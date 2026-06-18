@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Offres — 6-o</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Manrope",-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#EEF1EF;color:#1C2321;min-height:100vh;padding-bottom:4rem}
+header{background:#1C2321;color:#fff;padding:1rem 1.2rem;display:flex;align-items:center;gap:.8rem}
+.back{color:#fff;text-decoration:none;font-size:1.3rem;opacity:.85}
+.back:hover{opacity:1}
+h1{font-size:1.08rem;font-weight:800;flex:1}
+.btn-hdr{background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.3);color:#fff;padding:.45rem .9rem;border-radius:20px;cursor:pointer;font-size:.83rem;font-weight:700;font-family:inherit}
+.btn-hdr:hover{background:rgba(255,255,255,.28)}
+main{padding:1.1rem;max-width:620px;margin:0 auto}
+.empty{text-align:center;color:#A9B4C2;padding:3rem 1rem;font-size:.95rem}
+.offre-card{background:#fff;border-radius:16px;padding:1.1rem 1.2rem;box-shadow:0 2px 12px rgba(28,35,33,.1);margin-bottom:.9rem;display:flex;align-items:flex-start;gap:.9rem}
+.offre-card.inactif{opacity:.5}
+.offre-badge{background:#EEF1EF;color:#A22C29;font-size:.78rem;font-weight:800;border-radius:8px;padding:.28rem .65rem;white-space:nowrap;margin-top:.1rem}
+.offre-body{flex:1;min-width:0}
+.offre-nom{font-weight:800;font-size:.97rem;margin-bottom:.15rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.offre-desc{font-size:.8rem;color:#A9B4C2;line-height:1.4;margin-bottom:.3rem}
+.offre-date{font-size:.74rem;color:#A9B4C2}
+.offre-actions{display:flex;gap:.4rem;flex-shrink:0}
+.btn-ic{background:none;border:1.5px solid #c8d4da;border-radius:8px;padding:.32rem .6rem;cursor:pointer;font-size:.85rem;color:#A9B4C2;font-family:inherit;transition:all .15s}
+.btn-ic:hover{background:#EEF1EF;border-color:#A22C29;color:#A22C29}
+.btn-ic.del:hover{background:#2a1f1f;border-color:#A22C29;color:#A22C29}
+.toggle{width:36px;height:20px;border-radius:10px;border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;margin-top:.15rem}
+.toggle.on{background:#7D98A1}
+.toggle.off{background:#c8d4da}
+.toggle::after{content:'';position:absolute;top:2px;width:16px;height:16px;border-radius:50%;background:#EEF1EF;transition:left .2s}
+.toggle.on::after{left:18px}
+.toggle.off::after{left:2px}
+/* Modal */
+.overlay{display:none;position:fixed;inset:0;background:rgba(28,35,33,.55);z-index:100;align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:22px 22px 0 0;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;padding:1.5rem 1.5rem 2rem}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem}
+.modal-header h2{font-size:1.1rem;font-weight:800}
+.btn-close{background:none;border:none;font-size:1.5rem;cursor:pointer;color:#A9B4C2}
+.btn-close:hover{color:#EEF1EF}
+.field{margin-bottom:1rem}
+.field label{display:block;font-size:.74rem;font-weight:700;color:#A9B4C2;margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.05em}
+.field input,.field textarea{width:100%;border:1.5px solid #c8d4da;border-radius:10px;padding:.62rem .9rem;font-size:.95rem;color:#EEF1EF;outline:none;background:#fff;font-family:inherit;transition:border-color .15s}
+.field input:focus,.field textarea:focus{border-color:#A22C29;box-shadow:0 0 0 3px rgba(125,152,161,.18)}
+.field textarea{resize:vertical;min-height:80px}
+.row{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.2rem}
+.btn{padding:.68rem 1.1rem;border-radius:10px;border:none;cursor:pointer;font-size:.9rem;font-weight:700;font-family:inherit;transition:all .15s}
+.btn-primary{background:#A22C29;color:#1C2321}
+.btn-primary:hover{background:#8a2422}
+.btn-outline{background:#EEF1EF;color:#EEF1EF;border:1.5px solid #c8d4da}
+.btn-outline:hover{background:#e4eaed}
+@media(min-width:580px){.overlay{align-items:center}.modal{border-radius:22px;margin:1rem}}
+
+
+
+/* ── PREMIUM v3 — Carbon & Steel ── */
+body{background:#EEF1EF!important;color:#1C2321!important}
+header{background:#1C2321!important}
+.search-wrap,.sync-row{background:#EEF1EF!important}
+.card,.modal,.client-panel,.search-box,.top-card,.offre-card,.tpl-card{background:#fff!important;color:#1C2321!important;border:1px solid #dde4e8!important;box-shadow:0 1px 6px rgba(28,35,33,.07)!important}
+.card:hover{box-shadow:0 4px 18px rgba(28,35,33,.1)!important;border-color:#A9B4C2!important}
+input:not([type=file]):not([type=checkbox]):not([type=search]),textarea,select{background:#fff!important;color:#1C2321!important;border:1.5px solid #c8d4da!important}
+input:not([type=file]):not([type=checkbox]):not([type=search]):focus,textarea:focus,select:focus{border-color:#7D98A1!important;box-shadow:0 0 0 3px rgba(125,152,161,.18)!important}
+.qty-input,.amt-input,.fond-input,.ref-input{background:#fff!important;color:#1C2321!important;border-color:#c8d4da!important}
+.qty-input:focus,.amt-input:focus,.fond-input:focus,.ref-input:focus{border-color:#7D98A1!important}
+.field label{color:#5E6572!important;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase}
+.hint{color:#A9B4C2!important}
+.sub,.t-sub,.offre-desc,.offre-date,.tpl-sujet,.picker-sujet,.count,.hdr-sub,.salon-name,.desc{color:#5E6572!important}
+.fond-row{background:#f5f8fa!important;border-top-color:#dde4e8!important}
+.fond-row label,.fond-eur{color:#5E6572!important}
+.cnt-table tfoot td{background:#f5f8fa!important;color:#5E6572!important;border-top-color:#dde4e8!important}
+.cnt-table thead th,.history-table thead th{color:#A9B4C2!important;font-size:.64rem;letter-spacing:.07em}
+.cnt-table tbody td,.history-table tbody td{color:#1C2321!important}
+.card--ferraille .cnt-table tbody tr:nth-child(even) td,
+.card--papier .cnt-table tbody tr:nth-child(even) td,
+.card--elec .cnt-table tbody tr:nth-child(even) td,
+.history-table tbody tr:nth-child(even) td{background:#f5f8fa!important}
+.ecart-result{background:#f5f8fa!important;border-color:#dde4e8!important;border-radius:10px}
+.er-lbl{color:#5E6572!important}
+.prog-bar{background:#e4eaed!important}
+.prog-fill{background:linear-gradient(90deg,#7D98A1,#A9B4C2)!important}
+.reward-banner{background:#fff!important;border:1.5px solid #A22C29!important;color:#A22C29!important;display:flex}
+.tpl-loaded{background:#f0f7f4!important;border-color:#7D98A1!important;color:#1C2321!important}
+.info-banner{background:#f0f7f4!important;border-color:#7D98A1!important;color:#1C2321!important}
+.notice{background:#fef2f2!important;border-color:#A22C29!important;color:#7a1c1a!important}
+.history-empty,.empty,.no-offres,.quota{color:#A9B4C2!important}
+.status,.counter,.sync-st{color:#A9B4C2!important}
+.card .sep{color:#7D98A1!important;font-size:.75rem;letter-spacing:.07em}
+.card .sep::after{background:#dde4e8!important}
+.card h3{color:#5E6572!important;font-size:.78rem;letter-spacing:.07em}
+.badge{background:#f5f8fa!important;color:#5E6572!important;border:1px solid #dde4e8!important}
+.offre-badge{background:#fef2f2!important;color:#A22C29!important}
+.toggle.on{background:#7D98A1!important}
+.toggle.off{background:#c8d4da!important}
+.toggle::after{background:#fff!important}
+.btn-primary,.btn-p,.btn-save{background:#A22C29!important;color:#fff!important;border:none!important}
+.btn-primary:hover,.btn-p:hover,.btn-save:hover{background:#8a2422!important}
+.btn-outline,.btn-o,.btn-sm{background:#fff!important;color:#1C2321!important;border:1.5px solid #c8d4da!important}
+.btn-outline:hover,.btn-o:hover,.btn-sm:hover{background:#f5f8fa!important;border-color:#7D98A1!important;color:#1C2321!important}
+.btn-tpl{background:#f5f8fa!important;color:#5E6572!important;border:1.5px solid #dde4e8!important}
+.btn-tpl:hover{background:#e4eaed!important;color:#1C2321!important}
+.preview-box,.preview-body{background:#1C2321!important;color:#EEF1EF!important}
+.preview-header{background:#A22C29!important;color:#fff!important}
+.preview-footer{background:#111a18!important;color:#5E6572!important;border-top:1px solid #2a3532!important}
+.prefill-banner{background:#f5f8fa!important;border:1px solid #dde4e8!important;border-left:4px solid #7D98A1!important;color:#5E6572!important}
+.remise-alert{background:#fef2f2!important;border:1px solid #dde4e8!important;border-left:4px solid #A22C29!important;color:#A22C29!important}
+.btn-del{border:1px solid #A22C29!important;color:#A22C29!important;background:none!important}
+.btn-del:hover{background:#fef2f2!important}
+.btn-reset{background:#fff!important;border:1.5px solid #c8d4da!important;color:#5E6572!important}
+.btn-reset:hover{border-color:#A22C29!important;color:#A22C29!important;background:#fef2f2!important}
+.xbtn,.btn-close{color:#A9B4C2!important}
+.xbtn:hover,.btn-close:hover{color:#1C2321!important}
+.mh h2,.modal-header h2{color:#1C2321!important;font-size:1.08rem}
+.avatar,.cp-av,.res-av{background:linear-gradient(135deg,#A9B4C2,#7D98A1)!important;color:#fff!important}
+.offre-chk{background:#f5f8fa!important;border-radius:8px}
+.search-box input,.search-wrap input[type=search]{background:#f5f8fa!important;color:#1C2321!important;border:1.5px solid #dde4e8!important}
+.search-box input:focus,.search-wrap input[type=search]:focus{border-color:#7D98A1!important}
+.picker-card{background:#f5f8fa!important;color:#1C2321!important;border:1px solid #dde4e8!important}
+.picker-card:hover{background:#e4eaed!important;border-color:#7D98A1!important}
+.tpl-card:hover{border-color:#A9B4C2!important;box-shadow:0 4px 16px rgba(28,35,33,.1)!important}
+.tpl-card.selected{border-color:#7D98A1!important;box-shadow:0 0 0 3px rgba(125,152,161,.18)!important}
+.btn-xs{background:#f5f8fa!important;border:1px solid #dde4e8!important;color:#5E6572!important}
+.btn-xs:hover{background:#e4eaed!important;color:#1C2321!important}
+.btn-xs.send{background:#7D98A1!important;color:#fff!important;border-color:#7D98A1!important}
+.btn-xs.send:hover{background:#5E6572!important;border-color:#5E6572!important}
+.action-msg{color:#7D98A1!important}
+.sync-bar{color:#A9B4C2}
+.sync-bar.ok{color:#7D98A1!important}
+.sync-bar.err{color:#A22C29!important}
+.res-item:hover{background:#f5f8fa!important}
+.result.ok{color:#7D98A1!important}
+.result.err{color:#A22C29!important}
+.toast{background:#1C2321!important;color:#EEF1EF!important;box-shadow:0 4px 20px rgba(28,35,33,.25)!important}
+.fab{background:#A22C29!important;box-shadow:0 4px 18px rgba(162,44,41,.35)!important}
+.card--ferraille .card-head{background:#A22C29!important}
+.card--papier .card-head{background:#5E6572!important}
+.card--elec .card-head{background:#1C2321!important}
+.card--comptage .card-head{background:#7D98A1!important}
+.card--ecart .card-head{background:#5E6572!important}
+.card--history .card-head{background:#1C2321!important}
+.card-badge{background:rgba(255,255,255,.2)!important;color:#fff!important}
+.notice a,.hint a,a[style*="color:#7D98A1"]{color:#7D98A1!important}
+.t-pts{color:#7D98A1!important;font-weight:800}
+.t-pts.reward{color:#A22C29!important}
+.btn-ic:hover{border-color:#7D98A1!important;color:#7D98A1!important;background:#f5f8fa!important}
+.btn-ic.del:hover{border-color:#A22C29!important;color:#A22C29!important;background:#fef2f2!important}
+.logo-preview{background:#f5f8fa!important;border-color:#dde4e8!important}
+.logo-del{color:#A22C29!important}
+.btn-send{background:#7D98A1!important;color:#fff!important}
+.btn-send:hover{background:#5E6572!important}
+.recap{color:#7D98A1!important}
+.btn-p:disabled{background:#c8d4da!important;color:#fff!important}
+.section-title{color:#A9B4C2!important}
+.section-title::after{background:#dde4e8!important}
+
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" style="display:block" aria-hidden="true"><path d="M13.41,12l3.3-3.29a1,1,0,1,0-1.42-1.42l-4,4a1,1,0,0,0,0,1.42l4,4a1,1,0,0,0,1.42,0,1,1,0,0,0,0-1.42ZM8,7A1,1,0,0,0,7,8v8a1,1,0,0,0,2,0V8A1,1,0,0,0,8,7Z"></path></svg></a>
+  <h1><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#A22C29" style="vertical-align:-.18em" aria-hidden="true"><path d="M7,6A1,1,0,1,0,8,7,1,1,0,0,0,7,6Zm14.71,5.78L12.23,2.32A1,1,0,0,0,11.5,2h-6a1,1,0,0,0-.71.29L2.29,4.78A1,1,0,0,0,2,5.49v6a1.05,1.05,0,0,0,.29.71l9.49,9.5a1.05,1.05,0,0,0,.71.29,1,1,0,0,0,.71-.29l8.51-8.51a1,1,0,0,0,.29-.71A1.05,1.05,0,0,0,21.71,11.78Zm-9.22,7.81L4,11.09V5.9L5.9,4h5.18l8.5,8.49Z"></path></svg> Offres commerciales</h1>
+  <button class="btn-hdr" onclick="openModal()">+ Nouvelle offre</button>
+</header>
+
+<main>
+  <div id="liste"></div>
+</main>
+
+<!-- Modal -->
+<div class="overlay" id="overlay" onclick="backdropClose(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">Nouvelle offre</h2>
+      <button class="btn-close" onclick="closeModal()">&#x2715;</button>
+    </div>
+    <div class="field"><label>Nom de l'offre ✱</label><input id="fNom" type="text" placeholder="Ex : Coupe + couleur"></div>
+    <div class="field"><label>Réduction / avantage</label><input id="fReduction" type="text" placeholder="Ex : -20% ou 1 soin offert"></div>
+    <div class="field"><label>Description</label><textarea id="fDesc" placeholder="Détails de l'offre…"></textarea></div>
+    <div class="field"><label>Valable jusqu'au</label><input id="fDate" type="date"></div>
+    <div class="row">
+      <button class="btn btn-primary" onclick="saveOffre()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M18.71,7.21a1,1,0,0,0-1.42,0L9.84,14.67,6.71,11.53A1,1,0,1,0,5.29,13l3.84,3.84a1,1,0,0,0,1.42,0l8.16-8.16A1,1,0,0,0,18.71,7.21Z"></path></svg> Enregistrer</button>
+      <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var LS='offres-v1';
+var editId=null;
+function load(){try{return JSON.parse(localStorage.getItem(LS)||'[]');}catch(e){return[];}}
+function save(arr){localStorage.setItem(LS,JSON.stringify(arr));}
+
+function render(){
+  var arr=load(), el=document.getElementById('liste');
+  if(!arr.length){el.innerHTML='<div class="empty">Aucune offre. Créez votre première offre avec le bouton + ci-dessus.</div>';return;}
+  el.innerHTML=arr.map(function(o){
+    var cls='offre-card'+(o.actif?'':' inactif');
+    var date=o.validite?'Valable jusqu\'au '+o.validite:'';
+    var nom=escH(o.nom||'Sans nom'), reduc=escH(o.reduction||''), desc=escH(o.desc||'');
+    return '<div class="'+cls+'" id="card-'+o.id+'">'+'<div class="offre-badge">'+reduc+'</div>'+'<div class="offre-body"><div class="offre-nom">'+nom+'</div>'+(desc?'<div class="offre-desc">'+desc+'</div>':'')+(date?'<div class="offre-date">'+escH(date)+'</div>':'')+'</div>'+'<div class="offre-actions">'+'<button class="toggle '+(o.actif?'on':'off')+'" title="Activer/désactiver" onclick="toggleActif(\''+o.id+'\')" aria-label="Activer/désactiver"></button>'+'<button class="btn-ic" onclick="editOffre(\''+o.id+'\')" title="Modifier"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M22,7.24a1,1,0,0,0-.29-.71L17.47,2.29A1,1,0,0,0,16.76,2a1,1,0,0,0-.71.29L13.22,5.12h0L2.29,16.05a1,1,0,0,0-.29.71V21a1,1,0,0,0,1,1H7.24A1,1,0,0,0,8,21.71L18.87,10.78h0L21.71,8a1.19,1.19,0,0,0,.22-.33,1,1,0,0,0,0-.24.7.7,0,0,0,0-.14ZM6.83,20H4V17.17l9.93-9.93,2.83,2.83ZM18.17,8.66,15.34,5.83l1.42-1.41,2.82,2.82Z"></path></svg></button>'+'<button class="btn-ic del" onclick="delOffre(\''+o.id+'\')" title="Supprimer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M10,18a1,1,0,0,0,1-1V11a1,1,0,0,0-2,0v6A1,1,0,0,0,10,18ZM20,6H16V5a3,3,0,0,0-3-3H11A3,3,0,0,0,8,5V6H4A1,1,0,0,0,4,8H5V19a3,3,0,0,0,3,3h8a3,3,0,0,0,3-3V8h1a1,1,0,0,0,0-2ZM10,5a1,1,0,0,1,1-1h2a1,1,0,0,1,1,1V6H10Zm7,14a1,1,0,0,1-1,1H8a1,1,0,0,1-1-1V8H17Zm-3-1a1,1,0,0,0,1-1V11a1,1,0,0,0-2,0v6A1,1,0,0,0,14,18Z"></path></svg></button>'+'</div></div>';
+  }).join('');
+}
+
+function escH(s){var d=document.createElement('div');d.textContent=String(s==null?'':s);return d.innerHTML;}
+
+function openModal(id){
+  editId=id||null;
+  if(id){var arr=load(), o=arr.find(function(x){return x.id===id;});if(!o)return;
+    document.getElementById('modalTitle').textContent='Modifier l\'offre';
+    document.getElementById('fNom').value=o.nom||'';
+    document.getElementById('fReduction').value=o.reduction||'';
+    document.getElementById('fDesc').value=o.desc||'';
+    document.getElementById('fDate').value=o.validite||'';
+  }else{
+    document.getElementById('modalTitle').textContent='Nouvelle offre';
+    document.getElementById('fNom').value='';
+    document.getElementById('fReduction').value='';
+    document.getElementById('fDesc').value='';
+    document.getElementById('fDate').value='';
+  }
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('fNom').focus();
+}
+function closeModal(){document.getElementById('overlay').classList.remove('open');}
+function backdropClose(e){if(e.target===document.getElementById('overlay'))closeModal();}
+
+function saveOffre(){
+  var nom=(document.getElementById('fNom').value||'').trim();
+  if(!nom){alert('Le nom de l\'offre est requis.');return;}
+  var arr=load();
+  if(editId){var idx=arr.findIndex(function(x){return x.id===editId;});if(idx>=0){arr[idx].nom=nom;arr[idx].reduction=(document.getElementById('fReduction').value||'').trim();arr[idx].desc=(document.getElementById('fDesc').value||'').trim();arr[idx].validite=document.getElementById('fDate').value||'';arr[idx].maj=new Date().toISOString();}}
+  else{arr.push({id:'o_'+Date.now()+'_'+Math.floor(Math.random()*1e4),nom:nom,reduction:(document.getElementById('fReduction').value||'').trim(),desc:(document.getElementById('fDesc').value||'').trim(),validite:document.getElementById('fDate').value||'',actif:true,createdAt:new Date().toISOString()});}
+  save(arr);closeModal();render();
+}
+
+function editOffre(id){openModal(id);}
+
+function delOffre(id){
+  if(!confirm('Supprimer cette offre ?'))return;
+  var arr=load().filter(function(o){return o.id!==id;});
+  save(arr);render();
+}
+
+function toggleActif(id){
+  var arr=load(), o=arr.find(function(x){return x.id===id;});
+  if(o)o.actif=!o.actif;
+  save(arr);render();
+}
+
+render();
+</script>
+</body>
+</html>

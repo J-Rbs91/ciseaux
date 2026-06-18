@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prestations — 6-o</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Manrope",-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#EEF1EF;color:#1C2321;min-height:100vh;padding-bottom:4rem}
+header{background:#1C2321;color:#fff;padding:1rem 1.2rem;display:flex;align-items:center;gap:.8rem;position:sticky;top:0;z-index:20}
+.back{color:#fff;text-decoration:none;font-size:1.3rem;opacity:.85;line-height:1}
+.back:hover{opacity:1}
+h1{font-size:1.08rem;font-weight:800;flex:1;display:flex;align-items:center;gap:.5rem}
+main{padding:1.1rem;max-width:620px;margin:0 auto}
+.intro{font-size:.84rem;color:#5E6572;line-height:1.5;margin-bottom:1rem}
+.card{background:#fff;border:1px solid #dde4e8;border-radius:16px;padding:1.2rem 1.3rem;box-shadow:0 1px 6px rgba(28,35,33,.07)}
+.presta-row{display:flex;gap:.5rem;align-items:center;margin-bottom:.55rem}
+.presta-row input{border:1.5px solid #c8d4da;border-radius:9px;padding:.55rem .8rem;font-size:.92rem;font-family:inherit;outline:none;color:#1C2321;background:#fff;transition:border-color .15s}
+.presta-row input:focus{border-color:#7D98A1}
+.presta-row .p-nom{flex:1;min-width:0}
+.presta-row .p-prix{width:92px;flex-shrink:0;text-align:right}
+.presta-row .p-del{background:#fef2f2;color:#A22C29;border:none;border-radius:9px;width:38px;height:38px;flex-shrink:0;cursor:pointer;font-size:1rem;line-height:1}
+.presta-row .p-del:hover{background:#fce0e0}
+.presta-empty{font-size:.85rem;color:#5E6572;padding:.3rem 0 .7rem}
+.btn{padding:.65rem 1.1rem;border-radius:10px;border:none;cursor:pointer;font-size:.9rem;font-weight:700;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:.4rem}
+.btn-outline{background:#fff;color:#1C2321;border:1.5px solid #c8d4da}
+.btn-outline:hover{background:#f5f8fa;border-color:#7D98A1}
+.btn-primary{background:#A22C29;color:#fff}
+.btn-primary:hover{background:#8a2422}
+.actions{margin-top:1.1rem;display:flex;gap:.7rem;align-items:center;flex-wrap:wrap}
+.save-msg{font-size:.83rem;font-weight:600;color:#7D98A1;min-height:1.2em}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back" aria-label="Retour à l'accueil"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" style="display:block" aria-hidden="true"><path d="M13.41,12l3.3-3.29a1,1,0,1,0-1.42-1.42l-4,4a1,1,0,0,0,0,1.42l4,4a1,1,0,0,0,1.42,0,1,1,0,0,0,0-1.42ZM8,7A1,1,0,0,0,7,8v8a1,1,0,0,0,2,0V8A1,1,0,0,0,8,7Z"></path></svg></a>
+  <h1><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#A22C29" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-.2em" aria-hidden="true"><circle cx="6" cy="7" r="2.6"></circle><circle cx="6" cy="17" r="2.6"></circle><path d="M8.2 8.5 20 16"></path><path d="M8.2 15.5 20 8"></path></svg> Prestations &amp; tarifs</h1>
+</header>
+
+<main>
+  <p class="intro">Catalogue de vos prestations (nom + tarif). Elles sont cochées lors d'un passage sur la page <strong>Fidélité</strong> ; le tarif alimente le calcul du panier moyen par client.</p>
+
+  <div class="card">
+    <div id="prestaList"></div>
+    <button class="btn btn-outline" onclick="addPresta()">+ Ajouter une prestation</button>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="savePresta()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M18.71,7.21a1,1,0,0,0-1.42,0L9.84,14.67,6.71,11.53A1,1,0,1,0,5.29,13l3.84,3.84a1,1,0,0,0,1.42,0l8.16-8.16A1,1,0,0,0,18.71,7.21Z"></path></svg> Enregistrer</button>
+      <span class="save-msg" id="saveMsg"></span>
+    </div>
+  </div>
+</main>
+
+<script>
+var LS_P='profil-magasin-v1', LS_S='sync-url-v1';
+function lp(){try{return JSON.parse(localStorage.getItem(LS_P)||'{}')||{};}catch(e){return{};}}
+function su(){return(localStorage.getItem(LS_S)||'').trim();}
+function escAttr(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+var prestaWork=[];
+function renderPresta(){
+  var box=document.getElementById('prestaList');
+  if(!prestaWork.length){box.innerHTML='<div class="presta-empty">Aucune prestation. Ajoutez-en une ci-dessous.</div>';return;}
+  box.innerHTML=prestaWork.map(function(p,i){
+    return '<div class="presta-row">'+
+      '<input class="p-nom" value="'+escAttr(p.nom)+'" placeholder="Ex : Coupe homme" oninput="updPresta('+i+',\'nom\',this.value)">'+
+      '<input class="p-prix" type="number" min="0" step="0.01" value="'+(p.prix!=null?p.prix:'')+'" placeholder="€" oninput="updPresta('+i+',\'prix\',this.value)">'+
+      '<button class="p-del" title="Supprimer" onclick="delPresta('+i+')">✕</button>'+
+    '</div>';
+  }).join('');
+}
+function addPresta(){
+  prestaWork.push({id:'p_'+Date.now()+'_'+Math.floor(Math.random()*9999),nom:'',prix:''});
+  renderPresta();
+  var ins=document.getElementById('prestaList').querySelectorAll('.p-nom');
+  if(ins.length)ins[ins.length-1].focus();
+}
+function updPresta(i,k,v){if(prestaWork[i])prestaWork[i][k]=v;}
+function delPresta(i){prestaWork.splice(i,1);renderPresta();}
+
+function jsonp(base,params,cb){
+  var name='cb_'+Date.now()+'_'+Math.floor(Math.random()*1e6);
+  var s=document.createElement('script'),done=false;
+  var t=setTimeout(function(){if(!done)fin({ok:false,error:'délai dépassé'});},15000);
+  function fin(r){done=true;clearTimeout(t);try{delete window[name];}catch(e){window[name]=undefined;}if(s.parentNode)s.parentNode.removeChild(s);cb(r);}
+  window[name]=function(r){fin(r);};
+  s.onerror=function(){fin({ok:false,error:'réseau'});};
+  var q=[];for(var k in params)if(params.hasOwnProperty(k))q.push(encodeURIComponent(k)+'='+encodeURIComponent(params[k]));
+  q.push('callback='+name);
+  s.src=base+(base.indexOf('?')>=0?'&':'?')+q.join('&');
+  document.body.appendChild(s);
+}
+function syncPush(profil){
+  var url=su();if(!url)return;
+  jsonp(url,{action:'save',data:JSON.stringify(profil)},function(r){
+    var el=document.getElementById('saveMsg');
+    if(el)el.textContent=r&&r.ok?'✓ Enregistré et synchronisé avec Drive':'✓ Enregistré (synchro Drive échouée)';
+  });
+}
+
+function savePresta(){
+  var prestations=prestaWork.map(function(x){
+    return {id:x.id||('p_'+Date.now()+'_'+Math.floor(Math.random()*9999)),nom:String(x.nom||'').trim(),prix:Math.round((parseFloat(x.prix)||0)*100)/100};
+  }).filter(function(x){return x.nom;});
+  var p=lp();
+  p.prestations=prestations;
+  localStorage.setItem(LS_P,JSON.stringify(p));
+  // recharge la liste normalisée (tarifs arrondis, lignes vides retirées)
+  prestaWork=prestations.map(function(x){return {id:x.id,nom:x.nom,prix:x.prix};});
+  renderPresta();
+  document.getElementById('saveMsg').textContent='✓ Enregistré';
+  syncPush(p);
+  setTimeout(function(){var el=document.getElementById('saveMsg');if(el)el.textContent='';},3500);
+}
+
+// Init
+prestaWork=(function(){
+  var p=lp();
+  return Array.isArray(p.prestations)?p.prestations.map(function(x){return {id:x.id||('p_'+Date.now()+'_'+Math.floor(Math.random()*9999)),nom:String(x.nom||''),prix:(x.prix!=null?x.prix:'')};}):[];
+})();
+renderPresta();
+</script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Caisse — Ciseaux</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fdf3ef;color:#3d2b27;min-height:100vh;padding-bottom:4rem}
+header{background:linear-gradient(135deg,#b87c6e,#9c5f52);color:#fff;padding:1rem 1.2rem;display:flex;align-items:center;gap:.8rem}
+.back{color:#fff;text-decoration:none;font-size:1.3rem;opacity:.85}
+.back:hover{opacity:1}
+h1{font-size:1.08rem;font-weight:800;flex:1}
+main{padding:1.1rem;max-width:620px;margin:0 auto}
+/* Saisie */
+.card{background:#fff;border-radius:18px;padding:1.3rem 1.4rem;box-shadow:0 2px 14px rgba(0,0,0,.07);margin-bottom:1.1rem}
+.card-title{font-size:.85rem;font-weight:700;color:#b87c6e;text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem}
+.date-row{display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap}
+.date-row input[type=date]{border:1.5px solid #e8c5b8;border-radius:10px;padding:.55rem .85rem;font-size:.93rem;color:#3d2b27;outline:none;background:#fff;font-family:inherit;transition:border-color .15s}
+.date-row input[type=date]:focus{border-color:#b87c6e}
+.denom-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.7rem;margin-bottom:.9rem}
+.denom-field{display:flex;flex-direction:column;gap:.25rem}
+.denom-field label{font-size:.72rem;font-weight:700;color:#7a5c56;text-transform:uppercase;letter-spacing:.04em}
+.denom-field input{border:1.5px solid #e8c5b8;border-radius:8px;padding:.52rem .7rem;font-size:.92rem;color:#3d2b27;outline:none;background:#fff;font-family:inherit;text-align:right;transition:border-color .15s}
+.denom-field input:focus{border-color:#b87c6e}
+.total-row{background:#fdf3ef;border-radius:12px;padding:.85rem 1rem;display:flex;align-items:center;justify-content:space-between;margin:.5rem 0 1rem}
+.total-label{font-size:.85rem;font-weight:700;color:#7a5c56}
+.total-val{font-size:1.5rem;font-weight:800;color:#b87c6e}
+.note-field textarea{width:100%;border:1.5px solid #e8c5b8;border-radius:10px;padding:.6rem .9rem;font-size:.9rem;color:#3d2b27;outline:none;background:#fff;font-family:inherit;resize:vertical;min-height:60px;transition:border-color .15s}
+.note-field textarea:focus{border-color:#b87c6e}
+.note-label{font-size:.74rem;font-weight:700;color:#7a5c56;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;display:block}
+.btn{padding:.7rem 1.2rem;border-radius:10px;border:none;cursor:pointer;font-size:.9rem;font-weight:700;font-family:inherit;transition:all .15s}
+.btn-p{background:#b87c6e;color:#fff;width:100%;margin-top:.9rem;padding:.8rem}
+.btn-p:hover{background:#a06058}
+.save-msg{text-align:center;font-size:.82rem;color:#5a9a6f;min-height:1.4em;margin-top:.4rem;font-weight:600}
+/* Historique */
+.section-title{font-size:.85rem;font-weight:700;color:#7a5c56;text-transform:uppercase;letter-spacing:.06em;margin:.3rem 0 .8rem;display:flex;align-items:center;gap:.5rem}
+.section-title::after{content:'';flex:1;height:1px;background:#e8c5b8}
+.histo-item{background:#fff;border-radius:14px;padding:.95rem 1.1rem;margin-bottom:.65rem;box-shadow:0 1px 8px rgba(0,0,0,.05);display:flex;align-items:center;gap:.9rem}
+.h-date{font-size:.82rem;color:#7a5c56;font-weight:700;min-width:80px}
+.h-note{flex:1;font-size:.82rem;color:#a07870;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.h-total{font-size:1rem;font-weight:800;color:#b87c6e;white-space:nowrap}
+.del-btn{background:none;border:none;color:#d4a0a0;cursor:pointer;font-size:1rem;padding:.2rem;transition:color .12s}
+.del-btn:hover{color:#c0392b}
+.empty{text-align:center;padding:2rem;color:#c4a09a;font-size:.9rem}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back">&#8592;</a>
+  <h1>💰 Caisse</h1>
+</header>
+
+<main>
+  <div class="card">
+    <div class="card-title">Clôture du jour</div>
+
+    <div class="date-row">
+      <label style="font-size:.8rem;font-weight:700;color:#7a5c56">Date</label>
+      <input type="date" id="cDate">
+    </div>
+
+    <div class="denom-grid">
+      <div class="denom-field"><label>Billets 500 €</label><input type="number" id="d500" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
+      <div class="denom-field"><label>Billets 200 €</label><input type="number" id="d200" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
+      <div class="denom-field"><label>Billets 100 €</label><input type="number" id="d100" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
+      <div class="denom-field"><label>Billets 50 €</label><input type="number" id="d50" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
+      <div class="denom-field"><label>Billets 20 €</label><input type="number" id="d20" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
+      <div class="denom-field"><label>Billets 10 €</label><input type="number" id="d10" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
+      <div class="denom-field"><label>Billets 5 €</label><input type="number" id="d5" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
+      <div class="denom-field"><label>Pièces 2 €</label><input type="number" id="d2" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
+      <div class="denom-field"><label>Pièces 1 €</label><input type="number" id="d1" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
+      <div class="denom-field"><label>Pièces 0,50 €</label><input type="number" id="d050" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
+      <div class="denom-field"><label>Pièces 0,20 €</label><input type="number" id="d020" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
+      <div class="denom-field"><label>Pièces 0,10 €</label><input type="number" id="d010" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
+    </div>
+    <div style="margin-bottom:.6rem">
+      <label style="font-size:.74rem;font-weight:700;color:#7a5c56;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.35rem">Recettes CB / virement (€)</label>
+      <input type="number" id="dCB" min="0" step="0.01" placeholder="0.00" style="border:1.5px solid #e8c5b8;border-radius:10px;padding:.6rem .9rem;font-size:.95rem;color:#3d2b27;outline:none;background:#fff;font-family:inherit;width:160px" oninput="calcTotal()">
+    </div>
+
+    <div class="total-row">
+      <span class="total-label">Total caisse</span>
+      <span class="total-val" id="totalVal">0,00 €</span>
+    </div>
+
+    <div class="note-field">
+      <label class="note-label">Note du jour</label>
+      <textarea id="dNote" placeholder="Observations, incidents, chèques reçus…"></textarea>
+    </div>
+
+    <button class="btn btn-p" onclick="saveCloture()">💾 Enregistrer la clôture</button>
+    <div class="save-msg" id="saveMsg"></div>
+  </div>
+
+  <div class="section-title">📋 Historique</div>
+  <div id="histo"></div>
+</main>
+
+<script>
+var LS='clotures-v1';
+var DENOMS=[{id:'d500',val:500},{id:'d200',val:200},{id:'d100',val:100},{id:'d50',val:50},{id:'d20',val:20},{id:'d10',val:10},{id:'d5',val:5},{id:'d2',val:2},{id:'d1',val:1},{id:'d050',val:.5},{id:'d020',val:.2},{id:'d010',val:.1}];
+
+function lh(){try{return JSON.parse(localStorage.getItem(LS)||'[]');}catch(e){return[];}}
+function sh(a){localStorage.setItem(LS,JSON.stringify(a));}
+
+function fmt(n){return n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';}
+
+function calcTotal(){
+  var t=0;
+  DENOMS.forEach(function(d){
+    var v=parseInt(document.getElementById(d.id).value||'0',10)||0;
+    t+=v*d.val;
+  });
+  var cb=parseFloat(document.getElementById('dCB').value||'0')||0;
+  t+=cb;
+  document.getElementById('totalVal').textContent=fmt(t);
+  return t;
+}
+
+function saveCloture(){
+  var total=calcTotal();
+  var date=document.getElementById('cDate').value;
+  if(!date){alert('Sélectionnez une date.');return;}
+  var denoms={};
+  DENOMS.forEach(function(d){var v=parseInt(document.getElementById(d.id).value||'0',10)||0;if(v)denoms[d.id]=v;});
+  var cb=parseFloat(document.getElementById('dCB').value||'0')||0;
+  var note=(document.getElementById('dNote').value||'').trim();
+  var all=lh();
+  all.unshift({id:'cl_'+Date.now(),date:date,total:total,denoms:denoms,cb:cb,note:note,createdAt:new Date().toISOString()});
+  sh(all);
+  document.getElementById('saveMsg').textContent='✓ Clôture enregistrée pour le '+fmtDate(date)+'.';
+  setTimeout(function(){document.getElementById('saveMsg').textContent='';},3000);
+  resetForm();
+  renderHisto();
+}
+
+function resetForm(){
+  DENOMS.forEach(function(d){document.getElementById(d.id).value='';});
+  document.getElementById('dCB').value='';
+  document.getElementById('dNote').value='';
+  document.getElementById('totalVal').textContent='0,00 €';
+}
+
+function fmtDate(d){
+  if(!d)return'';
+  var p=d.split('-');
+  return p[2]+'/'+p[1]+'/'+p[0];
+}
+
+function renderHisto(){
+  var all=lh();
+  if(!all.length){document.getElementById('histo').innerHTML='<div class="empty">Aucune clôture enregistrée.</div>';return;}
+  var h=all.map(function(c){
+    return '<div class="histo-item">'
+      +'<div class="h-date">'+fmtDate(c.date)+'</div>'
+      +'<div class="h-note">'+(c.note||'&nbsp;')+'</div>'
+      +'<div class="h-total">'+fmt(c.total||0)+'</div>'
+      +'<button class="del-btn" title="Supprimer" onclick="delCloture(\'' + c.id + '\')">🗑</button>'
+      +'</div>';
+  }).join('');
+  document.getElementById('histo').innerHTML=h;
+}
+
+function delCloture(id){
+  if(!confirm('Supprimer cette clôture ?'))return;
+  sh(lh().filter(function(c){return c.id!==id;}));
+  renderHisto();
+}
+
+// Init date = aujourd'hui
+document.getElementById('cDate').value=new Date().toISOString().slice(0,10);
+renderHisto();
+</script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Synchro Google Drive — Ciseaux</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fdf3ef;color:#3d2b27;line-height:1.65;padding-bottom:3rem}
+header{background:linear-gradient(135deg,#b87c6e,#9c5f52);color:#fff;padding:1rem 1.5rem;display:flex;align-items:center;gap:.9rem}
+.back{color:#fff;text-decoration:none;font-size:1.3rem;opacity:.85}
+header h1{font-size:1.05rem;font-weight:800}
+.content{max-width:640px;margin:0 auto;padding:1.5rem 1.2rem}
+h2{font-size:1.1rem;font-weight:800;color:#b87c6e;margin:1.5rem 0 .6rem}
+p,li{font-size:.93rem;color:#4a3530}
+ul,ol{margin-left:1.3rem;margin-bottom:.8rem}
+li{margin-bottom:.35rem}
+.step{background:#fff;border-radius:14px;padding:1rem 1.2rem;margin-bottom:.8rem;box-shadow:0 2px 10px rgba(0,0,0,.06);display:flex;gap:.9rem;align-items:flex-start}
+.step-num{background:#b87c6e;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.88rem;flex-shrink:0;margin-top:.1rem}
+.step-body{flex:1}
+.step-body strong{font-weight:700}
+code{background:#f0e4df;padding:.1rem .4rem;border-radius:5px;font-size:.85rem;font-family:'SFMono-Regular',Consolas,monospace}
+.warn{background:#fff8e1;border:1.5px solid #ffd54f;border-radius:12px;padding:.9rem 1.1rem;font-size:.85rem;margin:1rem 0;color:#7a4f00}
+.warn strong{font-weight:700}
+</style>
+</head>
+<body>
+<header>
+  <a href="../../index.html" class="back">&#8592;</a>
+  <h1>☁️ Synchronisation Google Drive</h1>
+</header>
+<div class="content">
+  <p>Cette méthode permet de retrouver vos données depuis <strong>n'importe quel appareil</strong> (tablette, téléphone, autre ordi) grâce à votre propre compte Google.</p>
+
+  <h2>Comment ça marche ?</h2>
+  <p>Vous déployez un petit script sur <strong>votre</strong> Google Drive. Il stocke vos données dans un fichier que vous seul contrôlez. Ciseaux n'héberge rien.</p>
+
+  <h2>Étapes (5 min)</h2>
+
+  <div class="step"><div class="step-num">1</div><div class="step-body">Ouvrir <strong><a href="https://script.google.com" target="_blank" style="color:#b87c6e">script.google.com</a></strong> et cliquer <strong>Nouveau projet</strong>.</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-body">Supprimer le code existant. Copier-coller le contenu du fichier <code>apps-script/Code.gs</code> disponible dans le dépôt GitHub du projet.</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-body">Cliquer <strong>Enregistrer</strong> (icône disquette).</div></div>
+  <div class="step"><div class="step-num">4</div><div class="step-body">Cliquer <strong>Déployer → Nouveau déploiement</strong>. Choisir le type <strong>Application web</strong>.</div></div>
+  <div class="step"><div class="step-num">5</div><div class="step-body">Paramètres :<br>• <strong>Exécuter en tant que :</strong> Moi<br>• <strong>Qui a accès :</strong> Tout le monde</div></div>
+  <div class="step"><div class="step-num">6</div><div class="step-body">Cliquer <strong>Déployer</strong>. Si un écran « application non vérifiée » s'affiche → <strong>Paramètres avancés → Continuer</strong>. C'est normal pour un script personnel.</div></div>
+  <div class="step"><div class="step-num">7</div><div class="step-body">Copier l'<strong>URL</strong> qui se termine par <code>/exec</code>.</div></div>
+  <div class="step"><div class="step-num">8</div><div class="step-body">Dans Ciseaux, ouvrir <strong>⚙️ Mon salon</strong>, coller l'URL dans le champ <em>Synchro Google Drive</em>, puis enregistrer.</div></div>
+
+  <div class="warn"><strong>⚠️ Compte Google Workspace (pro) ?</strong><br>L'option « Tout le monde » peut ne pas être disponible. Solution : créer un compte Gmail personnel dédié (ex. <code>monsalon.sync@gmail.com</code>) et déployer le script depuis ce compte.</div>
+
+  <h2>Vos données restent chez vous</h2>
+  <p>Le script tourne sur <strong>votre</strong> compte Google. Il crée un dossier <code>Hub_Facilities</code> dans votre Drive avec vos données. Ciseaux n'y a pas accès.</p>
+</div>
+</body>
+</html>

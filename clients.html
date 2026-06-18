@@ -12,9 +12,15 @@ header{background:linear-gradient(135deg,#b87c6e,#9c5f52);color:#fff;padding:1re
 .back:hover{opacity:1}
 h1{font-size:1.08rem;font-weight:800;flex:1}
 .count{font-size:.78rem;opacity:.75;white-space:nowrap}
-.search-wrap{padding:.9rem 1.1rem;background:#fdf3ef;position:sticky;top:56px;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.search-wrap{padding:.9rem 1.1rem .4rem;background:#fdf3ef;position:sticky;top:56px;z-index:10}
 .search-wrap input{width:100%;border:1.5px solid #e8c5b8;border-radius:12px;padding:.65rem 1rem .65rem 2.4rem;font-size:.95rem;color:#3d2b27;outline:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23c4a09a' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.156a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z'/%3E%3C/svg%3E") no-repeat .8rem center;font-family:inherit;transition:border-color .15s}
 .search-wrap input:focus{border-color:#b87c6e;box-shadow:0 0 0 3px rgba(184,124,110,.1)}
+.sync-row{display:none;align-items:center;gap:.5rem;padding:0 1.1rem .7rem;max-width:620px;margin:0 auto;flex-wrap:wrap;background:#fdf3ef}
+.sync-btn{background:#fff;border:1.5px solid #e8c5b8;color:#8a5a4e;border-radius:18px;padding:.35rem .8rem;font-size:.76rem;font-weight:700;cursor:pointer;font-family:inherit}
+.sync-btn:hover{background:#f5ebe7}
+.sync-st{font-size:.74rem;color:#aaa}
+.sync-st.ok{color:#5a9a6f}
+.sync-st.err{color:#c0392b}
 .list{padding:.2rem 1rem 0;max-width:620px;margin:0 auto}
 .empty{text-align:center;padding:3.5rem 1rem;color:#c4a09a;font-size:.93rem;line-height:2}
 .card{background:#fff;border-radius:16px;padding:1rem 1.1rem;margin-bottom:.75rem;box-shadow:0 2px 10px rgba(0,0,0,.055);display:flex;align-items:center;gap:.9rem;cursor:pointer;transition:transform .12s,box-shadow .12s;border:1.5px solid transparent}
@@ -39,6 +45,8 @@ h1{font-size:1.08rem;font-weight:800;flex:1}
 .field input,.field textarea{width:100%;border:1.5px solid #e8c5b8;border-radius:10px;padding:.6rem .9rem;font-size:.93rem;color:#3d2b27;outline:none;background:#fff;font-family:inherit;transition:border-color .15s}
 .field input:focus,.field textarea:focus{border-color:#b87c6e;box-shadow:0 0 0 3px rgba(184,124,110,.1)}
 .field textarea{resize:vertical;min-height:64px}
+label.check{display:flex;align-items:center;gap:.55rem;font-size:.85rem;font-weight:600;color:#5a4540;text-transform:none;letter-spacing:0;cursor:pointer;margin-bottom:0}
+.field label.check input{width:auto;margin:0;transform:scale(1.2)}
 .row{display:flex;gap:.6rem;margin-top:1.2rem}
 .btn{padding:.65rem 1.1rem;border-radius:10px;border:none;cursor:pointer;font-size:.88rem;font-weight:700;font-family:inherit;transition:all .15s}
 .btn-p{background:#b87c6e;color:#fff;flex:1}
@@ -61,6 +69,11 @@ h1{font-size:1.08rem;font-weight:800;flex:1}
 <div class="search-wrap">
   <input id="q" type="search" placeholder="Rechercher nom, téléphone…" oninput="render()">
 </div>
+<div class="sync-row" id="syncRow">
+  <button class="sync-btn" onclick="pushClients()">⬆️ Envoyer vers Drive</button>
+  <button class="sync-btn" onclick="pullClients()">⬇️ Récupérer du Drive</button>
+  <span class="sync-st" id="syncSt"></span>
+</div>
 
 <div class="list" id="list"></div>
 <button class="fab" onclick="openNew()" title="Nouveau client">+</button>
@@ -76,6 +89,7 @@ h1{font-size:1.08rem;font-weight:800;flex:1}
     <div class="field"><label>Email</label><input id="fE" type="email" placeholder="marie@exemple.fr"></div>
     <div class="field"><label>Notes</label><textarea id="fNt" placeholder="Allergies, préférences, coupe habituelle…"></textarea></div>
     <div class="field"><label>Points fidélité</label><input id="fPt" type="number" min="0" step="1" placeholder="0"></div>
+    <div class="field"><label class="check"><input type="checkbox" id="fOpt"> Accepte de recevoir les offres &amp; promotions par email</label></div>
     <div class="row">
       <button class="btn btn-p" onclick="save_()">Enregistrer</button>
       <button class="btn btn-d" id="delBtn" style="display:none" onclick="del_()">Supprimer</button>
@@ -84,12 +98,51 @@ h1{font-size:1.08rem;font-weight:800;flex:1}
 </div>
 
 <script>
-var LS='clients-v1', eid=null;
+var LS='clients-v1', LS_S='sync-url-v1', eid=null;
 function lc(){try{return JSON.parse(localStorage.getItem(LS)||'[]');}catch(e){return[];}}
 function sc(a){localStorage.setItem(LS,JSON.stringify(a));}
+function su(){return(localStorage.getItem(LS_S)||'').trim();}
 function ini(n){return(n||'').split(' ').map(function(w){return w[0]||'';}).slice(0,2).join('').toUpperCase()||'?';}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function cfg(){try{return JSON.parse(localStorage.getItem('fidelite-config-v1')||'{}');}catch(e){return{};}}
+function isOptin(v){if(v===true)return true;var s=String(v||'').trim().toLowerCase();return s==='oui'||s==='true'||s==='1'||s==='x'||s==='yes';}
+
+function jsonp(base,params,cb){
+  var name='cb_'+Date.now()+'_'+Math.floor(Math.random()*1e6);
+  var s=document.createElement('script'),done=false;
+  var t=setTimeout(function(){if(!done)fin({ok:false,error:'délai dépassé'});},15000);
+  function fin(r){done=true;clearTimeout(t);try{delete window[name];}catch(e){window[name]=undefined;}if(s.parentNode)s.parentNode.removeChild(s);cb(r);}
+  window[name]=function(r){fin(r);};
+  s.onerror=function(){fin({ok:false,error:'réseau'});};
+  var q=[];for(var k in params)if(params.hasOwnProperty(k))q.push(encodeURIComponent(k)+'='+encodeURIComponent(params[k]));
+  q.push('callback='+name);
+  s.src=base+(base.indexOf('?')>=0?'&':'?')+q.join('&');
+  document.body.appendChild(s);
+}
+function syncMsg(cls,msg){var el=document.getElementById('syncSt');if(el){el.className='sync-st '+cls;el.textContent=msg;}}
+
+function pushClients(){
+  var url=su();if(!url){syncMsg('err','Configurez la synchro dans Mon salon.');return;}
+  syncMsg('','⏳ Envoi vers Drive…');
+  jsonp(url,{action:'saveClients',data:JSON.stringify(lc())},function(r){
+    if(r&&r.ok)syncMsg('ok','✓ Clients envoyés vers le Drive.');
+    else syncMsg('err','Échec : '+(r?r.error:'inconnu'));
+  });
+}
+function pullClients(){
+  var url=su();if(!url){syncMsg('err','Configurez la synchro dans Mon salon.');return;}
+  if(!confirm('Remplacer la liste locale par celle du Drive ?'))return;
+  syncMsg('','⏳ Récupération…');
+  jsonp(url,{action:'loadClients'},function(r){
+    if(r&&r.ok){
+      var arr=[];try{arr=JSON.parse(r.data||'[]');}catch(e){}
+      var norm=arr.filter(function(c){return c&&(c.id||c.nom);}).map(function(c){
+        return {id:String(c.id||('c_'+Date.now()+'_'+Math.floor(Math.random()*9999))),nom:String(c.nom||''),tel:String(c.tel||''),mail:String(c.mail||''),notes:String(c.notes||''),points:parseInt(c.points,10)||0,offre:String(c.offre||''),optin:isOptin(c.optin),maj:String(c.maj||'')};
+      });
+      sc(norm);render();syncMsg('ok','✓ '+norm.length+' client(s) récupéré(s).');
+    }else syncMsg('err','Échec : '+(r?r.error:'inconnu'));
+  });
+}
 
 function render(){
   var q=(document.getElementById('q').value||'').toLowerCase().trim();
@@ -110,9 +163,10 @@ function render(){
     var badge=hasReward
       ?'<span class="badge reward">🎁 Récompense !</span>'
       :'<span class="badge">⭐ '+pts+'</span>';
+    var mark=isOptin(c.optin)?' <span title="Reçoit les offres" style="font-size:.8rem">✉️</span>':'';
     h+='<div class="card" onclick="openEdit(\'' + c.id + '\')">';
     h+='<div class="avatar">'+ini(c.nom)+'</div>';
-    h+='<div class="info"><div class="nom">'+esc(c.nom)+'</div>';
+    h+='<div class="info"><div class="nom">'+esc(c.nom)+mark+'</div>';
     h+='<div class="sub">'+esc(c.tel||c.mail||'Pas de contact')+'</div></div>';
     h+=badge+'</div>';
   });
@@ -124,6 +178,7 @@ function openNew(){
   document.getElementById('mTitle').textContent='Nouveau client';
   ['fN','fT','fE','fNt'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('fPt').value='0';
+  document.getElementById('fOpt').checked=false;
   document.getElementById('delBtn').style.display='none';
   document.getElementById('ov').classList.add('open');
   setTimeout(function(){document.getElementById('fN').focus();},80);
@@ -139,6 +194,7 @@ function openEdit(id){
   document.getElementById('fE').value=c.mail||'';
   document.getElementById('fNt').value=c.notes||'';
   document.getElementById('fPt').value=c.points||0;
+  document.getElementById('fOpt').checked=isOptin(c.optin);
   document.getElementById('delBtn').style.display='';
   document.getElementById('ov').classList.add('open');
 }
@@ -147,11 +203,12 @@ function save_(){
   var nom=(document.getElementById('fN').value||'').trim();
   if(!nom){alert('Le nom est requis.');return;}
   var all=lc(), now=new Date().toISOString();
+  var optin=document.getElementById('fOpt').checked;
   if(eid){
     var i=all.findIndex(function(x){return x.id===eid;});
-    if(i>=0){all[i].nom=nom;all[i].tel=(document.getElementById('fT').value||'').trim();all[i].mail=(document.getElementById('fE').value||'').trim();all[i].notes=(document.getElementById('fNt').value||'').trim();all[i].points=parseInt(document.getElementById('fPt').value||'0',10)||0;all[i].maj=now;}
+    if(i>=0){all[i].nom=nom;all[i].tel=(document.getElementById('fT').value||'').trim();all[i].mail=(document.getElementById('fE').value||'').trim();all[i].notes=(document.getElementById('fNt').value||'').trim();all[i].points=parseInt(document.getElementById('fPt').value||'0',10)||0;all[i].optin=optin;all[i].maj=now;}
   }else{
-    all.push({id:'c_'+Date.now()+'_'+Math.floor(Math.random()*9999),nom:nom,tel:(document.getElementById('fT').value||'').trim(),mail:(document.getElementById('fE').value||'').trim(),notes:(document.getElementById('fNt').value||'').trim(),points:parseInt(document.getElementById('fPt').value||'0',10)||0,offre:'',maj:now});
+    all.push({id:'c_'+Date.now()+'_'+Math.floor(Math.random()*9999),nom:nom,tel:(document.getElementById('fT').value||'').trim(),mail:(document.getElementById('fE').value||'').trim(),notes:(document.getElementById('fNt').value||'').trim(),points:parseInt(document.getElementById('fPt').value||'0',10)||0,offre:'',optin:optin,maj:now});
   }
   sc(all);close_();render();
 }
@@ -165,6 +222,7 @@ function del_(){
 function close_(){document.getElementById('ov').classList.remove('open');eid=null;}
 function bkClose(e){if(e.target===document.getElementById('ov'))close_();}
 
+if(su())document.getElementById('syncRow').style.display='flex';
 render();
 </script>
 </body>

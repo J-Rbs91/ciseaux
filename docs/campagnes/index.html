@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Campagnes email — Ciseaux</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fdf3ef;color:#3d2b27;line-height:1.65;padding-bottom:3rem}
+header{background:linear-gradient(135deg,#b87c6e,#9c5f52);color:#fff;padding:1rem 1.5rem;display:flex;align-items:center;gap:.9rem}
+.back{color:#fff;text-decoration:none;font-size:1.3rem;opacity:.85}
+header h1{font-size:1.05rem;font-weight:800}
+.content{max-width:640px;margin:0 auto;padding:1.5rem 1.2rem}
+h2{font-size:1.1rem;font-weight:800;color:#b87c6e;margin:1.5rem 0 .6rem}
+p,li{font-size:.93rem;color:#4a3530}
+ul,ol{margin-left:1.3rem;margin-bottom:.8rem}
+li{margin-bottom:.35rem}
+code{background:#f0e4df;padding:.1rem .4rem;border-radius:5px;font-size:.85rem;font-family:'SFMono-Regular',Consolas,monospace}
+.warn{background:#fff8e1;border:1.5px solid #ffd54f;border-radius:12px;padding:.9rem 1.1rem;font-size:.85rem;margin:1rem 0;color:#7a4f00}
+.ok{background:#eef6f0;border:1.5px solid #b8dcc4;border-radius:12px;padding:.9rem 1.1rem;font-size:.85rem;margin:1rem 0;color:#3a6b4c}
+</style>
+</head>
+<body>
+<header>
+  <a href="../../index.html" class="back">&#8592;</a>
+  <h1>✉️ Campagnes email</h1>
+</header>
+<div class="content">
+  <p>Ciseaux permet d'envoyer des offres par email à vos clients, <strong>depuis votre propre adresse Gmail</strong>, grâce au même script Apps Script que la synchro Drive. Aucun service tiers, aucune donnée hébergée ailleurs.</p>
+
+  <h2>Comment ça marche ?</h2>
+  <ol>
+    <li>Vos clients sont stockés dans votre Google Sheet (via la synchro).</li>
+    <li>Vous rédigez un objet + un message dans la page <strong>Campagnes</strong>.</li>
+    <li>Votre script envoie un email personnalisé à chaque client qui a <strong>accepté les offres</strong>.</li>
+    <li>Chaque email part de votre Gmail et contient un lien de désinscription automatique.</li>
+  </ol>
+
+  <h2>Pré-requis</h2>
+  <ul>
+    <li>Avoir configuré la <a href="../sync-drive/">synchro Google Drive</a>.</li>
+    <li>Avoir <strong>redéployé la dernière version du script</strong> (le code gère désormais l'envoi d'emails) et <strong>réautorisé</strong> l'accès — Google demandera l'autorisation d'envoyer des emails en votre nom.</li>
+    <li>Avoir coché « Accepte les offres » pour les clients concernés, puis <strong>synchronisé vers le Drive</strong>.</li>
+  </ul>
+
+  <div class="warn"><strong>⚠️ Quota Gmail</strong><br>Un compte Gmail gratuit peut envoyer à <strong>100 destinataires par jour</strong> (1 500 pour Google Workspace). Au-delà, les envois sont reportés au lendemain. La page Campagnes affiche votre quota restant.</div>
+
+  <h2>Personnalisation</h2>
+  <p>Dans votre message, écrivez <code>{prenom}</code> pour insérer le prénom du client. Exemple : <em>« Bonjour {prenom}, profitez de… »</em>.</p>
+
+  <div class="ok"><strong>⚖️ Conformité RGPD</strong><br>Seuls les clients ayant explicitement accepté les offres reçoivent vos emails, et chaque message contient un lien de désinscription qui met à jour automatiquement votre base. C'est la base du marketing par email responsable.</div>
+
+  <h2>Astuces</h2>
+  <ul>
+    <li>Gardez vos messages courts (≈1500 caractères) — limite technique de l'envoi.</li>
+    <li>Cliquez « Vérifier les destinataires » avant d'envoyer pour connaître le nombre exact.</li>
+    <li>Ne fermez pas la page pendant l'envoi.</li>
+  </ul>
+</div>
+</body>
+</html>

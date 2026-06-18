@@ -104,6 +104,7 @@ function envoyerCampagne_(p) {
   var segment = p.segment || 'all';
   var seuil   = parseInt(p.seuil || '0', 10) || 0;
   var baseUrl = ScriptApp.getService().getUrl() || (p.base || '');
+  var logoUrl = p.logoUrl || '';
 
   var profil = {};
   try { profil = JSON.parse(lireProfil_() || '{}') || {}; } catch(e) {}
@@ -120,14 +121,14 @@ function envoyerCampagne_(p) {
   var envoyes = 0, ignores = 0, erreurs = 0;
 
   for (var i = 0; i < dest.length; i++) {
-    if (envoyes >= quota) { ignores++; continue; }   // protège le quota quotidien
+    if (envoyes >= quota) { ignores++; continue; }
     var c = dest[i];
     try {
       MailApp.sendEmail({
         to: String(c.mail),
         subject: sujet,
         body: construireTexte_(corps, c, profil, baseUrl),
-        htmlBody: construireEmail_(corps, c, profil, baseUrl),
+        htmlBody: construireEmail_(corps, c, profil, baseUrl, logoUrl),
         name: (profil.nom || 'Mon salon')
       });
       envoyes++;
@@ -147,10 +148,11 @@ function estOptin_(v) {
 function personnaliser_(txt, c, prenom) {
   return String(txt || '')
     .replace(/\{prenom\}/gi, prenom)
-    .replace(/\{nom\}/gi, String(c.nom || ''));
+    .replace(/\{nom\}/gi, String(c.nom || ''))
+    .replace(/\{points\}/gi, String(Number(c.points) || 0));
 }
 
-function construireEmail_(corps, c, profil, baseUrl) {
+function construireEmail_(corps, c, profil, baseUrl, logoUrl) {
   var prenom = String(c.nom || '').split(' ')[0] || '';
   var htmlCorps = escapeHtml_(personnaliser_(corps, c, prenom)).replace(/\n/g, '<br>');
   var unsub = baseUrl + '?action=unsub&id=' + encodeURIComponent(c.id);
@@ -159,9 +161,17 @@ function construireEmail_(corps, c, profil, baseUrl) {
   if (profil.adresse) coords.push(escapeHtml_(profil.adresse));
   if (profil.tel)     coords.push(escapeHtml_(profil.tel));
   var coordsStr = coords.join(' · ');
+
+  var logoBlock = '';
+  if (logoUrl && /^https:\/\//i.test(logoUrl)) {
+    logoBlock = '<div style="text-align:center;padding:10px 0 2px"><img src="' + escapeHtml_(logoUrl) + '" alt="" style="max-height:60px;max-width:200px"></div>';
+  }
+
   return ''
     + '<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;color:#3d2b27">'
-    +   '<div style="background:#b87c6e;color:#ffffff;padding:18px 22px;border-radius:12px 12px 0 0;font-size:18px;font-weight:bold">' + nom + '</div>'
+    +   '<div style="background:#b87c6e;color:#ffffff;padding:18px 22px;border-radius:12px 12px 0 0;font-size:18px;font-weight:bold">'
+    +     logoBlock + nom
+    +   '</div>'
     +   '<div style="background:#ffffff;padding:22px;border:1px solid #f0dbd5;border-top:none;font-size:15px;line-height:1.6">' + htmlCorps + '</div>'
     +   '<div style="padding:16px 22px;font-size:12px;color:#9a8077;background:#fdf3ef;border:1px solid #f0dbd5;border-top:none;border-radius:0 0 12px 12px">'
     +     (coordsStr ? coordsStr + '<br><br>' : '')

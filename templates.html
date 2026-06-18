@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Templates — Ciseaux</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fdf3ef;color:#3d2b27;min-height:100vh;padding-bottom:4rem}
+header{background:linear-gradient(135deg,#b87c6e,#9c5f52);color:#fff;padding:1rem 1.2rem;display:flex;align-items:center;gap:.8rem}
+.back{color:#fff;text-decoration:none;font-size:1.3rem;opacity:.85}
+.back:hover{opacity:1}
+h1{font-size:1.08rem;font-weight:800;flex:1}
+.btn-hdr{background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.3);color:#fff;padding:.45rem .9rem;border-radius:20px;cursor:pointer;font-size:.83rem;font-weight:700;font-family:inherit}
+.btn-hdr:hover{background:rgba(255,255,255,.28)}
+main{padding:1.1rem;max-width:900px;margin:0 auto}
+.tpl-list{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1.2rem}
+@media(max-width:540px){.tpl-list{grid-template-columns:1fr}}
+.tpl-card{background:#fff;border-radius:14px;padding:1rem 1.1rem;box-shadow:0 2px 10px rgba(0,0,0,.07);cursor:pointer;border:1.5px solid transparent;transition:all .15s;display:flex;flex-direction:column;gap:.3rem}
+.tpl-card:hover{border-color:#e8c5b8;box-shadow:0 6px 20px rgba(184,124,110,.15)}
+.tpl-card.selected{border-color:#b87c6e;box-shadow:0 0 0 3px rgba(184,124,110,.15)}
+.tpl-card .tpl-nom{font-weight:800;font-size:.95rem}
+.tpl-card .tpl-sujet{font-size:.78rem;color:#7a5c56;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tpl-card .tpl-actions{display:flex;gap:.4rem;margin-top:.5rem}
+.btn-xs{background:#f5ebe7;border:1.5px solid #e8c5b8;color:#7a5c56;border-radius:7px;padding:.22rem .55rem;font-size:.76rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-xs:hover{background:#ecddd8;color:#b87c6e}
+.btn-xs.send{background:#b87c6e;color:#fff;border-color:#b87c6e}
+.btn-xs.send:hover{background:#a06058}
+.btn-xs.del:hover{background:#fdf0ef;border-color:#c0392b;color:#c0392b}
+.editor-wrap{display:flex;gap:1.1rem;align-items:flex-start}
+.editor{flex:1;min-width:0}
+.preview-panel{width:320px;flex-shrink:0;position:sticky;top:1rem}
+@media(max-width:720px){.editor-wrap{flex-direction:column}.preview-panel{width:100%;position:static}}
+.card{background:#fff;border-radius:16px;padding:1.3rem;box-shadow:0 2px 12px rgba(0,0,0,.07);margin-bottom:1rem}
+.card h3{font-size:.85rem;font-weight:800;color:#b87c6e;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.9rem}
+.field{margin-bottom:.85rem}
+.field label{display:block;font-size:.73rem;font-weight:700;color:#7a5c56;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.05em}
+.field input,.field textarea{width:100%;border:1.5px solid #e8c5b8;border-radius:9px;padding:.58rem .85rem;font-size:.92rem;color:#3d2b27;outline:none;background:#fff;font-family:inherit;transition:border-color .15s}
+.field input:focus,.field textarea:focus{border-color:#b87c6e;box-shadow:0 0 0 3px rgba(184,124,110,.1)}
+.field textarea{resize:vertical}
+.hint{font-size:.72rem;color:#bbb;margin-top:.3rem;line-height:1.4}
+.check-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;font-size:.9rem}
+.check-row input[type=checkbox]{width:17px;height:17px;accent-color:#b87c6e;cursor:pointer}
+.offre-chk{background:#f9f2ef;border-radius:9px;padding:.65rem .9rem;margin-bottom:.5rem;display:flex;align-items:center;gap:.6rem;font-size:.88rem}
+.offre-chk input[type=checkbox]{width:16px;height:16px;accent-color:#b87c6e;cursor:pointer;flex-shrink:0}
+.no-offres{font-size:.82rem;color:#bbb;padding:.5rem 0}
+.logo-zone{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin-bottom:.3rem}
+.logo-preview{width:64px;height:40px;object-fit:contain;border-radius:6px;border:1.5px solid #e8c5b8;background:#f5ebe7;display:none}
+.logo-preview.show{display:block}
+.logo-del{font-size:.75rem;color:#c0392b;cursor:pointer;text-decoration:underline;background:none;border:none;font-family:inherit}
+.logo-del:hover{color:#922b21}
+.row{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.5rem}
+.btn{padding:.65rem 1rem;border-radius:10px;border:none;cursor:pointer;font-size:.88rem;font-weight:700;font-family:inherit;transition:all .15s}
+.btn-primary{background:#b87c6e;color:#fff}
+.btn-primary:hover{background:#a06058}
+.btn-outline{background:#f5ebe7;color:#3d2b27;border:1.5px solid #e8c5b8}
+.btn-outline:hover{background:#ecddd8}
+.btn-send{background:#5a9a6f;color:#fff;width:100%;padding:.75rem;font-size:.92rem}
+.btn-send:hover{background:#4a8460}
+/* Preview */
+.preview-box{background:#fff;border-radius:14px;padding:0;box-shadow:0 2px 12px rgba(0,0,0,.09);overflow:hidden;margin-bottom:.8rem}
+.preview-header{background:#b87c6e;color:#fff;padding:14px 18px;font-size:15px;font-weight:bold}
+.preview-body{padding:18px;font-size:14px;line-height:1.6;color:#3d2b27;min-height:80px;white-space:pre-wrap;word-break:break-word}
+.preview-footer{padding:12px 18px;font-size:11px;color:#9a8077;background:#fdf3ef;border-top:1px solid #f0dbd5}
+.preview-title{font-size:.72rem;font-weight:700;color:#7a5c56;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem}
+.sep{font-size:.78rem;font-weight:700;color:#b87c6e;text-transform:uppercase;letter-spacing:.05em;margin:.6rem 0 .4rem;display:flex;align-items:center;gap:.5rem}
+.sep::after{content:'';flex:1;height:1px;background:#f0dbd5}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back">&#8592;</a>
+  <h1>📋 Templates email</h1>
+  <button class="btn-hdr" onclick="nouveau()">+ Nouveau</button>
+</header>
+
+<main>
+  <div class="tpl-list" id="tplList"></div>
+
+  <div class="editor-wrap">
+    <div class="editor">
+
+      <div class="card">
+        <h3>Informations</h3>
+        <div class="field"><label>Nom du template ✱</label><input id="fNomTpl" type="text" placeholder="Ex : Promo printemps" oninput="livePreview()"></div>
+        <div class="field"><label>Objet de l'email</label><input id="fSujet" type="text" placeholder="Ex : 🎉 Offre spéciale !" oninput="livePreview()"></div>
+      </div>
+
+      <div class="card">
+        <h3>Contenu du message</h3>
+        <div class="field"><label>Titre</label><input id="fTitre" type="text" placeholder="Votre offre exclusive" oninput="livePreview()"></div>
+        <div class="field"><label>Sous-titre</label><input id="fSousTitre" type="text" placeholder="Pour vous remercier de votre fidélité" oninput="livePreview()"></div>
+        <div class="field"><label>Accroche</label><input id="fAccroche" type="text" placeholder="Cette semaine seulement…" oninput="livePreview()"></div>
+        <div class="field"><label>Corps du message</label><textarea id="fCorps" rows="5" placeholder="Détaillez votre message ici…&#10;Astuce : {prenom} sera remplacé par le prénom du client." oninput="livePreview()"></textarea><div class="hint">{prenom} {nom} {points} seront substitués lors de l'envoi.</div></div>
+      </div>
+
+      <div class="card">
+        <h3>🏷️ Offres à inclure</h3>
+        <div id="offresChk"></div>
+      </div>
+
+      <div class="card">
+        <h3>⭐ Fidélité</h3>
+        <div class="check-row"><input type="checkbox" id="fFidelite" onchange="livePreview()"><label for="fFidelite">Afficher le programme fidélité dans l'email</label></div>
+      </div>
+
+      <div class="card">
+        <h3>Signature</h3>
+        <div class="field"><label>Phrase de sortie</label><input id="fSortie" type="text" placeholder="À très bientôt dans notre salon !" oninput="livePreview()"></div>
+        <div class="field"><label>Salutation</label><input id="fSalut" type="text" placeholder="Cordialement," oninput="livePreview()"></div>
+        <div class="field"><label>Signature</label><input id="fSign" type="text" placeholder="L'équipe du salon" oninput="livePreview()"></div>
+      </div>
+
+      <div class="card">
+        <h3>🖼️ Logo</h3>
+        <div class="logo-zone">
+          <img id="logoPreview" class="logo-preview" alt="Aperçu logo">
+          <div>
+            <div class="field" style="margin-bottom:.5rem">
+              <label>Importer un logo (PNG/JPG/WEBP/GIF, 150 Ko max)</label>
+              <input type="file" id="logoFile" accept="image/png,image/jpeg,image/webp,image/gif" onchange="handleLogo(event)" style="font-size:.82rem">
+            </div>
+            <button class="logo-del" id="logoDel" style="display:none" onclick="clearLogo()">Supprimer le logo</button>
+          </div>
+        </div>
+        <div class="field" style="margin-top:.6rem">
+          <label>URL du logo (HTTPS) — utilisée dans l'email</label>
+          <input id="fLogoUrl" type="url" placeholder="https://monsite.fr/logo.png" oninput="livePreview()">
+          <div class="hint">L'image doit être hébergée en ligne (HTTPS). Le logo uploadé ci-dessus est uniquement pour l'aperçu.</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <button class="btn btn-primary" onclick="saveTpl()">💾 Enregistrer le template</button>
+        <button class="btn btn-outline" onclick="nouveau()">Réinitialiser</button>
+      </div>
+      <div style="margin-top:1rem">
+        <button class="btn btn-send" onclick="utiliserDansCampagne()">✉️ Utiliser dans une campagne</button>
+      </div>
+      <div id="saveSt" style="font-size:.8rem;color:#5a9a6f;margin-top:.5rem;min-height:1.2em"></div>
+
+    </div>
+
+    <div class="preview-panel">
+      <div class="preview-title">Aperçu</div>
+      <div class="preview-box">
+        <div class="preview-header" id="pvHeader">Mon salon</div>
+        <div class="preview-body" id="pvBody"></div>
+        <div class="preview-footer" id="pvFooter">Vous recevez cet email car vous êtes client(e).<br><span style="color:#b87c6e">Se désinscrire</span></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+var LS_TPL='email-templates-v1', LS_OFF='offres-v1', LS_FIDE='fidelite-config-v1', LS_P='profil-magasin-v1';
+var ALLOWED={'image/png':true,'image/jpeg':true,'image/webp':true,'image/gif':true};
+var editId=null, logoDataUrl='';
+
+function loadTpls(){try{return JSON.parse(localStorage.getItem(LS_TPL)||'[]');}catch(e){return[];}}
+function saveTpls(arr){localStorage.setItem(LS_TPL,JSON.stringify(arr));}
+function loadOffres(){try{return JSON.parse(localStorage.getItem(LS_OFF)||'[]');}catch(e){return[];}}
+function loadFide(){var def={seuil:10,recompense:'Récompense',ptsParVisite:1};try{return Object.assign({},def,JSON.parse(localStorage.getItem(LS_FIDE)||'{}'));}catch(e){return def;}}
+function loadProfil(){try{return JSON.parse(localStorage.getItem(LS_P)||'{}');}catch(e){return{};}}
+function escH(s){var d=document.createElement('div');d.textContent=String(s==null?'':s);return d.innerHTML;}
+function v(id){return(document.getElementById(id).value||'').trim();}
+
+var SEEDS=[
+  {id:'t_seed_promo',nom:'Promo du moment',sujet:'🎉 Offre spéciale pour vous !',titre:'Notre offre du moment',sousTitre:'Réservée à nos clients fidèles',accroche:'Cette semaine seulement :',corps:'Nous avons une surprise pour vous ! Profitez de cette offre exceptionnelle valable en salon.\n\nN\'hésitez pas à nous appeler pour réserver votre rendez-vous.',offresIds:[],afficherFidelite:false,phraseSortie:'À très bientôt dans notre salon !',salutation:'Chaleureusement,',signature:'Toute l\'équipe',logoDataUrl:'',logoUrl:'',createdAt:''},
+  {id:'t_seed_fide',nom:'Programme fidélité',sujet:'⭐ Vos points fidélité',titre:'Votre programme fidélité',sousTitre:'Merci de votre confiance',accroche:'',corps:'Bonjour {prenom},\n\nNous vous remercions pour votre fidélité ! Vous avez actuellement {points} point(s) sur votre compte.\n\nRappel : dès {seuil} visites, vous bénéficiez de : {recompense}.',offresIds:[],afficherFidelite:true,phraseSortie:'À très vite !',salutation:'Avec nos amitiés,',signature:'Le salon',logoDataUrl:'',logoUrl:'',createdAt:''},
+  {id:'t_seed_bvn',nom:'Bienvenue',sujet:'Bienvenue chez nous 💇',titre:'Bienvenue dans notre salon !',sousTitre:'',accroche:'',corps:'Bonjour {prenom},\n\nNous sommes ravis de vous compter parmi nos clients. N\'hésitez pas à nous contacter pour tout rendez-vous ou question.',offresIds:[],afficherFidelite:false,phraseSortie:'À bientôt !',salutation:'Cordialement,',signature:'L\'équipe du salon',logoDataUrl:'',logoUrl:'',createdAt:''},
+  {id:'t_seed_conge',nom:'Fermeture / Congés',sujet:'📅 Informations fermeture du salon',titre:'Nous prenons quelques jours de repos',sousTitre:'',accroche:'',corps:'Bonjour {prenom},\n\nNous vous informons que le salon sera fermé du [date de début] au [date de fin].\n\nNous serons de retour avec de nouvelles offres !',offresIds:[],afficherFidelite:false,phraseSortie:'Merci de votre compréhension.',salutation:'Bien cordialement,',signature:'La direction du salon',logoDataUrl:'',logoUrl:'',createdAt:''}
+];
+
+function initSeeds(){
+  var arr=loadTpls();
+  if(arr.length===0){saveTpls(SEEDS);return SEEDS;}
+  return arr;
+}
+
+function renderTplList(){
+  var arr=initSeeds(), el=document.getElementById('tplList');
+  if(!arr.length){el.innerHTML='';return;}
+  el.innerHTML=arr.map(function(t){
+    var sel=(editId&&editId===t.id)?' selected':'';
+    return '<div class="tpl-card'+sel+'" onclick="chargerTpl(\''+t.id+'\')">'+'<div class="tpl-nom">'+escH(t.nom||'Sans nom')+'</div>'+'<div class="tpl-sujet">'+escH(t.sujet||'—')+'</div>'+'<div class="tpl-actions" onclick="event.stopPropagation()">'+'<button class="btn-xs send" onclick="utiliserDansCampagneId(\''+t.id+'\')" title="Utiliser dans une campagne">✉️ Utiliser</button>'+'<button class="btn-xs" onclick="chargerTpl(\''+t.id+'\')" title="Modifier">✏️</button>'+'<button class="btn-xs del" onclick="delTpl(\''+t.id+'\')" title="Supprimer">🗑️</button>'+'</div></div>';
+  }).join('');
+}
+
+function chargerTpl(id){
+  var arr=loadTpls(), t=arr.find(function(x){return x.id===id;});
+  if(!t)return;
+  editId=id;
+  document.getElementById('fNomTpl').value=t.nom||'';
+  document.getElementById('fSujet').value=t.sujet||'';
+  document.getElementById('fTitre').value=t.titre||'';
+  document.getElementById('fSousTitre').value=t.sousTitre||'';
+  document.getElementById('fAccroche').value=t.accroche||'';
+  document.getElementById('fCorps').value=t.corps||'';
+  document.getElementById('fFidelite').checked=!!t.afficherFidelite;
+  document.getElementById('fSortie').value=t.phraseSortie||'';
+  document.getElementById('fSalut').value=t.salutation||'';
+  document.getElementById('fSign').value=t.signature||'';
+  document.getElementById('fLogoUrl').value=t.logoUrl||'';
+  logoDataUrl=t.logoDataUrl||'';
+  var pv=document.getElementById('logoPreview');
+  if(logoDataUrl){pv.src=logoDataUrl;pv.classList.add('show');document.getElementById('logoDel').style.display='';}else{pv.classList.remove('show');pv.src='';document.getElementById('logoDel').style.display='none';}
+  renderOffresChk(t.offresIds||[]);
+  livePreview();
+  renderTplList();
+  window.scrollTo(0,document.querySelector('.editor-wrap').offsetTop-10);
+}
+
+function nouveau(){
+  editId=null;
+  ['fNomTpl','fSujet','fTitre','fSousTitre','fAccroche','fCorps','fSortie','fSalut','fSign','fLogoUrl'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('fFidelite').checked=false;
+  clearLogo();
+  renderOffresChk([]);
+  livePreview();
+  renderTplList();
+}
+
+function renderOffresChk(selected){
+  var offres=loadOffres().filter(function(o){return o.actif;});
+  var el=document.getElementById('offresChk');
+  if(!offres.length){el.innerHTML='<div class="no-offres">Aucune offre active. Créez des offres dans <a href="offres.html" style="color:#b87c6e">Offres commerciales</a>.</div>';return;}
+  el.innerHTML=offres.map(function(o){
+    var chk=(selected.indexOf(o.id)>=0)?'checked':'';
+    return '<div class="offre-chk"><input type="checkbox" id="oc_'+o.id+'" value="'+o.id+'" '+chk+' onchange="livePreview()"><label for="oc_'+o.id+'">'+escH(o.nom)+(o.reduction?' — '+escH(o.reduction):'')+'</label></div>';
+  }).join('');
+}
+
+function getOffresSelected(){
+  var offres=loadOffres().filter(function(o){return o.actif;});
+  return offres.filter(function(o){var el=document.getElementById('oc_'+o.id);return el&&el.checked;});
+}
+
+function genBody(){
+  var fide=loadFide(), p=loadProfil();
+  var titre=v('fTitre'), sous=v('fSousTitre'), accroche=v('fAccroche'), corps=document.getElementById('fCorps').value||'';
+  var sortie=v('fSortie'), salut=v('fSalut'), sign=v('fSign');
+  var offres=getOffresSelected();
+  var showFide=document.getElementById('fFidelite').checked;
+  var lines=[];
+  lines.push('Bonjour {prenom},');
+  lines.push('');
+  if(titre){lines.push(titre);}
+  if(sous){lines.push(sous);}
+  if(titre||sous)lines.push('');
+  if(accroche){lines.push(accroche);lines.push('');}
+  if(corps.trim())lines.push(corps.trim());
+  if(offres.length){
+    lines.push('');
+    lines.push('🎉 NOS OFFRES DU MOMENT');
+    offres.forEach(function(o){
+      lines.push('▸ '+o.nom+(o.reduction?' — '+o.reduction:''));
+      if(o.desc)lines.push('  '+o.desc);
+      if(o.validite)lines.push('  Valable jusqu\'au '+o.validite);
+    });
+  }
+  if(showFide){
+    lines.push('');
+    lines.push('⭐ VOTRE PROGRAMME FIDÉLITÉ');
+    lines.push('Avec '+fide.seuil+' visites : '+fide.recompense);
+    lines.push('Vous avez actuellement {points} point(s).');
+  }
+  if(sortie){lines.push('');lines.push(sortie);}
+  if(salut){lines.push('');lines.push(salut);}
+  if(sign)lines.push(sign);
+  return lines.join('\n');
+}
+
+function livePreview(){
+  var profil=loadProfil();
+  var nom=profil.nom||'Mon salon';
+  var body=genBody();
+  var bodyDemo=body.replace(/\{prenom\}/gi,'Marie').replace(/\{nom\}/gi,'Dupont').replace(/\{points\}/gi,'7');
+  var pv=document.getElementById('pvBody');
+  var ph=document.getElementById('pvHeader');
+  ph.textContent=nom;
+  pv.textContent=bodyDemo;
+  var logoUrl=v('fLogoUrl');
+  if(logoUrl&&/^https:\/\//i.test(logoUrl)){
+    var img=ph.querySelector('img');
+    if(!img){img=document.createElement('img');img.style.cssText='max-height:40px;max-width:140px;display:block;margin:6px 0 0';ph.insertBefore(img,ph.firstChild);}
+    img.src=logoUrl;
+  }else{
+    var img2=ph.querySelector('img');if(img2)img2.remove();
+  }
+}
+
+function handleLogo(e){
+  var file=e.target.files[0];
+  e.target.value='';
+  if(!file)return;
+  if(!ALLOWED[file.type]){alert('Format non autorisé. Utilisez PNG, JPG, WEBP ou GIF.');return;}
+  if(file.size>150*1024){alert('Logo trop lourd (max 150 Ko).');return;}
+  var r=new FileReader();
+  r.onload=function(ev){
+    var data=ev.target.result||'';
+    if(!/^data:image\/(png|jpeg|webp|gif);base64,/.test(data)){alert('Fichier non valide.');return;}
+    logoDataUrl=data;
+    var pv=document.getElementById('logoPreview');
+    pv.src=logoDataUrl;pv.classList.add('show');
+    document.getElementById('logoDel').style.display='';
+    livePreview();
+  };
+  r.readAsDataURL(file);
+}
+
+function clearLogo(){
+  logoDataUrl='';
+  var pv=document.getElementById('logoPreview');pv.src='';pv.classList.remove('show');
+  document.getElementById('logoDel').style.display='none';
+  livePreview();
+}
+
+function collectTpl(id){
+  var offresIds=getOffresSelected().map(function(o){return o.id;});
+  return{id:id||editId||'t_'+Date.now()+'_'+Math.floor(Math.random()*1e4),nom:v('fNomTpl'),sujet:v('fSujet'),titre:v('fTitre'),sousTitre:v('fSousTitre'),accroche:v('fAccroche'),corps:document.getElementById('fCorps').value||'',offresIds:offresIds,afficherFidelite:document.getElementById('fFidelite').checked,phraseSortie:v('fSortie'),salutation:v('fSalut'),signature:v('fSign'),logoDataUrl:logoDataUrl,logoUrl:v('fLogoUrl'),createdAt:new Date().toISOString()};
+}
+
+function saveTpl(){
+  var nom=v('fNomTpl');
+  if(!nom){alert('Donnez un nom à votre template.');return;}
+  var arr=loadTpls();
+  var t=collectTpl();
+  if(editId){var idx=arr.findIndex(function(x){return x.id===editId;});if(idx>=0)arr[idx]=t;else arr.push(t);}
+  else{editId=t.id;arr.push(t);}
+  saveTpls(arr);
+  var st=document.getElementById('saveSt');st.textContent='✓ Template enregistré.';setTimeout(function(){st.textContent='';},2500);
+  renderTplList();
+}
+
+function delTpl(id){
+  if(!confirm('Supprimer ce template ?'))return;
+  var arr=loadTpls().filter(function(t){return t.id!==id;});
+  saveTpls(arr);
+  if(editId===id){nouveau();}
+  renderTplList();
+}
+
+function utiliserDansCampagne(){
+  var sujet=v('fSujet');
+  var body=genBody();
+  var logoUrl=v('fLogoUrl');
+  localStorage.setItem('template-en-cours',JSON.stringify({sujet:sujet,body:body,logoUrl:logoUrl}));
+  window.location.href='campagnes.html';
+}
+
+function utiliserDansCampagneId(id){
+  chargerTpl(id);
+  setTimeout(function(){utiliserDansCampagne();},50);
+}
+
+renderTplList();
+nouveau();
+</script>
+</body>
+</html>

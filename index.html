@@ -90,6 +90,16 @@ main{padding:1.2rem;max-width:600px;margin:0 auto}
       <div class="label">Campagnes</div>
       <div class="desc">Offres &amp; emailing clients</div>
     </a>
+    <a href="offres.html" class="card">
+      <div class="icon">🏷️</div>
+      <div class="label">Offres</div>
+      <div class="desc">Promotions &amp; avantages</div>
+    </a>
+    <a href="templates.html" class="card">
+      <div class="icon">📋</div>
+      <div class="label">Templates</div>
+      <div class="desc">Modèles d'emails</div>
+    </a>
     <div class="card disabled">
       <div class="icon">📅</div>
       <div class="label">Agenda</div>
@@ -203,8 +213,11 @@ function doExport(){
   var p=lp();
   var bundle={app:'ciseaux-hub',version:1,exportedAt:new Date().toISOString(),profil:p};
   try{bundle.clients=JSON.parse(localStorage.getItem('clients-v1')||'[]');}catch(e){bundle.clients=[];}
-  try{bundle.clotures=JSON.parse(localStorage.getItem('clotures-v1')||'[]');}catch(e){bundle.clotures=[];}
+  try{bundle.clotures=JSON.parse(localStorage.getItem('cloture-caisse-v1')||'[]');}catch(e){bundle.clotures=[];}
+  bundle.caisseReserve=localStorage.getItem('cloture-fond-v1')||'';
+  bundle.caisseFondCible=localStorage.getItem('cloture-fond-cible-v1')||'';
   try{bundle.fideliteConfig=JSON.parse(localStorage.getItem('fidelite-config-v1')||'{}');}catch(e){}
+  try{bundle.offres=JSON.parse(localStorage.getItem('offres-v1')||'[]');}catch(e){bundle.offres=[];}
   var nom=(p.nom||'monsalon').toLowerCase().replace(/[^a-z0-9]+/g,'-');
   var date=new Date().toISOString().slice(0,10);
   var blob=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'});
@@ -222,8 +235,11 @@ function doImport(e){
       if(b.app!=='ciseaux-hub'){setSt('fileSt','err','Ce fichier n\'est pas une sauvegarde Ciseaux.');return;}
       if(b.profil)localStorage.setItem(LS_P,JSON.stringify(b.profil));
       if(Array.isArray(b.clients))localStorage.setItem('clients-v1',JSON.stringify(b.clients));
-      if(Array.isArray(b.clotures))localStorage.setItem('clotures-v1',JSON.stringify(b.clotures));
+      if(Array.isArray(b.clotures))localStorage.setItem('cloture-caisse-v1',JSON.stringify(b.clotures));
+      if(typeof b.caisseReserve==='string'&&b.caisseReserve!=='')localStorage.setItem('cloture-fond-v1',b.caisseReserve);
+      if(typeof b.caisseFondCible==='string'&&b.caisseFondCible!=='')localStorage.setItem('cloture-fond-cible-v1',b.caisseFondCible);
       if(b.fideliteConfig)localStorage.setItem('fidelite-config-v1',JSON.stringify(b.fideliteConfig));
+      if(Array.isArray(b.offres))localStorage.setItem('offres-v1',JSON.stringify(b.offres));
       fillForm(lp());renderHeader();setSt('fileSt','ok','✓ Restauration réussie.');
     }catch(err){setSt('fileSt','err','Fichier illisible.');}
   };

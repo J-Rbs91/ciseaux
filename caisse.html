@@ -6,172 +6,538 @@
 <title>Caisse — Ciseaux</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fdf3ef;color:#3d2b27;min-height:100vh;padding-bottom:4rem}
-header{background:linear-gradient(135deg,#b87c6e,#9c5f52);color:#fff;padding:1rem 1.2rem;display:flex;align-items:center;gap:.8rem}
-.back{color:#fff;text-decoration:none;font-size:1.3rem;opacity:.85}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fdf3ef;color:#3d2b27;min-height:100vh;line-height:1.4}
+
+/* ── HEADER ── */
+header{background:linear-gradient(135deg,#b87c6e,#9c5f52);color:#fff;padding:.9rem 1.2rem;display:flex;align-items:center;gap:.9rem;flex-wrap:wrap}
+.back{color:#fff;text-decoration:none;font-size:1.4rem;opacity:.85;line-height:1}
 .back:hover{opacity:1}
-h1{font-size:1.08rem;font-weight:800;flex:1}
-main{padding:1.1rem;max-width:620px;margin:0 auto}
-/* Saisie */
-.card{background:#fff;border-radius:18px;padding:1.3rem 1.4rem;box-shadow:0 2px 14px rgba(0,0,0,.07);margin-bottom:1.1rem}
-.card-title{font-size:.85rem;font-weight:700;color:#b87c6e;text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem}
-.date-row{display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap}
-.date-row input[type=date]{border:1.5px solid #e8c5b8;border-radius:10px;padding:.55rem .85rem;font-size:.93rem;color:#3d2b27;outline:none;background:#fff;font-family:inherit;transition:border-color .15s}
-.date-row input[type=date]:focus{border-color:#b87c6e}
-.denom-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.7rem;margin-bottom:.9rem}
-.denom-field{display:flex;flex-direction:column;gap:.25rem}
-.denom-field label{font-size:.72rem;font-weight:700;color:#7a5c56;text-transform:uppercase;letter-spacing:.04em}
-.denom-field input{border:1.5px solid #e8c5b8;border-radius:8px;padding:.52rem .7rem;font-size:.92rem;color:#3d2b27;outline:none;background:#fff;font-family:inherit;text-align:right;transition:border-color .15s}
-.denom-field input:focus{border-color:#b87c6e}
-.total-row{background:#fdf3ef;border-radius:12px;padding:.85rem 1rem;display:flex;align-items:center;justify-content:space-between;margin:.5rem 0 1rem}
-.total-label{font-size:.85rem;font-weight:700;color:#7a5c56}
-.total-val{font-size:1.5rem;font-weight:800;color:#b87c6e}
-.note-field textarea{width:100%;border:1.5px solid #e8c5b8;border-radius:10px;padding:.6rem .9rem;font-size:.9rem;color:#3d2b27;outline:none;background:#fff;font-family:inherit;resize:vertical;min-height:60px;transition:border-color .15s}
-.note-field textarea:focus{border-color:#b87c6e}
-.note-label{font-size:.74rem;font-weight:700;color:#7a5c56;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;display:block}
-.btn{padding:.7rem 1.2rem;border-radius:10px;border:none;cursor:pointer;font-size:.9rem;font-weight:700;font-family:inherit;transition:all .15s}
-.btn-p{background:#b87c6e;color:#fff;width:100%;margin-top:.9rem;padding:.8rem}
-.btn-p:hover{background:#a06058}
-.save-msg{text-align:center;font-size:.82rem;color:#5a9a6f;min-height:1.4em;margin-top:.4rem;font-weight:600}
-/* Historique */
-.section-title{font-size:.85rem;font-weight:700;color:#7a5c56;text-transform:uppercase;letter-spacing:.06em;margin:.3rem 0 .8rem;display:flex;align-items:center;gap:.5rem}
-.section-title::after{content:'';flex:1;height:1px;background:#e8c5b8}
-.histo-item{background:#fff;border-radius:14px;padding:.95rem 1.1rem;margin-bottom:.65rem;box-shadow:0 1px 8px rgba(0,0,0,.05);display:flex;align-items:center;gap:.9rem}
-.h-date{font-size:.82rem;color:#7a5c56;font-weight:700;min-width:80px}
-.h-note{flex:1;font-size:.82rem;color:#a07870;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.h-total{font-size:1rem;font-weight:800;color:#b87c6e;white-space:nowrap}
-.del-btn{background:none;border:none;color:#d4a0a0;cursor:pointer;font-size:1rem;padding:.2rem;transition:color .12s}
-.del-btn:hover{color:#c0392b}
-.empty{text-align:center;padding:2rem;color:#c4a09a;font-size:.9rem}
+.hdr-info{flex:1;min-width:0}
+.hdr-title{font-size:1.08rem;font-weight:800}
+.hdr-sub{font-size:.78rem;opacity:.82;margin-top:.1rem}
+.hdr-date{font-size:.82rem;font-weight:600;opacity:.9;white-space:nowrap;text-transform:capitalize}
+
+/* ── LAYOUT ── */
+main{padding:1.1rem 1.1rem 3rem;max-width:1080px;margin:0 auto}
+.grid-top{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1rem}
+.grid-bottom{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+
+/* ── CARTES ── */
+.card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 14px rgba(0,0,0,.08)}
+.grid-top .card,.grid-bottom .card{margin-bottom:0}
+
+/* Card-head : chaque section a sa propre couleur */
+.card-head{padding:.85rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:.6rem}
+.card-head h2{font-size:.82rem;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.06em}
+.card-badge{font-size:.62rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:rgba(255,255,255,.22);color:#fff;padding:.2rem .65rem;border-radius:20px;white-space:nowrap}
+
+/* La Ferraille — terracotta principal */
+.card--ferraille .card-head{background:#b87c6e}
+/* Le Papier — vert */
+.card--papier .card-head{background:#5a9a6f}
+/* L'Électronique — mauve chaud */
+.card--elec .card-head{background:#7c5c9e}
+/* Comptage Espèces — terracotta foncé */
+.card--comptage .card-head{background:#9c5f52}
+/* Calcul Écart — vert foncé */
+.card--ecart .card-head{background:#4a8460}
+/* Historique — muted warm */
+.card--history .card-head{background:#7a5c56}
+
+/* ── TABLES ── */
+.cnt-table{width:100%;border-collapse:collapse}
+.cnt-table thead th{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:.55rem .85rem;border-bottom:1.5px solid #e8c5b8;color:#7a5c56;text-align:left}
+.cnt-table thead th.th-r{text-align:right}
+.cnt-table thead th.th-c{text-align:center}
+.cnt-table tbody td{padding:.4rem .85rem;font-size:.87rem;border-bottom:1px solid #f0dbd5;vertical-align:middle}
+.cnt-table tbody td.td-c{text-align:center}
+.cnt-table tbody td.td-r{text-align:right;font-weight:700}
+.cnt-table tbody td.td-lbl{font-weight:600}
+.cnt-table tfoot td{padding:.6rem .85rem;font-size:.85rem;font-weight:800;background:#fbeee6;border-top:1.5px solid #e8c5b8;color:#9c5f52}
+.cnt-table tfoot td.td-r{text-align:right}
+
+/* Zébrures adaptées à chaque section */
+.card--ferraille .cnt-table tbody tr:nth-child(even) td{background:#fdf7f4}
+.card--papier    .cnt-table tbody tr:nth-child(even) td{background:#f2fbf5}
+.card--elec      .cnt-table tbody tr:nth-child(even) td{background:#f7f3fd}
+
+/* ── CHAMP QUANTITÉ ── */
+.qty-input{width:60px;font-family:inherit;font-size:.9rem;font-weight:700;text-align:center;color:#3d2b27;border:1.5px solid #e8c5b8;border-radius:8px;padding:.32rem .45rem;background:#fff;transition:border-color .15s;-moz-appearance:textfield}
+.qty-input:focus{outline:none;border-color:#b87c6e}
+.qty-input::-webkit-inner-spin-button,.qty-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+
+/* ── CHAMP MONTANT (élec) ── */
+.amt-input{width:110px;font-family:inherit;font-size:.9rem;font-weight:700;text-align:right;color:#3d2b27;border:1.5px solid #e8c5b8;border-radius:8px;padding:.32rem .6rem;background:#fff;transition:border-color .15s;-moz-appearance:textfield}
+.amt-input:focus{outline:none;border-color:#7c5c9e}
+.amt-input::-webkit-inner-spin-button,.amt-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+
+/* ── RÉSERVE / FOND CIBLE ── */
+.fond-row{display:flex;align-items:center;gap:.6rem;padding:.75rem 1rem;background:#fbeee6;border-top:1.5px solid #e8c5b8}
+.fond-row label{flex:1;font-size:.85rem;font-weight:700;color:#9c5f52}
+.fond-input{width:90px;font-family:inherit;font-size:.9rem;font-weight:700;text-align:right;color:#9c5f52;border:1.5px solid #e0b9a9;border-radius:8px;padding:.35rem .55rem;background:#fff;transition:border-color .15s;-moz-appearance:textfield}
+.fond-input:focus{outline:none;border-color:#b87c6e}
+.fond-input::-webkit-inner-spin-button,.fond-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.fond-eur{font-size:.85rem;font-weight:700;color:#9c5f52}
+
+/* ── COMPTAGE ESPÈCES ── */
+.comptage-body{padding:1.6rem 1.2rem 1.4rem;text-align:center}
+.comptage-lbl{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#7a5c56;margin-bottom:.35rem}
+.comptage-total{font-size:2.6rem;font-weight:800;color:#b87c6e;letter-spacing:-1px;line-height:1}
+.comptage-sub{font-size:.76rem;color:#a07870;margin-top:.45rem}
+.comptage-breakdown{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.9rem 1.1rem;margin-top:1.3rem}
+.cb-item{text-align:center}
+.cb-item .cb-val{font-size:1.05rem;font-weight:800;color:#3d2b27}
+.cb-item .cb-lbl{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#7a5c56;margin-top:.15rem}
+.cb-sep{font-size:1.3rem;color:#e8c5b8;font-weight:300;line-height:1}
+
+/* ── CALCUL ÉCART ── */
+.ecart-body{padding:1.1rem 1.1rem 1.2rem}
+.ecart-field{display:flex;align-items:center;gap:.6rem;margin-bottom:.9rem}
+.ecart-field label{flex:1;font-size:.85rem;font-weight:600;color:#7a5c56}
+.ref-input{width:130px;font-family:inherit;font-size:.95rem;font-weight:700;text-align:right;color:#3d2b27;border:1.5px solid #e8c5b8;border-radius:8px;padding:.45rem .65rem;background:#fff;transition:border-color .15s;-moz-appearance:textfield}
+.ref-input:focus{outline:none;border-color:#b87c6e}
+.ref-input::-webkit-inner-spin-button,.ref-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.ref-eur{font-size:.82rem;font-weight:600;color:#7a5c56}
+.ecart-result{display:flex;align-items:center;justify-content:space-between;padding:.7rem .9rem;background:#fdf3ef;border:1px solid #e8c5b8;border-radius:10px;margin-bottom:.8rem}
+.er-lbl{font-size:.85rem;font-weight:600;color:#7a5c56}
+.er-val{font-size:1.4rem;font-weight:800}
+.er-val.pos{color:#5a9a6f}
+.er-val.neg{color:#c0392b}
+.er-val.zero{color:#a07870}
+.remise-alert{padding:.65rem .85rem;background:#fbeee6;border:1px solid #e0b9a9;border-left:4px solid #b87c6e;border-radius:8px;font-size:.84rem;font-weight:600;color:#9c5f52;margin-bottom:.9rem}
+
+/* ── BANDEAU REPORT DE LA VEILLE ── */
+.prefill-banner{display:flex;align-items:center;gap:.5rem;padding:.7rem .95rem;background:#fbeee6;border:1px solid #e8c5b8;border-left:4px solid #b87c6e;border-radius:10px;font-size:.84rem;font-weight:600;color:#7a5c56;margin-bottom:1rem}
+
+.btn-save{width:100%;padding:.75rem;background:#b87c6e;color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:.92rem;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-save:hover{background:#a06058}
+
+/* ── HISTORIQUE ── */
+.history-body{overflow-x:auto}
+.history-table{width:100%;border-collapse:collapse}
+.history-table thead th{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:.6rem .9rem;text-align:left;color:#7a5c56;border-bottom:1.5px solid #e8c5b8;white-space:nowrap}
+.history-table tbody tr:nth-child(even) td{background:#fdf7f4}
+.history-table tbody td{padding:.6rem .9rem;font-size:.84rem;border-bottom:1px solid #f0dbd5;vertical-align:middle;white-space:nowrap}
+.h-r{text-align:right}
+.history-table .ht-pos{color:#5a9a6f;font-weight:700}
+.history-table .ht-neg{color:#c0392b;font-weight:700}
+.history-table .ht-zero{color:#a07870;font-weight:700}
+.history-table .ht-bold{font-weight:700}
+.history-empty{padding:1.6rem;text-align:center;color:#c4a09a;font-size:.86rem;font-style:italic}
+.btn-del{background:none;border:1px solid #e2b3b3;color:#c0392b;border-radius:6px;font-size:.7rem;font-weight:700;padding:.25rem .6rem;cursor:pointer;transition:all .15s;font-family:inherit}
+.btn-del:hover{background:#fbedeb}
+
+/* ── ACTIONS ── */
+.actions-bar{display:flex;justify-content:flex-end;margin-top:.6rem}
+.btn-reset{background:#f5ebe7;border:1.5px solid #e8c5b8;color:#7a5c56;border-radius:10px;font-family:inherit;font-size:.84rem;font-weight:600;padding:.6rem 1.1rem;cursor:pointer;transition:all .15s}
+.btn-reset:hover{border-color:#d99d9d;color:#c0392b;background:#fbedeb}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;right:20px;background:#3d2b27;color:#fff;padding:.7rem 1.1rem;border-radius:10px;font-size:.84rem;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,.22);opacity:0;transform:translateY(8px);transition:all .22s;pointer-events:none;z-index:100}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){.grid-top{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.grid-top{grid-template-columns:1fr}.grid-bottom{grid-template-columns:1fr}.comptage-total{font-size:2.1rem}}
 </style>
 </head>
 <body>
 
 <header>
-  <a href="index.html" class="back">&#8592;</a>
-  <h1>💰 Caisse</h1>
+  <a href="index.html" class="back" aria-label="Retour à l'accueil">&#8592;</a>
+  <div class="hdr-info">
+    <div class="hdr-title">💰 Caisse</div>
+    <div class="hdr-sub" id="hdr-sub">Mon salon</div>
+  </div>
+  <div class="hdr-date" id="js-date"></div>
 </header>
 
 <main>
-  <div class="card">
-    <div class="card-title">Clôture du jour</div>
 
-    <div class="date-row">
-      <label style="font-size:.8rem;font-weight:700;color:#7a5c56">Date</label>
-      <input type="date" id="cDate">
-    </div>
+  <!-- ── BANDEAU REPORT DE LA VEILLE ── -->
+  <div class="prefill-banner" id="prefill-banner" style="display:none"></div>
 
-    <div class="denom-grid">
-      <div class="denom-field"><label>Billets 500 €</label><input type="number" id="d500" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
-      <div class="denom-field"><label>Billets 200 €</label><input type="number" id="d200" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
-      <div class="denom-field"><label>Billets 100 €</label><input type="number" id="d100" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
-      <div class="denom-field"><label>Billets 50 €</label><input type="number" id="d50" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
-      <div class="denom-field"><label>Billets 20 €</label><input type="number" id="d20" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
-      <div class="denom-field"><label>Billets 10 €</label><input type="number" id="d10" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
-      <div class="denom-field"><label>Billets 5 €</label><input type="number" id="d5" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
-      <div class="denom-field"><label>Pièces 2 €</label><input type="number" id="d2" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
-      <div class="denom-field"><label>Pièces 1 €</label><input type="number" id="d1" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
-      <div class="denom-field"><label>Pièces 0,50 €</label><input type="number" id="d050" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
-      <div class="denom-field"><label>Pièces 0,20 €</label><input type="number" id="d020" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
-      <div class="denom-field"><label>Pièces 0,10 €</label><input type="number" id="d010" min="0" step="1" placeholder="0" oninput="calcTotal()"></div>
-    </div>
-    <div style="margin-bottom:.6rem">
-      <label style="font-size:.74rem;font-weight:700;color:#7a5c56;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.35rem">Recettes CB / virement (€)</label>
-      <input type="number" id="dCB" min="0" step="0.01" placeholder="0.00" style="border:1.5px solid #e8c5b8;border-radius:10px;padding:.6rem .9rem;font-size:.95rem;color:#3d2b27;outline:none;background:#fff;font-family:inherit;width:160px" oninput="calcTotal()">
-    </div>
+  <!-- ── HAUT : 3 cartes ── -->
+  <div class="grid-top">
 
-    <div class="total-row">
-      <span class="total-label">Total caisse</span>
-      <span class="total-val" id="totalVal">0,00 €</span>
-    </div>
+    <!-- LA FERRAILLE (pièces) -->
+    <section class="card card--ferraille">
+      <div class="card-head"><h2>La Ferraille</h2><span class="card-badge">Pièces</span></div>
+      <table class="cnt-table">
+        <thead><tr><th class="th-c">Qté</th><th>Valeur</th><th class="th-r">Total</th></tr></thead>
+        <tbody id="coins-tbody"></tbody>
+        <tfoot><tr><td colspan="2">Total pièces</td><td class="td-r" id="total-coins">0,00 €</td></tr></tfoot>
+      </table>
+    </section>
 
-    <div class="note-field">
-      <label class="note-label">Note du jour</label>
-      <textarea id="dNote" placeholder="Observations, incidents, chèques reçus…"></textarea>
-    </div>
+    <!-- LE PAPIER (billets) -->
+    <section class="card card--papier">
+      <div class="card-head"><h2>Le Papier</h2><span class="card-badge">Billets</span></div>
+      <table class="cnt-table">
+        <thead><tr><th class="th-c">Qté</th><th>Valeur</th><th class="th-r">Total</th></tr></thead>
+        <tbody id="bills-tbody"></tbody>
+        <tfoot><tr><td colspan="2">Total billets</td><td class="td-r" id="total-bills">0,00 €</td></tr></tfoot>
+      </table>
+      <div class="fond-row">
+        <label for="reserve-monnaie">Réserve de monnaie</label>
+        <input class="fond-input" type="number" id="reserve-monnaie" min="0" step="0.01">
+        <span class="fond-eur">€</span>
+      </div>
+    </section>
 
-    <button class="btn btn-p" onclick="saveCloture()">💾 Enregistrer la clôture</button>
-    <div class="save-msg" id="saveMsg"></div>
+    <!-- L'ÉLECTRONIQUE -->
+    <section class="card card--elec">
+      <div class="card-head"><h2>L'Électronique</h2><span class="card-badge">Paiements</span></div>
+      <table class="cnt-table">
+        <thead><tr><th>Type</th><th class="th-r">Montant</th></tr></thead>
+        <tbody id="elec-tbody"></tbody>
+        <tfoot><tr><td>Total électronique</td><td class="td-r" id="total-elec">0,00 €</td></tr></tfoot>
+      </table>
+    </section>
+
   </div>
 
-  <div class="section-title">📋 Historique</div>
-  <div id="histo"></div>
+  <!-- ── BAS : 2 cartes ── -->
+  <div class="grid-bottom">
+
+    <!-- COMPTAGE ESPÈCES -->
+    <section class="card card--comptage">
+      <div class="card-head"><h2>Comptage espèces</h2><span class="card-badge">Total caisse</span></div>
+      <div class="comptage-body">
+        <div class="comptage-lbl">Total espèces en caisse</div>
+        <div class="comptage-total" id="total-especes">0,00 €</div>
+        <div class="comptage-sub">Pièces + Billets + Réserve de monnaie</div>
+        <div class="comptage-breakdown">
+          <div class="cb-item"><div class="cb-val" id="sub-coins">0,00 €</div><div class="cb-lbl">Pièces</div></div>
+          <div class="cb-sep">+</div>
+          <div class="cb-item"><div class="cb-val" id="sub-bills">0,00 €</div><div class="cb-lbl">Billets</div></div>
+          <div class="cb-sep">+</div>
+          <div class="cb-item"><div class="cb-val" id="sub-reserve">0,00 €</div><div class="cb-lbl">Réserve</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CALCUL DE L'ÉCART -->
+    <section class="card card--ecart">
+      <div class="card-head"><h2>Calcul de l'écart de caisse</h2><span class="card-badge">Clôture</span></div>
+      <div class="ecart-body">
+
+        <div class="ecart-field">
+          <label for="fond-cible">Fond de caisse cible</label>
+          <input class="ref-input fond-input" type="number" id="fond-cible" placeholder="0,00" min="0" step="0.01">
+          <span class="ref-eur">€</span>
+        </div>
+
+        <div class="ecart-field">
+          <label for="ref">Montant logiciel de caisse</label>
+          <input class="ref-input" type="number" id="ref" placeholder="0,00" min="0" step="0.01">
+          <span class="ref-eur">€</span>
+        </div>
+
+        <div class="ecart-result">
+          <span class="er-lbl">Écart de caisse</span>
+          <strong class="er-val zero" id="ecart-value">—</strong>
+        </div>
+
+        <div class="remise-alert" id="remise-alert" style="display:none"></div>
+
+        <button class="btn-save" id="btn-save" type="button">Enregistrer le comptage</button>
+
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ── TABLEAU HISTORIQUE ── -->
+  <section class="card card--history">
+    <div class="card-head"><h2>Historique</h2><span class="card-badge" id="history-count">0 entrée</span></div>
+    <div class="history-body">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th class="h-r">Pièces + billets</th>
+            <th class="h-r">Réserve monnaie</th>
+            <th class="h-r">Fond cible</th>
+            <th class="h-r">Sortie</th>
+            <th class="h-r">Logiciel</th>
+            <th class="h-r">Écart</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="history-tbody">
+          <tr><td class="history-empty" colspan="8">Aucun comptage enregistré pour le moment.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="actions-bar">
+    <button class="btn-reset" id="btn-reset" type="button">Réinitialiser le formulaire</button>
+  </div>
+
 </main>
 
+<div class="toast" id="toast"></div>
+
 <script>
-var LS='clotures-v1';
-var DENOMS=[{id:'d500',val:500},{id:'d200',val:200},{id:'d100',val:100},{id:'d50',val:50},{id:'d20',val:20},{id:'d10',val:10},{id:'d5',val:5},{id:'d2',val:2},{id:'d1',val:1},{id:'d050',val:.5},{id:'d020',val:.2},{id:'d010',val:.1}];
+  var COINS=[
+    {label:'2,00 €',value:2.00},{label:'1,00 €',value:1.00},{label:'0,50 €',value:0.50},
+    {label:'0,20 €',value:0.20},{label:'0,10 €',value:0.10},{label:'0,05 €',value:0.05},
+    {label:'0,02 €',value:0.02},{label:'0,01 €',value:0.01}
+  ];
+  var BILLS=[
+    {label:'200 €',value:200},{label:'100 €',value:100},{label:'50 €',value:50},
+    {label:'20 €',value:20},{label:'10 €',value:10},{label:'5 €',value:5}
+  ];
+  var ELEC=['CB','Sans Contact','Amex','Autre'];
 
-function lh(){try{return JSON.parse(localStorage.getItem(LS)||'[]');}catch(e){return[];}}
-function sh(a){localStorage.setItem(LS,JSON.stringify(a));}
+  var LS_CAISSE='cloture-caisse-v1', LS_RESERVE='cloture-fond-v1', LS_FOND_CIBLE='cloture-fond-cible-v1';
+  var HISTORY_DAYS=15, MAX_QTY=9999, MAX_AMOUNT=999999.99;
 
-function fmt(n){return n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';}
+  function profilMagasin(){try{return JSON.parse(localStorage.getItem('profil-magasin-v1')||'{}');}catch(e){return{};}}
+  function reserveDefaut(){var f=parseFloat(localStorage.getItem(LS_RESERVE));return isNaN(f)?0:f;}
+  function fondCibleDefaut(){var f=parseFloat(localStorage.getItem(LS_FOND_CIBLE));return isNaN(f)?0:f;}
+  function storeSubtitle(){return(profilMagasin().nom||'').trim()||'Mon salon';}
 
-function calcTotal(){
-  var t=0;
-  DENOMS.forEach(function(d){
-    var v=parseInt(document.getElementById(d.id).value||'0',10)||0;
-    t+=v*d.val;
+  function fmt(n){return n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';}
+  function r2(n){return Math.round(n*100)/100;}
+
+  function qtyValue(el){var q=parseInt(el.value,10)||0;if(q<0)q=0;if(q>MAX_QTY)q=MAX_QTY;return q;}
+  function normalizeQtyField(el){if(el.value==='')return;var q=qtyValue(el);if(el.value!==String(q))el.value=q;}
+  function amountValue(el){var v=parseFloat(el.value)||0;if(v<0)v=0;if(v>MAX_AMOUNT)v=MAX_AMOUNT;return r2(v);}
+  function normalizeAmountField(el){if(el.value==='')return;var v=parseFloat(el.value);if(isNaN(v))return;var c=amountValue(el);if(v<0||v>MAX_AMOUNT)el.value=c;}
+
+  function buildCoins(){
+    var tbody=document.getElementById('coins-tbody');
+    COINS.forEach(function(coin,i){
+      var tr=document.createElement('tr'),tdQty=document.createElement('td');
+      tdQty.className='td-c';
+      var inp=document.createElement('input');inp.className='qty-input';inp.type='number';inp.id='coin-qty-'+i;inp.placeholder='0';inp.min='0';inp.max=String(MAX_QTY);inp.step='1';
+      tdQty.appendChild(inp);
+      var tdLbl=document.createElement('td');tdLbl.className='td-lbl';tdLbl.textContent=coin.label;
+      var tdTot=document.createElement('td');tdTot.className='td-r';tdTot.id='coin-tot-'+i;tdTot.textContent='0,00 €';
+      tr.appendChild(tdQty);tr.appendChild(tdLbl);tr.appendChild(tdTot);tbody.appendChild(tr);
+    });
+  }
+
+  function buildBills(){
+    var tbody=document.getElementById('bills-tbody');
+    BILLS.forEach(function(bill,i){
+      var tr=document.createElement('tr'),tdQty=document.createElement('td');
+      tdQty.className='td-c';
+      var inp=document.createElement('input');inp.className='qty-input';inp.type='number';inp.id='bill-qty-'+i;inp.placeholder='0';inp.min='0';inp.max=String(MAX_QTY);inp.step='1';
+      tdQty.appendChild(inp);
+      var tdLbl=document.createElement('td');tdLbl.className='td-lbl';tdLbl.textContent=bill.label;
+      var tdTot=document.createElement('td');tdTot.className='td-r';tdTot.id='bill-tot-'+i;tdTot.textContent='0,00 €';
+      tr.appendChild(tdQty);tr.appendChild(tdLbl);tr.appendChild(tdTot);tbody.appendChild(tr);
+    });
+  }
+
+  function buildElec(){
+    var tbody=document.getElementById('elec-tbody');
+    ELEC.forEach(function(type,i){
+      var tr=document.createElement('tr'),tdLbl=document.createElement('td');
+      tdLbl.className='td-lbl';tdLbl.textContent=type;
+      var tdAmt=document.createElement('td');tdAmt.className='td-r';
+      var inp=document.createElement('input');inp.className='amt-input';inp.type='number';inp.id='elec-'+i;inp.placeholder='0,00';inp.min='0';inp.max=String(MAX_AMOUNT);inp.step='0.01';
+      tdAmt.appendChild(inp);tr.appendChild(tdLbl);tr.appendChild(tdAmt);tbody.appendChild(tr);
+    });
+  }
+
+  function initEnterNavigation(){
+    var SEL='.qty-input, .fond-input, .amt-input, .ref-input';
+    var fields=Array.prototype.slice.call(document.querySelectorAll(SEL));
+    function isOverwriteKey(e){return e.key&&e.key.length===1&&!e.ctrlKey&&!e.metaKey&&!e.altKey;}
+    function focusField(f){f.focus();if(f.matches&&f.matches(SEL))f.dataset.armed='1';try{if(typeof f.select==='function')f.select();}catch(e){}}
+    fields.forEach(function(field,i){
+      field.addEventListener('keydown',function(e){
+        if(e.key==='Enter'){e.preventDefault();focusField(fields[i+1]||document.getElementById('btn-save'));return;}
+        if(field.dataset.armed==='1'){if(isOverwriteKey(e))field.value='';field.dataset.armed='';}
+      });
+      field.addEventListener('mousedown',function(){field.dataset.armed='';});
+      field.addEventListener('input',function(){field.dataset.armed='';});
+    });
+  }
+
+  function calculate(){
+    var totalCoins=0;
+    COINS.forEach(function(coin,i){
+      var qty=qtyValue(document.getElementById('coin-qty-'+i));
+      var line=r2(qty*coin.value);
+      document.getElementById('coin-tot-'+i).textContent=fmt(line);
+      totalCoins=r2(totalCoins+line);
+    });
+    document.getElementById('total-coins').textContent=fmt(totalCoins);
+    document.getElementById('sub-coins').textContent=fmt(totalCoins);
+
+    var totalBills=0;
+    BILLS.forEach(function(bill,i){
+      var qty=qtyValue(document.getElementById('bill-qty-'+i));
+      var line=r2(qty*bill.value);
+      document.getElementById('bill-tot-'+i).textContent=fmt(line);
+      totalBills=r2(totalBills+line);
+    });
+    document.getElementById('total-bills').textContent=fmt(totalBills);
+    document.getElementById('sub-bills').textContent=fmt(totalBills);
+
+    var reserve=r2(parseFloat(document.getElementById('reserve-monnaie').value)||0);
+    document.getElementById('sub-reserve').textContent=fmt(reserve);
+
+    var totalEspeces=r2(totalCoins+totalBills);
+    var totalCaisse=r2(totalEspeces+reserve);
+    document.getElementById('total-especes').textContent=fmt(totalCaisse);
+
+    var totalElec=0;
+    ELEC.forEach(function(_,i){
+      totalElec=r2(totalElec+amountValue(document.getElementById('elec-'+i)));
+    });
+    document.getElementById('total-elec').textContent=fmt(totalElec);
+
+    var ref=parseFloat(document.getElementById('ref').value)||0;
+    var ecartEl=document.getElementById('ecart-value');
+    if(ref>0||document.getElementById('ref').value!==''){
+      var ecart=r2(totalCaisse-ref);
+      ecartEl.textContent=(ecart>=0?'+':'')+fmt(ecart);
+      ecartEl.className='er-val '+(ecart>0.005?'pos':ecart<-0.005?'neg':'zero');
+    }else{ecartEl.textContent='—';ecartEl.className='er-val zero';}
+
+    var fondCible=r2(parseFloat(document.getElementById('fond-cible').value)||0);
+    var remise=r2(Math.max(0,totalCaisse-fondCible));
+    var remiseEl=document.getElementById('remise-alert');
+    if(fondCible>0&&remise>0){remiseEl.textContent='Sortie de caisse à effectuer : '+fmt(remise)+'.';remiseEl.style.display='block';}
+    else remiseEl.style.display='none';
+  }
+
+  function loadHistory(){try{return JSON.parse(localStorage.getItem(LS_CAISSE)||'[]');}catch(e){return [];}}
+  function saveHistoryData(d){localStorage.setItem(LS_CAISSE,JSON.stringify(d));}
+
+  function capHistory(data){
+    if(!Array.isArray(data))return[];
+    var byDate={};
+    data.forEach(function(e){if(!e||!e.date)return;var p=byDate[e.date];if(!p||(e.ts||0)>=(p.ts||0))byDate[e.date]=e;});
+    var arr=Object.keys(byDate).map(function(k){return byDate[k];});
+    arr.sort(function(a,b){return(b.ts||0)-(a.ts||0);});
+    return arr.slice(0,HISTORY_DAYS);
+  }
+
+  function renderHistory(){
+    var data=loadHistory(),tbody=document.getElementById('history-tbody'),countEl=document.getElementById('history-count');
+    countEl.textContent=data.length+(data.length<=1?' entrée':' entrées');
+    while(tbody.firstChild)tbody.removeChild(tbody.firstChild);
+    if(!data.length){
+      var et=document.createElement('tr'),ed=document.createElement('td');
+      ed.className='history-empty';ed.colSpan=8;ed.textContent='Aucun comptage enregistré pour le moment.';
+      et.appendChild(ed);tbody.appendChild(et);return;
+    }
+    data.forEach(function(entry,i){
+      var tr=document.createElement('tr');
+      var eCls=entry.ecart>0.005?'ht-pos':entry.ecart<-0.005?'ht-neg':'ht-zero';
+      var eSign=entry.ecart>0.005?'+':'';
+      var cells=[
+        {cls:'',text:entry.date},
+        {cls:'h-r ht-bold',text:fmt(entry.comptage)},
+        {cls:'h-r',text:fmt(typeof entry.reserve==='number'?entry.reserve:entry.fond||0)},
+        {cls:'h-r',text:typeof entry.fondCible==='number'?fmt(entry.fondCible):'—'},
+        {cls:'h-r',text:typeof entry.sortie==='number'?fmt(entry.sortie):'—'},
+        {cls:'h-r',text:entry.ref>0?fmt(entry.ref):'—'},
+        {cls:'h-r '+eCls,text:eSign+fmt(entry.ecart)}
+      ];
+      cells.forEach(function(c){var td=document.createElement('td');if(c.cls)td.className=c.cls;td.textContent=c.text;tr.appendChild(td);});
+      var tdDel=document.createElement('td');tdDel.className='h-r';
+      var btnDel=document.createElement('button');btnDel.className='btn-del';btnDel.type='button';btnDel.textContent='Supprimer';btnDel.dataset.idx=i;
+      btnDel.addEventListener('click',function(){var idx=parseInt(this.dataset.idx,10),d=loadHistory();d.splice(idx,1);saveHistoryData(d);renderHistory();showToast('Entrée supprimée');});
+      tdDel.appendChild(btnDel);tr.appendChild(tdDel);tbody.appendChild(tr);
+    });
+  }
+
+  function saveEntry(){
+    var coinQtys=[],totalCoins=0;
+    COINS.forEach(function(coin,i){var el=document.getElementById('coin-qty-'+i);normalizeQtyField(el);var q=qtyValue(el);coinQtys.push(q);totalCoins=r2(totalCoins+r2(q*coin.value));});
+    var billQtys=[],totalBills=0;
+    BILLS.forEach(function(bill,i){var el=document.getElementById('bill-qty-'+i);normalizeQtyField(el);var q=qtyValue(el);billQtys.push(q);totalBills=r2(totalBills+r2(q*bill.value));});
+    var totalEspeces=r2(totalCoins+totalBills);
+    var reserve=r2(parseFloat(document.getElementById('reserve-monnaie').value)||0);
+    var fondCible=r2(parseFloat(document.getElementById('fond-cible').value)||0);
+    var totalCaisse=r2(totalEspeces+reserve);
+    var sortie=r2(Math.max(0,totalCaisse-fondCible));
+    var ref=r2(parseFloat(document.getElementById('ref').value)||0);
+    var ecart=r2(totalCaisse-ref);
+    var now=new Date(),dateStr=now.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
+    var entry={date:dateStr,ts:now.getTime(),comptage:totalEspeces,reserve:reserve,fondCible:fondCible,sortie:sortie,ref:ref,ecart:ecart,coins:coinQtys,bills:billQtys};
+    var data=loadHistory(),existsToday=data.some(function(e){return e.date===dateStr;});
+    data.unshift(entry);data=capHistory(data);saveHistoryData(data);renderHistory();
+    showToast(existsToday?'Comptage du jour mis à jour':'Comptage enregistré ✔');
+  }
+
+  function prefillFromLast(){
+    var data=loadHistory();if(!data.length)return;
+    var last=data[0];if(!last.coins&&!last.bills)return;
+    if(last.coins)last.coins.forEach(function(qty,i){var el=document.getElementById('coin-qty-'+i);if(el&&qty>0)el.value=qty;});
+    if(last.bills)last.bills.forEach(function(qty,i){var el=document.getElementById('bill-qty-'+i);if(el&&qty>0)el.value=qty;});
+    var lastReserve=typeof last.reserve==='number'?last.reserve:last.fond;
+    if(typeof lastReserve==='number')document.getElementById('reserve-monnaie').value=lastReserve.toFixed(2);
+    var banner=document.getElementById('prefill-banner');
+    banner.textContent='Comptage pré-rempli depuis la dernière clôture du '+last.date+'. Vérifiez et ajustez les quantités avant d’enregistrer.';
+    banner.style.display='flex';
+  }
+
+  var toastTimer;
+  function showToast(msg){
+    var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');
+    clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove('show');},2600);
+  }
+
+  function resetForm(){
+    if(!window.confirm('Réinitialiser tous les champs ? L’historique sera conservé.'))return;
+    COINS.forEach(function(_,i){document.getElementById('coin-qty-'+i).value='';});
+    BILLS.forEach(function(_,i){document.getElementById('bill-qty-'+i).value='';});
+    ELEC.forEach(function(_,i){document.getElementById('elec-'+i).value='';});
+    document.getElementById('ref').value='';
+    document.getElementById('reserve-monnaie').value=reserveDefaut().toFixed(2);
+    document.getElementById('fond-cible').value=fondCibleDefaut()?fondCibleDefaut().toFixed(2):'';
+    document.getElementById('prefill-banner').style.display='none';
+    calculate();showToast('Formulaire réinitialisé');
+  }
+
+  /* ── INIT ── */
+  document.getElementById('hdr-sub').textContent=storeSubtitle();
+  document.getElementById('reserve-monnaie').value=reserveDefaut().toFixed(2);
+  document.getElementById('fond-cible').value=fondCibleDefaut()?fondCibleDefaut().toFixed(2):'';
+
+  buildCoins();buildBills();buildElec();
+  initEnterNavigation();
+  saveHistoryData(capHistory(loadHistory()));
+  prefillFromLast();renderHistory();calculate();
+
+  var nowDate=new Date();
+  document.getElementById('js-date').textContent=nowDate.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  document.getElementById('coins-tbody').addEventListener('input',calculate);
+  document.getElementById('bills-tbody').addEventListener('input',calculate);
+  document.getElementById('elec-tbody').addEventListener('input',calculate);
+
+  function onQtyChange(e){
+    if(e.target&&e.target.classList.contains('qty-input')){normalizeQtyField(e.target);calculate();}
+  }
+  document.getElementById('coins-tbody').addEventListener('change',onQtyChange);
+  document.getElementById('bills-tbody').addEventListener('change',onQtyChange);
+  document.getElementById('elec-tbody').addEventListener('change',function(e){
+    if(e.target&&e.target.classList.contains('amt-input')){normalizeAmountField(e.target);calculate();}
   });
-  var cb=parseFloat(document.getElementById('dCB').value||'0')||0;
-  t+=cb;
-  document.getElementById('totalVal').textContent=fmt(t);
-  return t;
-}
-
-function saveCloture(){
-  var total=calcTotal();
-  var date=document.getElementById('cDate').value;
-  if(!date){alert('Sélectionnez une date.');return;}
-  var denoms={};
-  DENOMS.forEach(function(d){var v=parseInt(document.getElementById(d.id).value||'0',10)||0;if(v)denoms[d.id]=v;});
-  var cb=parseFloat(document.getElementById('dCB').value||'0')||0;
-  var note=(document.getElementById('dNote').value||'').trim();
-  var all=lh();
-  all.unshift({id:'cl_'+Date.now(),date:date,total:total,denoms:denoms,cb:cb,note:note,createdAt:new Date().toISOString()});
-  sh(all);
-  document.getElementById('saveMsg').textContent='✓ Clôture enregistrée pour le '+fmtDate(date)+'.';
-  setTimeout(function(){document.getElementById('saveMsg').textContent='';},3000);
-  resetForm();
-  renderHisto();
-}
-
-function resetForm(){
-  DENOMS.forEach(function(d){document.getElementById(d.id).value='';});
-  document.getElementById('dCB').value='';
-  document.getElementById('dNote').value='';
-  document.getElementById('totalVal').textContent='0,00 €';
-}
-
-function fmtDate(d){
-  if(!d)return'';
-  var p=d.split('-');
-  return p[2]+'/'+p[1]+'/'+p[0];
-}
-
-function renderHisto(){
-  var all=lh();
-  if(!all.length){document.getElementById('histo').innerHTML='<div class="empty">Aucune clôture enregistrée.</div>';return;}
-  var h=all.map(function(c){
-    return '<div class="histo-item">'
-      +'<div class="h-date">'+fmtDate(c.date)+'</div>'
-      +'<div class="h-note">'+(c.note||'&nbsp;')+'</div>'
-      +'<div class="h-total">'+fmt(c.total||0)+'</div>'
-      +'<button class="del-btn" title="Supprimer" onclick="delCloture(\'' + c.id + '\')">🗑</button>'
-      +'</div>';
-  }).join('');
-  document.getElementById('histo').innerHTML=h;
-}
-
-function delCloture(id){
-  if(!confirm('Supprimer cette clôture ?'))return;
-  sh(lh().filter(function(c){return c.id!==id;}));
-  renderHisto();
-}
-
-// Init date = aujourd'hui
-document.getElementById('cDate').value=new Date().toISOString().slice(0,10);
-renderHisto();
+  document.getElementById('reserve-monnaie').addEventListener('input',function(){
+    var v=parseFloat(document.getElementById('reserve-monnaie').value);
+    if(!isNaN(v))localStorage.setItem(LS_RESERVE,v);
+    calculate();
+  });
+  document.getElementById('fond-cible').addEventListener('input',function(){
+    var v=parseFloat(document.getElementById('fond-cible').value);
+    if(isNaN(v))localStorage.removeItem(LS_FOND_CIBLE);else localStorage.setItem(LS_FOND_CIBLE,v);
+    calculate();
+  });
+  document.getElementById('ref').addEventListener('input',calculate);
+  document.getElementById('btn-save').addEventListener('click',saveEntry);
+  document.getElementById('btn-reset').addEventListener('click',resetForm);
 </script>
 </body>
 </html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Réservations — KuT</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="theme-color" content="#1C2321">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script defer src="pwa.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Manrope",-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#EEF1EF;color:#1C2321;min-height:100vh;padding-bottom:5rem}
+header{background:#1C2321;color:#fff;padding:1rem 1.2rem;display:flex;align-items:center;gap:.8rem;position:sticky;top:0;z-index:20}
+.back{color:#fff;text-decoration:none;font-size:1.3rem;opacity:.85;line-height:1;padding:.2rem}
+.back:hover{opacity:1}
+h1{font-size:1.08rem;font-weight:800;flex:1}
+.count{font-size:.78rem;opacity:.75;white-space:nowrap}
+.bar{padding:.8rem 1.1rem;max-width:680px;margin:0 auto;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.btn{border:1.5px solid #c8d4da;background:#fff;color:#1C2321;border-radius:18px;padding:.4rem .9rem;font:inherit;font-size:.8rem;font-weight:700;cursor:pointer}
+.btn:hover{background:#f3f6f5}
+.btn.primary{background:#A22C29;border-color:#A22C29;color:#fff}
+.st{font-size:.76rem;color:#5E6572}.st.err{color:#A22C29}
+.tabs{display:flex;gap:.4rem;padding:0 1.1rem;max-width:680px;margin:0 auto}
+.tab{flex:1;text-align:center;padding:.5rem;border:none;background:#dfe6e3;color:#5E6572;border-radius:10px 10px 0 0;font:inherit;font-weight:700;font-size:.82rem;cursor:pointer}
+.tab.active{background:#fff;color:#1C2321}
+.list{padding:.6rem 1rem 0;max-width:680px;margin:0 auto}
+.item{background:#fff;border:1px solid #e1e8e6;border-radius:14px;padding:.9rem 1rem;margin-bottom:.7rem}
+.item-top{display:flex;justify-content:space-between;gap:.6rem;align-items:flex-start}
+.who{font-weight:800;font-size:1rem}
+.when{font-size:.82rem;color:#5E6572;margin-top:.15rem}
+.badge{font-size:.68rem;font-weight:700;padding:.18rem .5rem;border-radius:20px;white-space:nowrap}
+.b-att{background:#fff4e0;color:#9a6b00}.b-ok{background:#e8f5ec;color:#1f7a44}.b-no{background:#f3eceb;color:#8a6f6a}
+.meta{font-size:.84rem;color:#3a4441;margin-top:.5rem;line-height:1.5}
+.meta a{color:#A22C29;text-decoration:none}
+.tag{display:inline-block;background:#EEF1EF;border-radius:8px;padding:.1rem .45rem;font-size:.76rem;margin:.2rem .2rem 0 0}
+.actions{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.7rem}
+.actions .btn{font-size:.76rem;padding:.35rem .7rem}
+.btn-del{border-color:#E0635D;color:#E0635D}
+.empty{text-align:center;padding:3rem 1.3rem;color:#5E6572;line-height:1.6}
+.notice{max-width:680px;margin:.4rem auto;padding:.7rem 1.1rem}
+.notice .box{background:#fff4e0;border:1px solid #f0d9a8;color:#7a5a00;border-radius:10px;padding:.7rem .9rem;font-size:.82rem}
+</style>
+</head>
+<body>
+<header>
+  <a href="index.html" class="back" aria-label="Retour">←</a>
+  <h1>Réservations</h1>
+  <span class="count" id="count"></span>
+</header>
+
+<div class="bar">
+  <button class="btn primary" onclick="reload()">↻ Actualiser</button>
+  <span class="st" id="st"></span>
+</div>
+
+<div id="notice" class="notice" style="display:none"><div class="box"></div></div>
+
+<div class="tabs">
+  <button class="tab active" data-f="en_attente" onclick="setFilter('en_attente')">En attente</button>
+  <button class="tab" data-f="confirme" onclick="setFilter('confirme')">Confirmés</button>
+  <button class="tab" data-f="refuse" onclick="setFilter('refuse')">Refusés</button>
+</div>
+
+<div class="list" id="list"></div>
+
+<script src="app-sync.js"></script>
+<script>
+var LS_S='sync-url-v1', LS_K='admin-key-v1';
+var bookings=[], filter='en_attente';
+function su(){return(localStorage.getItem(LS_S)||'').trim();}
+function ak(){return(localStorage.getItem(LS_K)||'').trim();}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function setSt(cls,msg){var e=document.getElementById('st');e.className='st '+(cls||'');e.textContent=msg||'';}
+function fmtDate(d){var m=String(d||'').match(/^(\d{4})-(\d{2})-(\d{2})/);return m?m[3]+'/'+m[2]+'/'+m[1]:esc(d||'');}
+
+function jsonp(base,params,cb){
+  if(!('key' in params)){var k=ak();if(k)params.key=k;}
+  var name='cb_'+Date.now()+'_'+Math.floor(Math.random()*1e6);
+  var s=document.createElement('script'),done=false;
+  var t=setTimeout(function(){if(!done)fin({ok:false,error:'délai dépassé'});},20000);
+  function fin(r){done=true;clearTimeout(t);try{delete window[name];}catch(e){window[name]=undefined;}if(s.parentNode)s.parentNode.removeChild(s);cb(r);}
+  window[name]=function(r){fin(r);};
+  s.onerror=function(){fin({ok:false,error:'réseau'});};
+  var q=[];for(var k in params)if(params.hasOwnProperty(k))q.push(encodeURIComponent(k)+'='+encodeURIComponent(params[k]));
+  q.push('callback='+name);
+  s.src=base+(base.indexOf('?')>=0?'&':'?')+q.join('&');
+  document.body.appendChild(s);
+}
+
+function setFilter(f){filter=f;document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.dataset.f===f);});render();}
+
+function reload(){
+  var url=su();
+  if(!url){setSt('err','Configurez la synchro dans « Mon salon ».');render();return;}
+  setSt('','⏳ Chargement…');
+  jsonp(url,{action:'loadBookings'},function(r){
+    if(r&&r.ok){
+      try{bookings=JSON.parse(r.data||'[]');}catch(e){bookings=[];}
+      bookings.sort(function(a,b){return String(b.date).localeCompare(String(a.date));});
+      setSt('','✓ '+bookings.length+' demande(s)');
+    }else{
+      bookings=[];
+      setSt('err','Erreur : '+((r&&r.error)||'inconnue')+(r&&r.error==='non autorisé'?' — vérifiez la clé admin.':''));
+    }
+    render();
+  });
+}
+
+function render(){
+  checkNotice();
+  var url=su();
+  var box=document.getElementById('list');
+  if(!url){box.innerHTML='<div class="empty">Aucune synchro configurée.<br>Ouvrez <strong>Mon salon</strong> sur l\'accueil pour coller l\'URL de votre script et la clé admin.</div>';document.getElementById('count').textContent='';return;}
+  var shown=bookings.filter(function(b){return (b.statut||'en_attente')===filter;});
+  document.getElementById('count').textContent=bookings.length?bookings.length+' au total':'';
+  if(!shown.length){box.innerHTML='<div class="empty">Aucune réservation '+(filter==='en_attente'?'en attente':(filter==='confirme'?'confirmée':'refusée'))+'.</div>';return;}
+  box.innerHTML=shown.map(itemHtml).join('');
+}
+
+function itemHtml(b){
+  var s=b.statut||'en_attente';
+  var badge=s==='confirme'?'<span class="badge b-ok">Confirmé</span>':s==='refuse'?'<span class="badge b-no">Refusé</span>':'<span class="badge b-att">En attente</span>';
+  var contact=[];
+  if(b.tel)contact.push('<a href="tel:'+esc(b.tel)+'">'+esc(b.tel)+'</a>');
+  if(b.mail)contact.push('<a href="mailto:'+esc(b.mail)+'">'+esc(b.mail)+'</a>');
+  var tags=[];
+  if(b.prestation)tags.push('<span class="tag">'+esc(b.prestation)+'</span>');
+  if(b.heure)tags.push('<span class="tag">🕐 '+esc(b.heure)+'</span>');
+  if(b.optin&&String(b.optin).toLowerCase()==='oui')tags.push('<span class="tag">✉️ offres OK</span>');
+  var acts;
+  if(s==='en_attente'){
+    acts='<button class="btn primary" onclick="setStatut(\''+esc(b.id)+'\',\'confirme\')">✓ Confirmer</button>'+
+         '<button class="btn" onclick="setStatut(\''+esc(b.id)+'\',\'refuse\')">Refuser</button>';
+  }else{
+    acts='<button class="btn" onclick="setStatut(\''+esc(b.id)+'\',\'en_attente\')">↩ En attente</button>';
+  }
+  acts+='<button class="btn" onclick="toClient(\''+esc(b.id)+'\')">+ Fichier clients</button>'+
+        '<button class="btn btn-del" onclick="delResa(\''+esc(b.id)+'\')">Supprimer</button>';
+  return '<div class="item"><div class="item-top"><div><div class="who">'+esc(b.nom||'(sans nom)')+'</div>'+
+    '<div class="when">📅 '+fmtDate(b.date)+'</div></div>'+badge+'</div>'+
+    (tags.length?'<div>'+tags.join('')+'</div>':'')+
+    (contact.length?'<div class="meta">'+contact.join(' · ')+'</div>':'')+
+    (b.notes?'<div class="meta">📝 '+esc(b.notes)+'</div>':'')+
+    '<div class="actions">'+acts+'</div></div>';
+}
+
+function setStatut(id,statut){
+  var url=su();if(!url)return;
+  setSt('','⏳ …');
+  jsonp(url,{action:'setBookingStatus',id:id,statut:statut},function(r){
+    if(r&&r.ok){var b=bookings.filter(function(x){return x.id===id;})[0];if(b)b.statut=statut;setSt('','✓ Mis à jour');render();}
+    else setSt('err','Échec : '+((r&&r.error)||'inconnue'));
+  });
+}
+function delResa(id){
+  if(!confirm('Supprimer définitivement cette réservation ?'))return;
+  var url=su();if(!url)return;
+  jsonp(url,{action:'deleteBooking',id:id},function(r){
+    if(r&&r.ok){bookings=bookings.filter(function(x){return x.id!==id;});setSt('','✓ Supprimé');render();}
+    else setSt('err','Échec : '+((r&&r.error)||'inconnue'));
+  });
+}
+function toClient(id){
+  var b=bookings.filter(function(x){return x.id===id;})[0];if(!b)return;
+  var arr;try{arr=JSON.parse(localStorage.getItem('clients-v1')||'[]');}catch(e){arr=[];}
+  var dup=arr.filter(function(c){return (b.tel&&c.tel===b.tel)||(b.mail&&c.mail&&c.mail===b.mail);})[0];
+  if(dup&&!confirm('Un client avec ce contact existe déjà ('+esc(dup.nom)+'). L\'ajouter quand même ?'))return;
+  var c={id:'c_'+Date.now()+'_'+Math.floor(Math.random()*9999),nom:b.nom||'',tel:b.tel||'',mail:b.mail||'',dob:b.dob||'',
+    notes:b.notes||'',points:0,visitsCount:0,offre:'',optin:String(b.optin||'').toLowerCase()==='oui',maj:new Date().toISOString().slice(0,10),visites:[],ledger:[]};
+  arr.push(c);localStorage.setItem('clients-v1',JSON.stringify(arr));
+  if(window.DB&&DB.configured())DB.upsert(c);
+  setSt('','✓ Ajouté au fichier clients');
+}
+
+function checkNotice(){
+  var n=document.getElementById('notice');
+  if(su()&&!ak()){
+    n.style.display='';
+    n.querySelector('.box').innerHTML='⚠ <strong>Aucune clé admin configurée.</strong> Sans clé, l\'URL de votre script donne accès à toutes vos données si elle fuite. Définissez une clé admin dans <strong>Mon salon</strong> pour sécuriser le formulaire public.';
+  }else n.style.display='none';
+}
+
+reload();
+</script>
+</body>
+</html>

@@ -373,8 +373,8 @@ html[data-theme="dark"] .tl-tag{background:#171C1F!important;border-color:#313A3
     <div class="field"><label>Nom ✱</label><input id="fN" type="text" placeholder="Marie Dupont"></div>
     <div class="field"><label>Téléphone</label><input id="fT" type="tel" placeholder="06 12 34 56 78"></div>
     <div class="field"><label>Email</label><input id="fE" type="email" placeholder="marie@exemple.fr"></div>
-    <div class="field"><label>Date de naissance</label><input id="fDob" type="date"><div class="hint" style="font-size:.74rem;color:#A9B4C2;margin-top:.3rem">Déclenche l'offre et le mail d'anniversaire (si une offre anniversaire est active).</div></div>
-    <div class="field"><label>Notes</label><textarea id="fNt" placeholder="Allergies, préférences, coupe habituelle…"></textarea></div>
+    <div class="field"><label>Date de naissance <span style="font-weight:400;color:#A9B4C2">(facultatif)</span></label><input id="fDob" type="date"><div class="hint" style="font-size:.74rem;color:#A9B4C2;margin-top:.3rem">Facultatif — sert uniquement à l'offre et au mail d'anniversaire (si une offre est active). À ne renseigner qu'avec l'accord du client.</div></div>
+    <div class="field"><label>Notes</label><textarea id="fNt" placeholder="Préférences, coupe habituelle…"></textarea><div class="hint" style="font-size:.74rem;color:#A9B4C2;margin-top:.3rem">Évitez d'y noter des données sensibles (santé, allergies…) sans nécessité ni accord du client.</div></div>
     <div class="field"><label class="check"><input type="checkbox" id="fOpt"> Accepte de recevoir les offres &amp; promotions par email</label></div>
     <div class="hist-sec" id="histSec" style="display:none">
       <h3>Historique des passages</h3>
@@ -468,6 +468,7 @@ function renderHistory(c){
 }
 
 function jsonp(base,params,cb){
+  if(!('key' in params)){var ak='';try{ak=(localStorage.getItem('admin-key-v1')||'').trim();}catch(e){}if(ak)params.key=ak;}
   var name='cb_'+Date.now()+'_'+Math.floor(Math.random()*1e6);
   var s=document.createElement('script'),done=false;
   var t=setTimeout(function(){if(!done)fin({ok:false,error:'délai dépassé'});},15000);

@@ -44,6 +44,7 @@
   function status(msg, cls){ if (statusCb) try { statusCb(msg, cls || ''); } catch (e) {} }
 
   function jsonp(base, params, cb){
+    if (!('key' in params)) { var ak = ''; try { ak = (localStorage.getItem('admin-key-v1')||'').trim(); } catch (e) {} if (ak) params.key = ak; }
     var name = 'cb_' + Date.now() + '_' + Math.floor(Math.random()*1e6);
     var s = document.createElement('script'), done = false;
     var t = setTimeout(function () { if (!done) fin({ ok:false, error:'délai dépassé' }); }, 20000);

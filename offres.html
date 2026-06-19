@@ -363,6 +363,7 @@ function prestaList(){try{var p=JSON.parse(localStorage.getItem(LS_P)||'{}');ret
 function eur(n){n=Math.round((+n||0)*100)/100;return n.toLocaleString('fr-FR',{minimumFractionDigits:0,maximumFractionDigits:2})+' €';}
 
 function jsonp(base,params,cb){
+  if(!('key' in params)){var ak='';try{ak=(localStorage.getItem('admin-key-v1')||'').trim();}catch(e){}if(ak)params.key=ak;}
   var name='cb_'+Date.now()+'_'+Math.floor(Math.random()*1e6);
   var s=document.createElement('script'),done=false;
   var t=setTimeout(function(){if(!done)fin({ok:false,error:'délai dépassé'});},15000);

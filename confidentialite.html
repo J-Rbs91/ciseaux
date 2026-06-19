@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Politique de confidentialité</title>
+<style>
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#fdf3ef;color:#3d2b27;line-height:1.6}
+  .wrap{max-width:760px;margin:0 auto;padding:32px 20px 64px}
+  .card{background:#fff;border:1px solid #f0dbd5;border-radius:16px;padding:28px 30px;box-shadow:0 2px 16px rgba(0,0,0,.05)}
+  h1{font-size:1.5rem;margin:0 0 .4rem}
+  h2{font-size:1.05rem;margin:1.6rem 0 .4rem;color:#9c5f50}
+  .muted{color:#9a8077;font-size:.85rem}
+  a{color:#9c5f50}
+  table{border-collapse:collapse;width:100%;margin:.5rem 0;font-size:.9rem}
+  td,th{border:1px solid #f0dbd5;padding:.5rem .6rem;text-align:left;vertical-align:top}
+  th{background:#fdf3ef}
+  .note{background:#fdf3ef;border:1px dashed #e0c4ba;border-radius:10px;padding:.7rem .9rem;font-size:.82rem;color:#9a8077;margin:1rem 0}
+  ul{margin:.3rem 0 .3rem 1.1rem;padding:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>Politique de confidentialité</h1>
+    <p class="muted">Dernière mise à jour : <span id="maj"></span></p>
+
+    <div class="note">
+      <strong>À personnaliser par le salon</strong> — remplacez les valeurs ci-dessous (nom, adresse,
+      email de contact) dans le bloc <code>CONFIG</code> en bas de ce fichier, ou directement dans le texte.
+      Ce modèle est fourni à titre indicatif et ne constitue pas un conseil juridique.
+    </div>
+
+    <h2>1. Responsable du traitement</h2>
+    <p>Le responsable du traitement de vos données est <strong id="salon">[Nom du salon]</strong>,
+       situé <span id="adresse">[adresse]</span>. Pour toute question, contactez :
+       <a id="mailto" href="#"><span id="email">[email de contact]</span></a>.</p>
+
+    <h2>2. Quelles données nous collectons</h2>
+    <ul>
+      <li><strong>Identité</strong> : nom, prénom.</li>
+      <li><strong>Coordonnées</strong> : téléphone, adresse email.</li>
+      <li><strong>Date de naissance</strong> (facultative) : uniquement si vous souhaitez bénéficier d'une offre d'anniversaire.</li>
+      <li><strong>Historique</strong> : rendez-vous, prestations réalisées, points/visites de fidélité, et les éventuelles notes liées à votre suivi.</li>
+    </ul>
+
+    <h2>3. Pourquoi (finalités) et sur quelle base légale</h2>
+    <table>
+      <tr><th>Finalité</th><th>Base légale (RGPD)</th></tr>
+      <tr><td>Gérer vos demandes de rendez-vous et notre relation client</td><td>Exécution de mesures précontractuelles / contrat (art. 6.1.b)</td></tr>
+      <tr><td>Tenir un fichier client et un programme de fidélité</td><td>Intérêt légitime (art. 6.1.f)</td></tr>
+      <tr><td>Vous envoyer des offres et promotions par email</td><td>Votre consentement (art. 6.1.a), recueilli séparément</td></tr>
+      <tr><td>Vous adresser une offre le jour de votre anniversaire</td><td>Votre consentement (art. 6.1.a)</td></tr>
+    </table>
+
+    <h2>4. Destinataires</h2>
+    <p>Vos données sont accessibles au seul personnel du salon. Elles sont hébergées chez
+       <strong>Google</strong> (Google Drive, Google Sheets et Gmail), qui agit en tant que sous-traitant
+       pour le compte du salon. Aucune donnée n'est vendue ni transmise à des tiers à des fins commerciales.</p>
+
+    <h2>5. Durée de conservation</h2>
+    <p>Vos données client sont conservées pendant la durée de notre relation commerciale, puis
+       <strong>jusqu'à 3 ans</strong> après votre dernier rendez-vous ou contact. Au-delà, elles sont
+       supprimées. Si vous retirez votre consentement aux communications commerciales, vous ne recevez
+       plus aucune offre, et ce dès la prise en compte de votre demande.</p>
+
+    <h2>6. Vos droits</h2>
+    <p>Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, d'effacement, de
+       limitation, d'opposition et de portabilité de vos données. Vous pouvez aussi retirer à tout moment
+       votre consentement aux offres (lien de désinscription présent dans chaque email).</p>
+    <p>Pour exercer ces droits, écrivez-nous à <a id="mailto2" href="#"><span id="email2">[email de contact]</span></a>.
+       Vous pouvez également introduire une réclamation auprès de la <a href="https://www.cnil.fr" target="_blank" rel="noopener">CNIL</a>.</p>
+
+    <h2>7. Sécurité</h2>
+    <p>Nous mettons en œuvre des mesures techniques et organisationnelles pour protéger vos données.
+       L'accès à votre fichier est protégé et limité au salon.</p>
+  </div>
+</div>
+
+<script>
+/* CONFIG — à personnaliser (ou passer en paramètres d'URL : ?salon=...&email=...&adresse=...) */
+var CONFIG = {
+  salon:   "Mon salon",
+  email:   "contact@monsalon.fr",
+  adresse: "—"
+};
+(function(){
+  var qs = new URLSearchParams(location.search);
+  ['salon','email','adresse'].forEach(function(k){ if(qs.get(k)) CONFIG[k]=qs.get(k); });
+  document.getElementById('maj').textContent = new Date().toLocaleDateString('fr-FR');
+  document.getElementById('salon').textContent = CONFIG.salon;
+  document.getElementById('adresse').textContent = CONFIG.adresse;
+  document.title = 'Confidentialité · ' + CONFIG.salon;
+  ['email','email2'].forEach(function(id){ document.getElementById(id).textContent = CONFIG.email; });
+  ['mailto','mailto2'].forEach(function(id){ document.getElementById(id).href = 'mailto:'+CONFIG.email; });
+})();
+</script>
+</body>
+</html>

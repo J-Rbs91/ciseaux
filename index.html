@@ -363,11 +363,11 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
       <div class="label">Statistiques</div>
       <div class="desc">CA, panier moyen &amp; tendances</div>
     </a>
-    <div class="card disabled">
+    <a href="reservations.html" class="card">
       <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="38" height="38" fill="#A22C29" style="display:block" aria-hidden="true"><path d="M12,19a1,1,0,1,0-1-1A1,1,0,0,0,12,19Zm5,0a1,1,0,1,0-1-1A1,1,0,0,0,17,19Zm0-4a1,1,0,1,0-1-1A1,1,0,0,0,17,15Zm-5,0a1,1,0,1,0-1-1A1,1,0,0,0,12,15ZM19,3H18V2a1,1,0,0,0-2,0V3H8V2A1,1,0,0,0,6,2V3H5A3,3,0,0,0,2,6V20a3,3,0,0,0,3,3H19a3,3,0,0,0,3-3V6A3,3,0,0,0,19,3Zm1,17a1,1,0,0,1-1,1H5a1,1,0,0,1-1-1V11H20ZM20,9H4V6A1,1,0,0,1,5,5H6V6A1,1,0,0,0,8,6V5h8V6a1,1,0,0,0,2,0V5h1a1,1,0,0,1,1,1ZM7,15a1,1,0,1,0-1-1A1,1,0,0,0,7,15Zm0,4a1,1,0,1,0-1-1A1,1,0,0,0,7,19Z"></path></svg></div>
-      <div class="label">Agenda</div>
-      <div class="desc">Bientôt disponible</div>
-    </div>
+      <div class="label">Réservations</div>
+      <div class="desc">Demandes de rendez-vous en ligne</div>
+    </a>
   </div>
 </main>
 
@@ -395,6 +395,16 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
     </div>
     <div class="status" id="driveSt"></div>
 
+    <div class="field">
+      <label>Clé admin (sécurité)</label>
+      <div style="display:flex;gap:.5rem">
+        <input id="fAdminKey" type="text" placeholder="Clé secrète protégeant vos données" style="flex:1">
+        <button class="btn btn-outline" type="button" onclick="genKey()" style="white-space:nowrap;width:auto">Générer</button>
+      </div>
+      <div class="hint">Protège votre base : sans elle, l'URL ci-dessus donne accès à tout si elle fuite. Indispensable pour ouvrir un <a href="reservation.html" target="_blank" rel="noopener">formulaire de réservation public</a> sans risque. Collez la <strong>même</strong> clé sur chaque appareil.</div>
+      <div class="status" id="keySt"></div>
+    </div>
+
     <div class="sep"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="m20.71 9.29-6-6a1 1 0 0 0-.32-.21A1.09 1.09 0 0 0 14 3H6a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3v-8a1 1 0 0 0-.29-.71ZM9 5h4v2H9Zm6 14H9v-3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1Zm4-1a1 1 0 0 1-1 1h-1v-3a3 3 0 0 0-3-3h-4a3 3 0 0 0-3 3v3H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V6.41l4 4Z"></path></svg> Sauvegarde fichier</div>
     <div class="row">
       <button class="btn btn-outline" onclick="doExport()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M8.71,7.71,11,5.41V15a1,1,0,0,0,2,0V5.41l2.29,2.3a1,1,0,0,0,1.42,0,1,1,0,0,0,0-1.42l-4-4a1,1,0,0,0-.33-.21,1,1,0,0,0-.76,0,1,1,0,0,0-.33.21l-4,4A1,1,0,1,0,8.71,7.71ZM21,14a1,1,0,0,0-1,1v4a1,1,0,0,1-1,1H5a1,1,0,0,1-1-1V15a1,1,0,0,0-2,0v4a3,3,0,0,0,3,3H19a3,3,0,0,0,3-3V15A1,1,0,0,0,21,14Z"></path></svg> Télécharger</button>
@@ -411,12 +421,15 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
 </div>
 
 <script>
-var LS_P='profil-magasin-v1', LS_S='sync-url-v1';
+var LS_P='profil-magasin-v1', LS_S='sync-url-v1', LS_K='admin-key-v1';
 function lp(){try{return JSON.parse(localStorage.getItem(LS_P)||'{}');}catch(e){return{};}}
 function su(){return(localStorage.getItem(LS_S)||'').trim();}
+function ak(){return(localStorage.getItem(LS_K)||'').trim();}
+function genKey(){document.getElementById('fAdminKey').value=(Date.now().toString(36)+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)).replace(/[^a-z0-9]/g,'').slice(0,32);}
 function renderHeader(){var p=lp();document.getElementById('salonName').textContent=(p.nom||'').trim()||'Mon salon';}
 
 function jsonp(base,params,cb){
+  if(!('key' in params)){var ak='';try{ak=(localStorage.getItem('admin-key-v1')||'').trim();}catch(e){}if(ak)params.key=ak;}
   var name='cb_'+Date.now()+'_'+Math.floor(Math.random()*1e6);
   var s=document.createElement('script'),done=false;
   var t=setTimeout(function(){if(!done)fin({ok:false,error:'délai dépassé'});},15000);
@@ -456,9 +469,21 @@ function saveProfil(){
   var p={nom:(document.getElementById('fNom').value||'').trim(),adresse:(document.getElementById('fAdresse').value||'').trim(),tel:(document.getElementById('fTel').value||'').trim(),mail:(document.getElementById('fMail').value||'').trim(),prestations:Array.isArray(existing.prestations)?existing.prestations:[]};
   if(!p.nom){alert('Le nom du salon est requis.');return;}
   var url=(document.getElementById('fSyncUrl').value||'').trim();
+  var key=(document.getElementById('fAdminKey').value||'').trim();
   localStorage.setItem(LS_P,JSON.stringify(p));
   if(url)localStorage.setItem(LS_S,url);
-  renderHeader();syncPush(p);closeModal();
+  if(key)localStorage.setItem(LS_K,key);else localStorage.removeItem(LS_K);
+  renderHeader();syncPush(p);
+  // Revendique la clé côté script (n'aboutit que si aucune clé n'y est encore définie).
+  if(url&&key){
+    setSt('keySt','','⏳ Activation de la clé…');
+    jsonp(url,{action:'claimKey',key:key},function(r){
+      if(r&&r.ok)setSt('keySt','ok','✓ Clé activée sur le script. Sécurité en place.');
+      else if(r&&r.error==='clé déjà définie')setSt('keySt','ok','✓ Clé enregistrée sur cet appareil.');
+      else setSt('keySt','err','Clé enregistrée localement (activation script : '+((r&&r.error)||'échec')+').');
+      setTimeout(closeModal,1200);
+    });
+  } else closeModal();
 }
 
 function fillForm(p){
@@ -467,6 +492,7 @@ function fillForm(p){
   document.getElementById('fTel').value=p.tel||'';
   document.getElementById('fMail').value=p.mail||'';
   document.getElementById('fSyncUrl').value=su();
+  document.getElementById('fAdminKey').value=ak();
 }
 
 function openModal(){fillForm(lp());document.getElementById('overlay').classList.add('open');}

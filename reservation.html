@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Prendre rendez-vous</title>
+<style>
+  :root{--rose:#b87c6e;--rose-d:#9c5f50;--bg:#fdf3ef;--card:#fff;--txt:#3d2b27;--muted:#9a8077;--line:#f0dbd5;--err:#A22C29}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--txt);line-height:1.5}
+  .wrap{max-width:540px;margin:0 auto;padding:24px 18px 48px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:0 2px 16px rgba(0,0,0,.05)}
+  h1{font-size:1.35rem;margin:0 0 .2rem}
+  .sub{color:var(--muted);font-size:.9rem;margin:0 0 1.4rem}
+  label{display:block;font-weight:600;font-size:.86rem;margin:.9rem 0 .3rem}
+  .req:after{content:" *";color:var(--rose-d)}
+  input,select,textarea{width:100%;padding:.6rem .7rem;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff;color:var(--txt)}
+  input:focus,select,textarea:focus{outline:2px solid var(--rose);outline-offset:-1px}
+  textarea{resize:vertical;min-height:64px}
+  .hint{font-size:.76rem;color:var(--muted);margin-top:.3rem}
+  .two{display:flex;gap:.7rem}.two>div{flex:1}
+  .consent{display:flex;gap:.55rem;align-items:flex-start;margin-top:1rem;font-size:.83rem}
+  .consent input{width:auto;margin-top:.15rem;flex:none}
+  .consent a{color:var(--rose-d)}
+  .btn{width:100%;margin-top:1.5rem;padding:.85rem;border:none;border-radius:12px;background:var(--rose);color:#fff;font-size:1rem;font-weight:700;cursor:pointer}
+  .btn:disabled{opacity:.6;cursor:default}
+  .msg{margin-top:1rem;padding:.8rem;border-radius:10px;font-size:.88rem;display:none}
+  .msg.ok{display:block;background:#e8f5ec;color:#1f7a44;border:1px solid #bfe6cd}
+  .msg.err{display:block;background:#fbeaea;color:var(--err);border:1px solid #f0caca}
+  .hp{position:absolute;left:-9999px;top:-9999px;height:0;overflow:hidden}
+  .foot{text-align:center;font-size:.75rem;color:var(--muted);margin-top:1.2rem}
+  .ok-box{text-align:center;padding:10px 0}
+  .ok-box .big{font-size:42px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card" id="formCard">
+    <h1 id="title">Prendre rendez-vous</h1>
+    <p class="sub" id="subtitle">Remplissez ce formulaire : le salon vous confirmera votre créneau.</p>
+
+    <form id="resaForm" autocomplete="on" novalidate>
+      <!-- piège anti-robot : doit rester vide -->
+      <div class="hp" aria-hidden="true"><label>Ne pas remplir<input type="text" id="hp" name="website" tabindex="-1" autocomplete="off"></label></div>
+
+      <div class="two">
+        <div><label class="req" for="prenom">Prénom</label><input id="prenom" type="text" autocomplete="given-name" required></div>
+        <div><label class="req" for="nom">Nom</label><input id="nom" type="text" autocomplete="family-name" required></div>
+      </div>
+
+      <label class="req" for="tel">Téléphone</label>
+      <input id="tel" type="tel" inputmode="tel" autocomplete="tel" required>
+
+      <label for="mail">Email</label>
+      <input id="mail" type="email" autocomplete="email">
+      <div class="hint">Pour recevoir la confirmation de votre rendez-vous.</div>
+
+      <label id="prestaLabel" for="prestation" style="display:none">Prestation souhaitée</label>
+      <select id="prestation" style="display:none"></select>
+
+      <div class="two">
+        <div><label class="req" for="date">Date souhaitée</label><input id="date" type="date" required></div>
+        <div><label for="heure">Heure</label><input id="heure" type="time"></div>
+      </div>
+
+      <label for="dob">Date de naissance</label>
+      <input id="dob" type="date">
+      <div class="hint">Facultatif — uniquement pour vous offrir un cadeau le jour de votre anniversaire. Vous pouvez laisser vide.</div>
+
+      <label for="notes">Précisions (facultatif)</label>
+      <textarea id="notes" placeholder="Ex : coloration, demande particulière…"></textarea>
+
+      <label class="consent">
+        <input type="checkbox" id="cgu" required>
+        <span>J'ai lu et j'accepte la <a href="confidentialite.html" target="_blank" rel="noopener">politique de confidentialité</a> et que mes coordonnées soient utilisées pour gérer ma demande de rendez-vous. <strong>(obligatoire)</strong></span>
+      </label>
+
+      <label class="consent">
+        <input type="checkbox" id="optin">
+        <span>J'accepte de recevoir par email les offres et promotions du salon. (facultatif, désinscription à tout moment)</span>
+      </label>
+
+      <button class="btn" id="submitBtn" type="submit">Envoyer ma demande</button>
+      <div class="msg" id="msg" role="alert"></div>
+    </form>
+  </div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script>
+/* ============================================================
+   CONFIGURATION DU SALON — à éditer une seule fois après le fork.
+   - api    : l'URL …/exec de VOTRE script Apps Script.
+   - salon  : le nom affiché en haut du formulaire.
+   - prestations : liste optionnelle (laisser [] pour masquer le menu).
+   On peut aussi passer ces valeurs en paramètres d'URL :
+     reservation.html?api=...&salon=Nom%20du%20salon
+   ============================================================ */
+var CONFIG = {
+  api: "",                       // ex : "https://script.google.com/macros/s/AKf.../exec"
+  salon: "Mon salon",
+  prestations: []                // ex : ["Coupe femme","Coupe homme","Coloration","Brushing"]
+};
+
+(function(){
+  var qs = new URLSearchParams(location.search);
+  if (qs.get('api'))   CONFIG.api   = qs.get('api');
+  if (qs.get('salon')) CONFIG.salon = qs.get('salon');
+
+  document.getElementById('title').textContent = 'Prendre rendez-vous';
+  document.getElementById('subtitle').textContent = CONFIG.salon + ' vous confirmera votre créneau après réception.';
+  document.title = 'Rendez-vous · ' + CONFIG.salon;
+  document.getElementById('foot').textContent = CONFIG.salon;
+  // empêche de réserver dans le passé
+  var today = new Date().toISOString().slice(0,10);
+  document.getElementById('date').min = today;
+
+  if (CONFIG.prestations && CONFIG.prestations.length){
+    var sel = document.getElementById('prestation');
+    sel.style.display = 'block';
+    document.getElementById('prestaLabel').style.display = 'block';
+    var o0 = document.createElement('option'); o0.value=''; o0.textContent='— choisir —'; sel.appendChild(o0);
+    CONFIG.prestations.forEach(function(p){ var o=document.createElement('option'); o.value=p; o.textContent=p; sel.appendChild(o); });
+  }
+})();
+
+function jsonp(base, params, cb){
+  var name='cb_'+Date.now()+'_'+Math.floor(Math.random()*1e6);
+  var s=document.createElement('script'), done=false;
+  var t=setTimeout(function(){ if(!done) fin({ok:false,error:'délai dépassé'}); },20000);
+  function fin(r){ done=true; clearTimeout(t); try{delete window[name];}catch(e){window[name]=undefined;} if(s.parentNode)s.parentNode.removeChild(s); cb(r); }
+  window[name]=function(r){ fin(r); };
+  s.onerror=function(){ fin({ok:false,error:'réseau'}); };
+  var q=[]; for(var k in params) if(params.hasOwnProperty(k)) q.push(encodeURIComponent(k)+'='+encodeURIComponent(params[k]));
+  q.push('callback='+name);
+  s.src=base+(base.indexOf('?')>=0?'&':'?')+q.join('&');
+  document.body.appendChild(s);
+}
+
+function showMsg(cls, text){ var m=document.getElementById('msg'); m.className='msg '+cls; m.textContent=text; }
+
+document.getElementById('resaForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  var btn=document.getElementById('submitBtn');
+  if(!CONFIG.api){ showMsg('err','Formulaire non configuré (URL du salon manquante).'); return; }
+  if(!document.getElementById('cgu').checked){ showMsg('err','Merci d\'accepter la politique de confidentialité.'); return; }
+
+  var prenom=document.getElementById('prenom').value.trim();
+  var nom=document.getElementById('nom').value.trim();
+  var data={
+    action:'createBooking',
+    hp: document.getElementById('hp').value,
+    nom: (prenom+' '+nom).trim(),
+    tel: document.getElementById('tel').value.trim(),
+    mail: document.getElementById('mail').value.trim(),
+    dob: document.getElementById('dob').value,
+    date: document.getElementById('date').value,
+    heure: document.getElementById('heure').value,
+    prestation: document.getElementById('prestation').value || '',
+    notes: document.getElementById('notes').value.trim(),
+    optin: document.getElementById('optin').checked ? 'oui' : 'non'
+  };
+  if(!data.nom || !data.tel || !data.date){ showMsg('err','Merci de renseigner au moins votre nom, votre téléphone et la date.'); return; }
+
+  btn.disabled=true; btn.textContent='Envoi…'; showMsg('','');
+  jsonp(CONFIG.api, data, function(r){
+    if(r && r.ok){
+      document.getElementById('formCard').innerHTML =
+        '<div class="ok-box"><div class="big">✅</div>'+
+        '<h1>Demande envoyée&nbsp;!</h1>'+
+        '<p class="sub">Merci '+escapeHtml(prenom)+'. '+escapeHtml(CONFIG.salon)+
+        ' a bien reçu votre demande de rendez-vous et vous confirmera votre créneau.</p></div>';
+    } else {
+      btn.disabled=false; btn.textContent='Envoyer ma demande';
+      showMsg('err', 'Désolé, l\'envoi a échoué'+(r&&r.error?' ('+r.error+')':'')+'. Réessayez ou appelez le salon.');
+    }
+  });
+});
+
+function escapeHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>

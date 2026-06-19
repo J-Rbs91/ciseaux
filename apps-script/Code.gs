@@ -15,15 +15,56 @@ var OFFRES   = 'offres.json';
 var CLASSEUR = 'base-clients';
 var ONGLET   = 'Clients';
 var ENTETES  = ['id','nom','tel','mail','dob','points','visitsCount','offre','notes','optin','maj','visites','ledger'];
+var RESA       = 'Réservations';
+var ENTETES_RESA = ['id','createdAt','statut','date','heure','prestation','nom','tel','mail','dob','notes','optin'];
+
+// ── Contrôle d'accès ──────────────────────────────────────────
+// Seule une poignée d'actions est PUBLIQUE (formulaire de réservation en ligne) ;
+// toutes les autres exigent la clé admin si une clé a été définie. Tant qu'aucune
+// clé n'est configurée, le script reste en mode « ouvert » (compatibilité des
+// déploiements existants) — d'où l'avertissement affiché dans l'application.
+var ACTIONS_PUBLIQUES = { createBooking:1, securite:1, unsub:1 };
+
+function cleAdmin_() {
+  return (PropertiesService.getScriptProperties().getProperty('ADMIN_KEY') || '').trim();
+}
+
+// À exécuter UNE fois depuis l'éditeur Apps Script pour générer/forcer une clé admin.
+// La clé apparaît dans les journaux (Affichage → Journaux) : collez-la dans
+// l'application (Mon salon → Clé admin).
+function genererCleAdmin() {
+  var k = Utilities.getUuid().replace(/-/g, '');
+  PropertiesService.getScriptProperties().setProperty('ADMIN_KEY', k);
+  Logger.log('Clé admin : ' + k + '\nCollez-la dans Mon salon → Clé admin (sur chaque appareil).');
+  return k;
+}
+
+// Revendication de la clé depuis l'app : n'aboutit QUE si aucune clé n'est encore définie
+// (premier appareil qui configure). La rotation ultérieure se fait via genererCleAdmin().
+function revendiquerCle_(k) {
+  k = String(k || '').trim();
+  if (!k) return { ok:false, error:'clé vide' };
+  var props = PropertiesService.getScriptProperties();
+  if ((props.getProperty('ADMIN_KEY') || '').trim()) return { ok:false, error:'clé déjà définie' };
+  props.setProperty('ADMIN_KEY', k);
+  return { ok:true };
+}
 
 function doGet(e) {
   var p = e.parameter || {}, cb = p.callback, res;
+  var action = p.action || 'load';
 
   // Lien de désinscription cliqué depuis un email : navigation directe (page HTML)
-  if (p.action === 'unsub') return pageDesinscription_(p);
+  if (action === 'unsub') return pageDesinscription_(p);
+
+  // Garde d'accès : si une clé admin est définie, tout sauf les actions publiques l'exige.
+  var cle = cleAdmin_();
+  if (cle && !ACTIONS_PUBLIQUES[action] && String(p.key || '') !== cle) {
+    return sortie_({ ok:false, error:'non autorisé' }, cb);
+  }
 
   try {
-    switch (p.action) {
+    switch (action) {
       case 'save':         JSON.parse(p.data||'{}'); ecrireProfil_(p.data||'{}'); res={ok:true}; break;
       case 'load':         res={ok:true,data:lireProfil_()}; break;
       case 'saveClients':  ecrireClients_(JSON.parse(p.data||'[]')); res={ok:true}; break;
@@ -35,11 +76,23 @@ function doGet(e) {
       case 'sendCampaign': res=envoyerCampagne_(p); break;
       case 'sendBirthdays':res=envoyerAnniversaires_(); break;
       case 'quota':        res={ok:true,quota:MailApp.getRemainingDailyQuota()}; break;
-      default:             res={ok:true,data:lireProfil_()};
+      // Réservations en ligne
+      case 'createBooking':    res=creerReservation_(p); break;                 // PUBLIC (formulaire)
+      case 'loadBookings':     res={ok:true,data:lireReservations_()}; break;
+      case 'setBookingStatus': res={ok:true,updated:majStatutReservation_(p.id||'', p.statut||'')}; break;
+      case 'deleteBooking':    res={ok:true,deleted:supprimerReservation_(p.id||'')}; break;
+      // Sécurité / clé admin
+      case 'claimKey':         res=revendiquerCle_(p.key||''); break;
+      case 'securite':         res={ok:true, locked: !!cle}; break;             // PUBLIC (état)
+      default:                 res={ok:true,data:lireProfil_()};
     }
   } catch(err) {
     res={ok:false,error:String(err)};
   }
+  return sortie_(res, cb);
+}
+
+function sortie_(res, cb) {
   var json = JSON.stringify(res);
   return cb
     ? ContentService.createTextOutput(cb+'('+json+')').setMimeType(ContentService.MimeType.JAVASCRIPT)
@@ -162,6 +215,100 @@ function deleteClient_(id) {
   if (!id) return false;
   var sh = feuille_();
   var idCol = ENTETES.indexOf('id');
+  var n = sh.getLastRow() - 1;
+  var ids = n > 0 ? sh.getRange(2, idCol + 1, n, 1).getValues() : [];
+  for (var i = 0; i < ids.length; i++) {
+    if (String(ids[i][0]) === String(id)) { sh.deleteRow(i + 2); return true; }
+  }
+  return false;
+}
+
+// ── Réservations en ligne (Google Sheet) ─────────────────────
+// L'action « createBooking » est PUBLIQUE : c'est le seul point d'entrée du
+// formulaire de réservation. Elle est volontairement minimale (write-only) :
+// elle dépose une demande « en attente » et ne renvoie AUCUNE donnée. La lecture
+// (loadBookings) et la validation (setBookingStatus) exigent la clé admin.
+
+function feuilleResa_() {
+  var d = dossier_();
+  var it = d.getFilesByName(CLASSEUR), ss;
+  if (it.hasNext()) { ss = SpreadsheetApp.open(it.next()); }
+  else { ss = SpreadsheetApp.create(CLASSEUR); DriveApp.getFileById(ss.getId()).moveTo(d); }
+  var sh = ss.getSheetByName(RESA) || ss.insertSheet(RESA);
+  if (sh.getLastRow() === 0) sh.appendRow(ENTETES_RESA);
+  return sh;
+}
+
+function creerReservation_(p) {
+  // Piège anti-robot : un champ caché rempli = bot. On répond ok mais on n'enregistre rien.
+  if (String(p.hp || '') !== '') return { ok:true };
+
+  var nom  = String(p.nom  || '').trim();
+  var tel  = String(p.tel  || '').trim();
+  var mail = String(p.mail || '').trim();
+  var date = String(p.date || '').trim();
+
+  if (!nom) return { ok:false, error:'Nom requis' };
+  if (!tel && !mail) return { ok:false, error:'Téléphone ou email requis' };
+  if (mail && mail.indexOf('@') < 0) return { ok:false, error:'Email invalide' };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { ok:false, error:'Date invalide' };
+
+  var d = new Date(date + 'T00:00:00');
+  var auj = new Date(); auj.setHours(0,0,0,0);
+  if (isNaN(d) || d < auj) return { ok:false, error:'Date dans le passé' };
+  var max = new Date(); max.setMonth(max.getMonth() + 12);
+  if (d > max) return { ok:false, error:'Date trop lointaine' };
+
+  // Garde-fou anti-flood (global, fenêtre d'une minute) : limite les abus du formulaire public.
+  var cache = CacheService.getScriptCache();
+  var n = parseInt(cache.get('resa_count') || '0', 10);
+  if (n >= 20) return { ok:false, error:'Trop de demandes, réessayez dans une minute.' };
+  cache.put('resa_count', String(n + 1), 60);
+
+  var o = {
+    id: 'r_' + Date.now() + '_' + Math.floor(Math.random() * 9999),
+    createdAt: new Date().toISOString(),
+    statut: 'en_attente',
+    date: date,
+    heure: String(p.heure || '').trim(),
+    prestation: String(p.prestation || '').trim(),
+    nom: nom, tel: tel, mail: mail,
+    dob: String(p.dob || '').trim(),
+    notes: String(p.notes || '').trim(),
+    optin: estOptin_(p.optin) ? 'oui' : 'non'
+  };
+  feuilleResa_().appendRow(ENTETES_RESA.map(function(h) { return o[h] != null ? o[h] : ''; }));
+  return { ok:true };
+}
+
+function lireReservations_() {
+  var sh = feuilleResa_();
+  var rows = sh.getDataRange().getValues();
+  var head = rows.shift() || ENTETES_RESA;
+  return JSON.stringify(rows.map(function(r) {
+    var o = {}; head.forEach(function(h, i) { o[h] = r[i]; }); return o;
+  }));
+}
+
+function majStatutReservation_(id, statut) {
+  if (!id) return false;
+  var ok = { en_attente:1, confirme:1, refuse:1 };
+  if (!ok[statut]) return false;
+  var sh = feuilleResa_();
+  var data = sh.getDataRange().getValues();
+  var head = data[0] || ENTETES_RESA;
+  var idCol = head.indexOf('id'), stCol = head.indexOf('statut');
+  if (idCol < 0 || stCol < 0) return false;
+  for (var r = 1; r < data.length; r++) {
+    if (String(data[r][idCol]) === String(id)) { sh.getRange(r + 1, stCol + 1).setValue(statut); return true; }
+  }
+  return false;
+}
+
+function supprimerReservation_(id) {
+  if (!id) return false;
+  var sh = feuilleResa_();
+  var idCol = ENTETES_RESA.indexOf('id');
   var n = sh.getLastRow() - 1;
   var ids = n > 0 ? sh.getRange(2, idCol + 1, n, 1).getValues() : [];
   for (var i = 0; i < ids.length; i++) {

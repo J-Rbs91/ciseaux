@@ -47,6 +47,12 @@ L'URL `…/exec` reste la même, inutile de la recoller.
 | `sendBirthdays` | Envoie le mail d'anniversaire du jour (test/forçage manuel) |
 | `quota` | Renvoie le nombre d'emails encore envoyables aujourd'hui |
 | `unsub` | Page de désinscription (lien placé dans chaque email) |
+| `createBooking` | **Public** — dépose une demande de rendez-vous (formulaire en ligne) |
+| `loadBookings` | Renvoie les demandes de rendez-vous (admin) |
+| `setBookingStatus` | Confirme / refuse / remet en attente une demande (admin) |
+| `deleteBooking` | Supprime une demande de rendez-vous (admin) |
+| `claimKey` | Définit la clé admin si aucune n'est encore enregistrée |
+| `securite` | Indique si une clé admin protège le script |
 
 Le script crée automatiquement un dossier **`Hub_Facilities`** dans votre Drive
 avec un fichier `profil-magasin.json` et un classeur `base-clients`.
@@ -104,8 +110,50 @@ dans le message : `{prenom}`, `{nom}`, `{offre}`, `{prestations}`.
 
 Le script s'arrête proprement quand le quota est atteint et indique combien d'emails ont été ignorés.
 
+## Réservations en ligne 📅
+
+Le formulaire public `reservation.html` permet à vos clients de **demander un rendez-vous**
+depuis votre fiche Google, votre site ou vos réseaux. Les demandes arrivent dans la page
+**Réservations** de l'application, où vous les **confirmez ou refusez** (et pouvez ajouter
+le client à votre fichier).
+
+- Les demandes sont stockées dans un onglet **`Réservations`** du classeur `base-clients` :
+  `id | createdAt | statut | date | heure | prestation | nom | tel | mail | dob | notes | optin`
+- L'action `createBooking` est **write-only** : elle ne fait que déposer une demande
+  « en attente » et **ne renvoie jamais** la liste des clients ni des autres réservations.
+- Protections intégrées : champ piège anti-robot, validation de la date (pas de date passée),
+  limite anti-flood (max 20 demandes/minute).
+
+Pour mettre le formulaire en ligne : ouvrez `reservation.html`, renseignez le bloc `CONFIG`
+en bas du fichier (votre URL `…/exec`, le nom du salon, vos prestations), puis publiez la page
+(GitHub Pages) et ajoutez son lien comme bouton **« Prendre rendez-vous »** sur votre fiche
+Google Business Profile.
+
+## Clé admin (sécurité) 🔐
+
+Comme le formulaire de réservation rend l'URL `…/exec` **publique**, cette URL ne peut plus
+servir de secret. Une **clé admin** protège alors toutes les actions sensibles (lecture des
+clients, suppression, campagnes…) : seules `createBooking` et `securite` restent publiques.
+
+**Mise en place (une fois) :**
+
+1. Dans l'app, ouvrir **Mon salon**, cliquer **Générer** à côté de « Clé admin », puis
+   **Enregistrer**. L'app enregistre la clé sur le script (action `claimKey`, qui n'aboutit
+   que si aucune clé n'existe encore).
+2. Coller la **même clé** dans **Mon salon** sur chaque appareil utilisé par le salon.
+3. (Alternative experte) Exécuter `genererCleAdmin` depuis l'éditeur Apps Script : la clé
+   s'affiche dans les **journaux**, à recopier dans l'app.
+
+> Tant qu'aucune clé n'est définie, le script reste en mode **ouvert** (compatibilité des
+> déploiements existants) et l'app affiche un avertissement. **N'activez pas le formulaire
+> public sans avoir défini une clé.**
+
 ## Sécurité & conformité
 
-- L'URL `…/exec` est longue et aléatoire — elle sert de clé secrète. Ne la partagez pas.
+- L'URL `…/exec` est longue et aléatoire. Tant que vous n'ouvrez pas de formulaire public,
+  elle fait office de secret ; **dès que vous publiez `reservation.html`, définissez une clé admin.**
 - Aucune donnée n'est hébergée par le projet KuT : tout vit sur votre compte Google.
 - Les emails ne partent qu'aux clients **opt-in** et incluent un **lien de désinscription** (RGPD).
+- Le formulaire de réservation affiche un lien vers `confidentialite.html` et exige le
+  consentement à la politique de confidentialité (case obligatoire), avec un opt-in marketing
+  **distinct** (case facultative).

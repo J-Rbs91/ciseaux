@@ -12,15 +12,35 @@ implications importantes pour la sécurité :
 - La synchronisation optionnelle passe par un script **Google Apps Script
   déployé par l'utilisateur sur son propre compte Google**. L'URL `…/exec`
   générée fait office de clé secrète.
+- Une **clé admin** (optionnelle, vivement recommandée) protège les actions
+  sensibles du script (lecture/écriture des clients, suppression, campagnes).
+  Seules les actions **publiques** du formulaire de réservation
+  (`createBooking`, `securite`) restent accessibles sans clé.
+
+## Formulaire de réservation public
+
+Le formulaire `reservation.html` est conçu pour être exposé publiquement :
+
+- Il n'utilise que l'action **write-only** `createBooking`, qui dépose une demande
+  « en attente » et **ne renvoie aucune donnée** (ni clients, ni autres réservations).
+- Protections anti-abus : champ piège anti-robot, refus des dates passées, limite
+  anti-flood. Les demandes restent à **valider** par le salon, jamais inscrites
+  directement dans un agenda confirmé.
+- **Avant de publier ce formulaire, définissez une clé admin** : sans elle, l'URL
+  `…/exec` — désormais publique — donnerait accès à toutes vos données.
 
 ## Recommandations aux utilisateurs
 
-- **Ne partagez jamais votre URL `…/exec`** : quiconque la possède peut lire et
-  écrire vos données de synchro.
+- **Ne partagez jamais votre URL `…/exec`** tant qu'aucune clé admin n'est définie :
+  quiconque la possède peut alors lire et écrire vos données.
+- **Définissez une clé admin** dès que vous ouvrez le formulaire de réservation,
+  et utilisez la **même clé** sur tous vos appareils.
 - Les données du `localStorage` ne sont **pas chiffrées**. Sur un poste
   partagé, utilisez la sauvegarde fichier et videz les données après usage.
 - Le RGPD s'applique aux données clients que vous saisissez : informez vos
-  clients et ne collectez que le nécessaire.
+  clients (voir `confidentialite.html`), ne collectez que le nécessaire (la date
+  de naissance reste facultative) et préférez un compte **Google Workspace** (avec
+  accord de sous-traitance) pour un usage professionnel.
 
 ## Versions supportées
 

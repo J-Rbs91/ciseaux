@@ -12,6 +12,7 @@ Outil open source pour salons de coiffure — CRM clients, programme de fidélit
 - **📊 Statistiques** — tableau de bord calculé à partir des passages : **chiffre d'affaires, panier moyen, nombre de passages et clients servis** (par mois en cours, mois précédent, 12 mois glissants ou tout l'historique), **évolution du CA sur 12 mois**, **prestations les plus rentables**, **meilleurs clients** et **clients en sommeil** (aucune nouvelle saisie : tout est dérivé des données existantes)
 - **💰 Caisse** — clôture journalière : comptage pièces/billets + paiements électroniques, réserve de monnaie, fond de caisse cible, calcul d'écart vs logiciel de caisse, historique 15 jours, report de la veille
 - **✉️ Campagnes** — envoi d'offres par email depuis votre propre Gmail, aux clients opt-in, avec **segmentation** des destinataires : tous, récompense disponible, à relancer, **clients fidèles** (nombre de passages), **clients VIP** (panier moyen) ou **ayant pris une prestation** donnée
+- **📅 Réservations en ligne** — formulaire public (`reservation.html`) à lier depuis votre fiche Google : vos clients **demandent un rendez-vous**, vous les **confirmez/refusez** depuis la page Réservations (write-only côté public, anti-robot, demandes à valider)
 - **☁️ Synchro Drive** — sauvegarde automatique multi-appareils via votre propre Google Drive
 - **💾 Sauvegarde fichier** — export/import `.json` local
 
@@ -22,6 +23,7 @@ Outil open source pour salons de coiffure — CRM clients, programme de fidélit
 - Synchro et envoi d'emails via un script Google Apps Script déployé **sur le compte de chaque utilisateur**
 - Communication par **JSONP** (jamais `fetch`) — compatible avec les web apps Apps Script
 - Aucune donnée ne quitte le navigateur sauf action explicite de l'utilisateur
+- **Clé admin** optionnelle : protège les actions sensibles du script ; seules les actions du formulaire public de réservation restent ouvertes
 
 ## Campagnes email
 
@@ -38,6 +40,25 @@ Voir [`docs/campagnes/`](docs/campagnes/) et [`apps-script/README.md`](apps-scri
 1. Forker ce dépôt
 2. Aller dans **Settings → Pages → Source : Deploy from a branch → main / root**
 3. L'application est disponible sur `https://<votre-user>.github.io/ciseaux/`
+
+## Réservations en ligne & confidentialité
+
+1. Déployer le script Apps Script et coller l'URL `…/exec` dans **Mon salon**.
+2. Dans **Mon salon**, cliquer **Générer** une **clé admin** puis **Enregistrer** (sécurise vos données).
+3. Éditer le bloc `CONFIG` en haut de [`reservation.html`](reservation.html) (URL `…/exec`, nom du salon, prestations) et de [`confidentialite.html`](confidentialite.html) (nom, email, adresse).
+4. Ajouter le lien `https://<votre-user>.github.io/ciseaux/reservation.html` comme bouton **« Prendre rendez-vous »** sur votre fiche Google Business Profile.
+
+> ⚠️ **Avant de publier le formulaire, définissez une clé admin.** Voir [`SECURITY.md`](SECURITY.md) et [`apps-script/README.md`](apps-script/README.md).
+
+### RGPD
+
+L'application collecte nom, prénom, email, téléphone et (facultatif) date de naissance.
+Le **salon est responsable de traitement** ; **Google** (Drive/Sheets/Gmail) est sous-traitant ;
+le projet KuT n'héberge ni ne traite aucune donnée. Le modèle de politique de confidentialité
+[`confidentialite.html`](confidentialite.html) couvre finalités, base légale, durée de conservation
+et droits des personnes. Le formulaire exige le consentement à cette politique (case obligatoire)
+et propose un opt-in marketing **distinct**. La date de naissance est **facultative** (offre
+d'anniversaire uniquement).
 
 ## Synchro Google Drive
 

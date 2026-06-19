@@ -41,7 +41,10 @@ L'URL `…/exec` reste la même, inutile de la recoller.
 | `saveClients` | Écrase la Google Sheet avec la liste fournie (sauvegarde complète) |
 | `upsertClient` | Crée/met à jour **un seul** client (par `id`) — synchro incrémentale |
 | `deleteClient` | Supprime **un seul** client (par `id`) |
+| `loadOffres` | Renvoie les offres commerciales synchronisées |
+| `saveOffres` | Enregistre les offres (depuis la page Offres) — nécessaire à l'envoi auto des anniversaires |
 | `sendCampaign` | Envoie un email personnalisé aux clients opt-in (depuis votre Gmail) |
+| `sendBirthdays` | Envoie le mail d'anniversaire du jour (test/forçage manuel) |
 | `quota` | Renvoie le nombre d'emails encore envoyables aujourd'hui |
 | `unsub` | Page de désinscription (lien placé dans chaque email) |
 
@@ -50,7 +53,10 @@ avec un fichier `profil-magasin.json` et un classeur `base-clients`.
 
 ### Colonnes de la Sheet `Clients`
 
-`id | nom | tel | mail | points | visitsCount | offre | notes | optin | maj | visites | ledger`
+`id | nom | tel | mail | dob | points | visitsCount | offre | notes | optin | maj | visites | ledger`
+
+La colonne **`dob`** (date de naissance, format `AAAA-MM-JJ`) est renseignée depuis la fiche client.
+Elle sert à déclencher l'**offre et le mail d'anniversaire**.
 
 La colonne **`optin`** détermine qui reçoit les campagnes : mettez `oui` (ou cochez la case
 dans l'app) pour les clients ayant accepté les offres. Le lien de désinscription repasse
@@ -64,6 +70,32 @@ automatiquement cette valeur à `non`.
 > le nouveau code ajoute les colonnes `visitsCount` et `ledger`. Refaites **Déployer → Gérer les
 > déploiements → Modifier → Nouvelle version**. Au prochain « Envoyer vers Drive » depuis l'app,
 > la Sheet est réécrite avec les nouvelles colonnes (les données existantes sont conservées).
+
+## Mails d'anniversaire automatiques 🎂
+
+Le salon crée une **offre anniversaire** depuis la page **Offres** : il coche
+« 🎂 Offre anniversaire », choisit la **prestation (ou le groupe de prestations)**
+offerte et rédige l'**objet** et le **message** du mail. Tant que l'offre est
+**active**, le mail part automatiquement chaque année le jour de l'anniversaire
+à chaque client qui a :
+
+- une **date de naissance** renseignée dans sa fiche, **et**
+- accepté les **communications commerciales** (case opt-in).
+
+Chaque client ne reçoit le mail **qu'une seule fois par an**. Variables disponibles
+dans le message : `{prenom}`, `{nom}`, `{offre}`, `{prestations}`.
+
+### Activer l'envoi automatique (une seule fois)
+
+1. Mettre à jour le `Code.gs` (voir « Mise à jour du script » ci-dessus) et réautoriser.
+2. Dans l'éditeur Apps Script, sélectionner la fonction **`creerDeclencheurAnniversaire`**
+   dans la liste déroulante, puis cliquer **Exécuter**. Cela programme un déclencheur
+   quotidien (vers 9h) qui envoie les mails d'anniversaire du jour.
+3. (Optionnel) Pour tester immédiatement : appeler l'URL `…/exec?action=sendBirthdays`
+   ou exécuter la fonction `envoyerAnniversaires_` depuis l'éditeur.
+
+> Les offres sont synchronisées vers le Drive (`offres.json`) à chaque
+> enregistrement sur la page Offres : c'est ce fichier que lit l'envoi automatique.
 
 ## Quota d'envoi Gmail
 

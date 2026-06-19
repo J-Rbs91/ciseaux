@@ -27,6 +27,7 @@
     return {
       id: String(c.id || ('c_' + Date.now() + '_' + Math.floor(Math.random()*9999))),
       nom: String(c.nom || ''), tel: String(c.tel || ''), mail: String(c.mail || ''),
+      dob: String(c.dob || ''),
       notes: String(c.notes || ''), points: parseInt(c.points, 10) || 0,
       visitsCount: parseInt(c.visitsCount, 10) || 0, offre: String(c.offre || ''),
       optin: isOptin(c.optin), maj: String(c.maj || ''),

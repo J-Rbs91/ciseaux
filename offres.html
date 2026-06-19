@@ -59,6 +59,13 @@ main{padding:1.1rem;max-width:620px;margin:0 auto}
 .btn-outline{background:#EEF1EF;color:#EEF1EF;border:1.5px solid #c8d4da}
 .btn-outline:hover{background:#e4eaed}
 @media(min-width:580px){.overlay{align-items:center}.modal{border-radius:22px;margin:1rem}}
+.anniv-check{display:flex;align-items:center;gap:.5rem;font-size:.86rem;font-weight:700;color:#1C2321;text-transform:none;letter-spacing:0;cursor:pointer}
+.anniv-check input{width:auto;margin:0;transform:scale(1.15)}
+.presta-box{display:flex;flex-direction:column;gap:.15rem;max-height:150px;overflow-y:auto}
+.presta-box label{display:flex;align-items:center;gap:.5rem;font-size:.88rem;font-weight:500;color:#1C2321;text-transform:none;letter-spacing:0;cursor:pointer;padding:.3rem .2rem}
+.presta-box label input{width:auto;margin:0;accent-color:#A22C29;transform:scale(1.1)}
+.presta-box .pp-prix{margin-left:auto;color:#A22C29;font-weight:700;font-size:.82rem}
+.anniv-tag{background:#fdf3ef;color:#A22C29;font-size:.72rem;font-weight:800;border-radius:6px;padding:.18rem .5rem;border:1px solid #f0dbd5;display:inline-block;margin-top:.25rem}
 
 
 
@@ -290,6 +297,11 @@ html[data-theme="dark"] .toggle.on{background:#5E6572!important}
 html[data-theme="dark"] .toggle.off{background:#313A3F!important}
 html[data-theme="dark"] .toast{background:#0E1214!important;color:#E7ECEE!important}
 html[data-theme="dark"] .logo span{color:#E0635D!important}
+/* Offre anniversaire — mode sombre */
+html[data-theme="dark"] .anniv-check{color:#E7ECEE!important}
+html[data-theme="dark"] #annivBlock{background:#171C1F!important;border-color:#313A3F!important}
+html[data-theme="dark"] .presta-box label{color:#E7ECEE!important}
+html[data-theme="dark"] .anniv-tag{background:#2a1614!important;color:#E0635D!important;border-color:#3d484e!important}
 </style>
 <script>(function(){try{if(localStorage.getItem("kut-theme")==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();</script>
 </head>
@@ -316,6 +328,13 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
     <div class="field"><label>Réduction / avantage</label><input id="fReduction" type="text" placeholder="Ex : -20% ou 1 soin offert"></div>
     <div class="field"><label>Description</label><textarea id="fDesc" placeholder="Détails de l'offre…"></textarea></div>
     <div class="field"><label>Valable jusqu'au</label><input id="fDate" type="date"></div>
+    <div class="field" style="margin-bottom:.4rem"><label class="anniv-check"><input type="checkbox" id="fAnniv" onchange="toggleAnniv()"> 🎂 Offre anniversaire (envoi automatique du mail le jour de l'anniversaire)</label></div>
+    <div id="annivBlock" style="display:none;border:1.5px solid #f0dbd5;border-radius:12px;padding:.9rem 1rem;background:#fdf3ef;margin-bottom:.4rem">
+      <div class="field"><label>Prestation(s) concernée(s)</label><div id="fPrestaBox" class="presta-box"></div><div class="hint" style="font-size:.74rem;color:#A9B4C2;margin-top:.4rem">Sélectionnez la prestation ou le groupe de prestations offert(es) pour l'anniversaire. (Catalogue : page Prestations.)</div></div>
+      <div class="field"><label>Objet du mail</label><input id="fEmailSujet" type="text" placeholder="Joyeux anniversaire 🎂"></div>
+      <div class="field"><label>Message du mail</label><textarea id="fEmailCorps" placeholder="Bonjour {prenom}, toute l'équipe vous souhaite un joyeux anniversaire ! Profitez de {offre} sur {prestations}…"></textarea></div>
+      <div class="hint" style="font-size:.74rem;color:#A9B4C2">Variables : <strong>{prenom}</strong>, <strong>{nom}</strong>, <strong>{offre}</strong>, <strong>{prestations}</strong>. Le mail part automatiquement aux clients ayant une date de naissance renseignée <strong>et</strong> ayant accepté les communications commerciales. Un lien de désinscription est ajouté automatiquement.</div>
+    </div>
     <div class="row">
       <button class="btn btn-primary" onclick="saveOffre()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M18.71,7.21a1,1,0,0,0-1.42,0L9.84,14.67,6.71,11.53A1,1,0,1,0,5.29,13l3.84,3.84a1,1,0,0,0,1.42,0l8.16-8.16A1,1,0,0,0,18.71,7.21Z"></path></svg> Enregistrer</button>
       <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
@@ -324,10 +343,45 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
 </div>
 
 <script>
-var LS='offres-v1';
+var LS='offres-v1', LS_P='profil-magasin-v1', LS_S='sync-url-v1';
 var editId=null;
 function load(){try{return JSON.parse(localStorage.getItem(LS)||'[]');}catch(e){return[];}}
 function save(arr){localStorage.setItem(LS,JSON.stringify(arr));}
+function su(){return(localStorage.getItem(LS_S)||'').trim();}
+function escAttr(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function prestaList(){try{var p=JSON.parse(localStorage.getItem(LS_P)||'{}');return Array.isArray(p.prestations)?p.prestations:[];}catch(e){return[];}}
+function eur(n){n=Math.round((+n||0)*100)/100;return n.toLocaleString('fr-FR',{minimumFractionDigits:0,maximumFractionDigits:2})+' €';}
+
+function jsonp(base,params,cb){
+  var name='cb_'+Date.now()+'_'+Math.floor(Math.random()*1e6);
+  var s=document.createElement('script'),done=false;
+  var t=setTimeout(function(){if(!done)fin({ok:false,error:'délai dépassé'});},15000);
+  function fin(r){done=true;clearTimeout(t);try{delete window[name];}catch(e){window[name]=undefined;}if(s.parentNode)s.parentNode.removeChild(s);cb(r);}
+  window[name]=function(r){fin(r);};
+  s.onerror=function(){fin({ok:false,error:'réseau'});};
+  var q=[];for(var k in params)if(params.hasOwnProperty(k))q.push(encodeURIComponent(k)+'='+encodeURIComponent(params[k]));
+  q.push('callback='+name);
+  s.src=base+(base.indexOf('?')>=0?'&':'?')+q.join('&');
+  document.body.appendChild(s);
+}
+// Pousse les offres vers le Drive : indispensable pour l'envoi automatique des mails anniversaire.
+function pushOffres(){var url=su();if(!url)return;jsonp(url,{action:'saveOffres',data:JSON.stringify(load())},function(){});}
+
+function renderPrestaBox(selected){
+  selected=selected||[];
+  var box=document.getElementById('fPrestaBox'), list=prestaList();
+  if(!list.length){box.innerHTML='<div class="hint" style="font-size:.8rem;color:#A9B4C2">Aucune prestation enregistrée. Ajoutez-en sur la page <strong>Prestations</strong> pour pouvoir les sélectionner ici.</div>';return;}
+  box.innerHTML=list.map(function(p){
+    var on=selected.indexOf(p.nom)>=0;
+    return '<label><input type="checkbox" value="'+escAttr(p.nom)+'"'+(on?' checked':'')+'>'+escH(p.nom)+'<span class="pp-prix">'+escH(eur(p.prix))+'</span></label>';
+  }).join('');
+}
+function selectedPrestas(){
+  var out=[],boxes=document.querySelectorAll('#fPrestaBox input[type=checkbox]'),i;
+  for(i=0;i<boxes.length;i++){if(boxes[i].checked)out.push(boxes[i].value);}
+  return out;
+}
+function toggleAnniv(){document.getElementById('annivBlock').style.display=document.getElementById('fAnniv').checked?'block':'none';}
 
 function render(){
   var arr=load(), el=document.getElementById('liste');
@@ -341,7 +395,9 @@ function render(){
     var cls='offre-card'+(o.actif?'':' inactif');
     var date=o.validite?'Valable jusqu\'au '+o.validite:'';
     var nom=escH(o.nom||'Sans nom'), reduc=escH(o.reduction||''), desc=escH(o.desc||'');
-    return '<div class="'+cls+'" id="card-'+o.id+'">'+'<div class="offre-badge">'+reduc+'</div>'+'<div class="offre-body"><div class="offre-nom">'+nom+'</div>'+(desc?'<div class="offre-desc">'+desc+'</div>':'')+(date?'<div class="offre-date">'+escH(date)+'</div>':'')+'</div>'+'<div class="offre-actions">'+'<button class="toggle '+(o.actif?'on':'off')+'" title="Activer/désactiver" onclick="toggleActif(\''+o.id+'\')" aria-label="Activer/désactiver"></button>'+'<button class="btn-ic" onclick="editOffre(\''+o.id+'\')" title="Modifier"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M22,7.24a1,1,0,0,0-.29-.71L17.47,2.29A1,1,0,0,0,16.76,2a1,1,0,0,0-.71.29L13.22,5.12h0L2.29,16.05a1,1,0,0,0-.29.71V21a1,1,0,0,0,1,1H7.24A1,1,0,0,0,8,21.71L18.87,10.78h0L21.71,8a1.19,1.19,0,0,0,.22-.33,1,1,0,0,0,0-.24.7.7,0,0,0,0-.14ZM6.83,20H4V17.17l9.93-9.93,2.83,2.83ZM18.17,8.66,15.34,5.83l1.42-1.41,2.82,2.82Z"></path></svg></button>'+'<button class="btn-ic del" onclick="delOffre(\''+o.id+'\')" title="Supprimer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M10,18a1,1,0,0,0,1-1V11a1,1,0,0,0-2,0v6A1,1,0,0,0,10,18ZM20,6H16V5a3,3,0,0,0-3-3H11A3,3,0,0,0,8,5V6H4A1,1,0,0,0,4,8H5V19a3,3,0,0,0,3,3h8a3,3,0,0,0,3-3V8h1a1,1,0,0,0,0-2ZM10,5a1,1,0,0,1,1-1h2a1,1,0,0,1,1,1V6H10Zm7,14a1,1,0,0,1-1,1H8a1,1,0,0,1-1-1V8H17Zm-3-1a1,1,0,0,0,1-1V11a1,1,0,0,0-2,0v6A1,1,0,0,0,14,18Z"></path></svg></button>'+'</div></div>';
+    var annivTag='';
+    if(o.anniv){var pr=Array.isArray(o.prestations)?o.prestations:[];var prTxt=pr.length?' · '+pr.map(escH).join(', '):'';annivTag='<div class="anniv-tag">🎂 Anniversaire'+(o.actif?' · envoi auto':'')+prTxt+'</div>';}
+    return '<div class="'+cls+'" id="card-'+o.id+'">'+'<div class="offre-badge">'+reduc+'</div>'+'<div class="offre-body"><div class="offre-nom">'+nom+'</div>'+(desc?'<div class="offre-desc">'+desc+'</div>':'')+(date?'<div class="offre-date">'+escH(date)+'</div>':'')+annivTag+'</div>'+'<div class="offre-actions">'+'<button class="toggle '+(o.actif?'on':'off')+'" title="Activer/désactiver" onclick="toggleActif(\''+o.id+'\')" aria-label="Activer/désactiver"></button>'+'<button class="btn-ic" onclick="editOffre(\''+o.id+'\')" title="Modifier"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M22,7.24a1,1,0,0,0-.29-.71L17.47,2.29A1,1,0,0,0,16.76,2a1,1,0,0,0-.71.29L13.22,5.12h0L2.29,16.05a1,1,0,0,0-.29.71V21a1,1,0,0,0,1,1H7.24A1,1,0,0,0,8,21.71L18.87,10.78h0L21.71,8a1.19,1.19,0,0,0,.22-.33,1,1,0,0,0,0-.24.7.7,0,0,0,0-.14ZM6.83,20H4V17.17l9.93-9.93,2.83,2.83ZM18.17,8.66,15.34,5.83l1.42-1.41,2.82,2.82Z"></path></svg></button>'+'<button class="btn-ic del" onclick="delOffre(\''+o.id+'\')" title="Supprimer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M10,18a1,1,0,0,0,1-1V11a1,1,0,0,0-2,0v6A1,1,0,0,0,10,18ZM20,6H16V5a3,3,0,0,0-3-3H11A3,3,0,0,0,8,5V6H4A1,1,0,0,0,4,8H5V19a3,3,0,0,0,3,3h8a3,3,0,0,0,3-3V8h1a1,1,0,0,0,0-2ZM10,5a1,1,0,0,1,1-1h2a1,1,0,0,1,1,1V6H10Zm7,14a1,1,0,0,1-1,1H8a1,1,0,0,1-1-1V8H17Zm-3-1a1,1,0,0,0,1-1V11a1,1,0,0,0-2,0v6A1,1,0,0,0,14,18Z"></path></svg></button>'+'</div></div>';
   }).join('');
 }
 
@@ -355,13 +411,22 @@ function openModal(id){
     document.getElementById('fReduction').value=o.reduction||'';
     document.getElementById('fDesc').value=o.desc||'';
     document.getElementById('fDate').value=o.validite||'';
+    document.getElementById('fAnniv').checked=!!o.anniv;
+    renderPrestaBox(Array.isArray(o.prestations)?o.prestations:[]);
+    document.getElementById('fEmailSujet').value=o.emailSujet||'';
+    document.getElementById('fEmailCorps').value=o.emailCorps||'';
   }else{
     document.getElementById('modalTitle').textContent='Nouvelle offre';
     document.getElementById('fNom').value='';
     document.getElementById('fReduction').value='';
     document.getElementById('fDesc').value='';
     document.getElementById('fDate').value='';
+    document.getElementById('fAnniv').checked=false;
+    renderPrestaBox([]);
+    document.getElementById('fEmailSujet').value='';
+    document.getElementById('fEmailCorps').value='';
   }
+  toggleAnniv();
   document.getElementById('overlay').classList.add('open');
   document.getElementById('fNom').focus();
 }
@@ -372,9 +437,13 @@ function saveOffre(){
   var nom=(document.getElementById('fNom').value||'').trim();
   if(!nom){alert('Le nom de l\'offre est requis.');return;}
   var arr=load();
-  if(editId){var idx=arr.findIndex(function(x){return x.id===editId;});if(idx>=0){arr[idx].nom=nom;arr[idx].reduction=(document.getElementById('fReduction').value||'').trim();arr[idx].desc=(document.getElementById('fDesc').value||'').trim();arr[idx].validite=document.getElementById('fDate').value||'';arr[idx].maj=new Date().toISOString();}}
-  else{arr.push({id:'o_'+Date.now()+'_'+Math.floor(Math.random()*1e4),nom:nom,reduction:(document.getElementById('fReduction').value||'').trim(),desc:(document.getElementById('fDesc').value||'').trim(),validite:document.getElementById('fDate').value||'',actif:true,createdAt:new Date().toISOString()});}
-  save(arr);closeModal();render();
+  var anniv=document.getElementById('fAnniv').checked;
+  var prestations=anniv?selectedPrestas():[];
+  var emailSujet=anniv?(document.getElementById('fEmailSujet').value||'').trim():'';
+  var emailCorps=anniv?(document.getElementById('fEmailCorps').value||'').trim():'';
+  if(editId){var idx=arr.findIndex(function(x){return x.id===editId;});if(idx>=0){arr[idx].nom=nom;arr[idx].reduction=(document.getElementById('fReduction').value||'').trim();arr[idx].desc=(document.getElementById('fDesc').value||'').trim();arr[idx].validite=document.getElementById('fDate').value||'';arr[idx].anniv=anniv;arr[idx].prestations=prestations;arr[idx].emailSujet=emailSujet;arr[idx].emailCorps=emailCorps;arr[idx].maj=new Date().toISOString();}}
+  else{arr.push({id:'o_'+Date.now()+'_'+Math.floor(Math.random()*1e4),nom:nom,reduction:(document.getElementById('fReduction').value||'').trim(),desc:(document.getElementById('fDesc').value||'').trim(),validite:document.getElementById('fDate').value||'',anniv:anniv,prestations:prestations,emailSujet:emailSujet,emailCorps:emailCorps,actif:true,createdAt:new Date().toISOString()});}
+  save(arr);pushOffres();closeModal();render();
 }
 
 function editOffre(id){openModal(id);}
@@ -382,13 +451,13 @@ function editOffre(id){openModal(id);}
 function delOffre(id){
   if(!confirm('Supprimer cette offre ?'))return;
   var arr=load().filter(function(o){return o.id!==id;});
-  save(arr);render();
+  save(arr);pushOffres();render();
 }
 
 function toggleActif(id){
   var arr=load(), o=arr.find(function(x){return x.id===id;});
   if(o)o.actif=!o.actif;
-  save(arr);render();
+  save(arr);pushOffres();render();
 }
 
 render();

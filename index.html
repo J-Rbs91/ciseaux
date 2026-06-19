@@ -401,7 +401,7 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
         <input id="fAdminKey" type="text" placeholder="Clé secrète protégeant vos données" style="flex:1">
         <button class="btn btn-outline" type="button" onclick="genKey()" style="white-space:nowrap;width:auto">Générer</button>
       </div>
-      <div class="hint">Protège votre base : sans elle, l'URL ci-dessus donne accès à tout si elle fuite. Indispensable pour ouvrir un <a href="reservation.html" target="_blank" rel="noopener">formulaire de réservation public</a> sans risque. Collez la <strong>même</strong> clé sur chaque appareil.</div>
+      <div class="hint">Protège votre base : sans elle, l'URL ci-dessus donne accès à tout si elle fuite. Indispensable pour ouvrir un <a href="reservation.html" target="_blank" rel="noopener">formulaire de réservation public</a> sans risque. Utilisez la <strong>même</strong> clé sur chaque appareil : elle est incluse dans la <strong>sauvegarde fichier</strong> ci-dessous — exportez ici, restaurez sur l'autre appareil, et la clé (avec l'URL) y est rétablie.</div>
       <div class="status" id="keySt"></div>
     </div>
 
@@ -508,6 +508,11 @@ function doExport(){
   bundle.caisseFondCible=localStorage.getItem('cloture-fond-cible-v1')||'';
   try{bundle.fideliteConfig=JSON.parse(localStorage.getItem('fidelite-config-v1')||'{}');}catch(e){}
   try{bundle.offres=JSON.parse(localStorage.getItem('offres-v1')||'[]');}catch(e){bundle.offres=[];}
+  // Paramètres de connexion/sécurité : permettent à une restauration de rendre un
+  // nouvel appareil opérationnel sans recoller l'URL ni la clé admin manuellement.
+  bundle.syncUrl=su();
+  bundle.adminKey=ak();
+  try{bundle.crmPolicy=JSON.parse(localStorage.getItem('crm-policy-v1')||'{}');}catch(e){}
   var nom=(p.nom||'monsalon').toLowerCase().replace(/[^a-z0-9]+/g,'-');
   var date=new Date().toISOString().slice(0,10);
   var blob=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'});
@@ -530,7 +535,10 @@ function doImport(e){
       if(typeof b.caisseFondCible==='string'&&b.caisseFondCible!=='')localStorage.setItem('cloture-fond-cible-v1',b.caisseFondCible);
       if(b.fideliteConfig)localStorage.setItem('fidelite-config-v1',JSON.stringify(b.fideliteConfig));
       if(Array.isArray(b.offres))localStorage.setItem('offres-v1',JSON.stringify(b.offres));
-      fillForm(lp());renderHeader();setSt('fileSt','ok','✓ Restauration réussie.');
+      if(typeof b.syncUrl==='string'&&b.syncUrl)localStorage.setItem(LS_S,b.syncUrl);
+      if(typeof b.adminKey==='string'&&b.adminKey)localStorage.setItem(LS_K,b.adminKey);
+      if(b.crmPolicy&&typeof b.crmPolicy==='object')localStorage.setItem('crm-policy-v1',JSON.stringify(b.crmPolicy));
+      fillForm(lp());renderHeader();setSt('fileSt','ok','✓ Restauration réussie'+((b.adminKey||b.syncUrl)?' (synchro et clé admin restaurées).':'.'));
     }catch(err){setSt('fileSt','err','Fichier illisible.');}
   };
   r.readAsText(file);e.target.value='';

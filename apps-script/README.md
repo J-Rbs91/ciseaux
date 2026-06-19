@@ -140,7 +140,9 @@ clients, suppression, campagnes…) : seules `createBooking` et `securite` reste
 1. Dans l'app, ouvrir **Mon salon**, cliquer **Générer** à côté de « Clé admin », puis
    **Enregistrer**. L'app enregistre la clé sur le script (action `claimKey`, qui n'aboutit
    que si aucune clé n'existe encore).
-2. Coller la **même clé** dans **Mon salon** sur chaque appareil utilisé par le salon.
+2. Coller la **même clé** dans **Mon salon** sur chaque appareil utilisé par le salon
+   — ou plus simple : **exporter la sauvegarde fichier** depuis le 1ᵉʳ appareil et la
+   **restaurer** sur les autres (l'URL `…/exec` et la clé admin y sont incluses).
 3. (Alternative experte) Exécuter `genererCleAdmin` depuis l'éditeur Apps Script : la clé
    s'affiche dans les **journaux**, à recopier dans l'app.
 

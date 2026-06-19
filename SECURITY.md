@@ -37,6 +37,9 @@ Le formulaire `reservation.html` est conçu pour être exposé publiquement :
   et utilisez la **même clé** sur tous vos appareils.
 - Les données du `localStorage` ne sont **pas chiffrées**. Sur un poste
   partagé, utilisez la sauvegarde fichier et videz les données après usage.
+- La **sauvegarde fichier `.json`** contient désormais l'URL `…/exec` et la
+  **clé admin** (pour qu'une restauration rende un nouvel appareil opérationnel
+  sans ressaisie). Conservez ce fichier en lieu sûr et ne le partagez pas.
 - Le RGPD s'applique aux données clients que vous saisissez : informez vos
   clients (voir `confidentialite.html`), ne collectez que le nécessaire (la date
   de naissance reste facultative) et préférez un compte **Google Workspace** (avec

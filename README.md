@@ -11,7 +11,7 @@ Outil open source pour salons de coiffure — CRM clients, programme de fidélit
 - **✂️ Prestations & tarifs** — catalogue de prestations (nom + tarif) géré depuis la **page dédiée Prestations** du hub, utilisé pour cocher les passages et calculer les stats
 - **📊 Statistiques** — tableau de bord calculé à partir des passages : **chiffre d'affaires, panier moyen, nombre de passages et clients servis** (par mois en cours, mois précédent, 12 mois glissants ou tout l'historique), **évolution du CA sur 12 mois**, **prestations les plus rentables**, **meilleurs clients** et **clients en sommeil** (aucune nouvelle saisie : tout est dérivé des données existantes)
 - **💰 Caisse** — clôture journalière : comptage pièces/billets + paiements électroniques, réserve de monnaie, fond de caisse cible, calcul d'écart vs logiciel de caisse, historique 15 jours, report de la veille
-- **✉️ Campagnes** — envoi d'offres par email depuis votre propre Gmail, aux clients opt-in
+- **✉️ Campagnes** — envoi d'offres par email depuis votre propre Gmail, aux clients opt-in, avec **segmentation** des destinataires : tous, récompense disponible, à relancer, **clients fidèles** (nombre de passages), **clients VIP** (panier moyen) ou **ayant pris une prestation** donnée
 - **☁️ Synchro Drive** — sauvegarde automatique multi-appareils via votre propre Google Drive
 - **💾 Sauvegarde fichier** — export/import `.json` local
 

@@ -182,6 +182,9 @@ function envoyerCampagne_(p) {
   var rules   = [];
   try { if (p.rewardRules) rules = JSON.parse(p.rewardRules) || []; } catch(e) {}
   var winMult = parseFloat(p.winbackMult) || 2;
+  var minVisits = parseInt(p.minVisits || '0', 10) || 0;
+  var minBasket = parseFloat(p.minBasket) || 0;
+  var prestaName = String(p.prestaName == null ? '' : p.prestaName).trim().toLowerCase();
   var baseUrl = ScriptApp.getService().getUrl() || (p.base || '');
   var logoUrl = p.logoUrl || '';
 
@@ -200,6 +203,9 @@ function envoyerCampagne_(p) {
       return (Number(c.points) || 0) >= seuil;
     }
     if (segment === 'winback') return estEnRetard_(c, winMult);
+    if (segment === 'freq') return nbPassages_(c) >= minVisits;
+    if (segment === 'vip') return panierMoyen_(c) >= minBasket;
+    if (segment === 'presta') return aPrisPresta_(c, prestaName);
     return true;
   });
 
@@ -235,6 +241,37 @@ function estEnRetard_(c, mult) {
   var avg = gaps.reduce(function(a, b){ return a + b; }, 0) / gaps.length;
   if (!avg) return false;
   return (Date.now() - new Date(v[v.length - 1].date)) / 86400000 > (mult || 2) * avg;
+}
+
+// Nombre de passages enregistrés (visites avec une date).
+function nbPassages_(c) {
+  var v = (c.visites && c.visites.length ? c.visites : []).filter(function(x){ return x && x.date; });
+  return v.length;
+}
+
+// Panier moyen : moyenne des montants > 0 des passages.
+function panierMoyen_(c) {
+  var v = (c.visites && c.visites.length ? c.visites : []), sum = 0, n = 0;
+  for (var i = 0; i < v.length; i++) {
+    var m = Number(v[i] && v[i].montant) || 0;
+    if (m > 0) { sum += m; n++; }
+  }
+  return n ? sum / n : 0;
+}
+
+// Le client a-t-il déjà pris une prestation portant ce nom (insensible à la casse) ?
+function aPrisPresta_(c, name) {
+  if (!name) return false;
+  var v = (c.visites && c.visites.length ? c.visites : []);
+  for (var i = 0; i < v.length; i++) {
+    var it = v[i] && v[i].items;
+    if (it && it.length) {
+      for (var j = 0; j < it.length; j++) {
+        if (String((it[j] && it[j].nom) || '').trim().toLowerCase() === name) return true;
+      }
+    }
+  }
+  return false;
 }
 
 function estOptin_(v) {

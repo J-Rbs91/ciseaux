@@ -127,7 +127,10 @@
     } catch (e) {}
     if (!su()) return;
     try {
-      document.addEventListener('visibilitychange', function () { if (!document.hidden) syncNow(); });
+      document.addEventListener('visibilitychange', function () {
+        if (document.hidden) flush();   // arrière-plan / fermeture : on pousse la file (qui persiste de toute façon en local)
+        else syncNow();                 // retour au premier plan : resynchro complète
+      });
       window.addEventListener('focus', syncNow);
     } catch (e) {}
     if (autoTimer) clearInterval(autoTimer);

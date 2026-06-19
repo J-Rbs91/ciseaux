@@ -391,11 +391,12 @@ html[data-theme="dark"] .tl-tag{background:#171C1F!important;border-color:#313A3
 
 <div class="overlay" id="ovInact" onclick="bkInact(event)">
   <div class="modal">
-    <div class="mh"><h2>Clients inactifs</h2><button class="xbtn" onclick="closeInact()">&times;</button></div>
-    <div class="field"><label>Inactif depuis plus de (mois)</label><input id="inactMonths" type="number" min="1" step="1" oninput="renderInactList()"><div style="font-size:.76rem;color:#A9B4C2;margin-top:.35rem">Aucune visite ni mise à jour depuis ce délai. La suppression est définitive (RGPD) : décoche ceux à garder, puis confirme.</div></div>
+    <div class="mh"><h2>Clients inactifs &amp; rétention</h2><button class="xbtn" onclick="closeInact()">&times;</button></div>
+    <div class="field"><label class="check"><input type="checkbox" id="autoPurge" onchange="onPolChange()"> Supprimer automatiquement les clients inactifs</label><div style="font-size:.76rem;color:#A9B4C2;margin-top:.35rem">Conformité RGPD : un client sans aucune visite ni mise à jour depuis le délai ci-dessous est <strong>supprimé automatiquement</strong> à l'ouverture de l'application (en local et sur le Drive).</div></div>
+    <div class="field"><label>Délai avant suppression (mois)</label><input id="inactMonths" type="number" min="1" step="1" oninput="onPolChange()"><div style="font-size:.76rem;color:#A9B4C2;margin-top:.35rem">Par défaut <strong>24 mois (2 ans)</strong> après la dernière activité.</div></div>
     <div id="inactList"></div>
     <div class="row" style="margin-top:1rem">
-      <button class="btn btn-d" onclick="purgeSelected()">Supprimer la sélection</button>
+      <button class="btn btn-d" onclick="purgeSelected()" id="purgeBtn">Supprimer la sélection</button>
       <button class="btn btn-o" onclick="closeInact()">Fermer</button>
     </div>
   </div>
@@ -508,8 +509,8 @@ function pullClients(){
 }
 
 var LS_POL='crm-policy-v1';
-function pol(){try{return Object.assign({purgeMonths:12},JSON.parse(localStorage.getItem(LS_POL)||'{}'));}catch(e){return {purgeMonths:12};}}
-function polSet(o){localStorage.setItem(LS_POL,JSON.stringify(o));}
+function pol(){try{return Object.assign({purgeMonths:24,autoPurge:true},JSON.parse(localStorage.getItem(LS_POL)||'{}'));}catch(e){return {purgeMonths:24,autoPurge:true};}}
+function polSet(o){localStorage.setItem(LS_POL,JSON.stringify(Object.assign(pol(),o)));}
 function lastActivity(c){
   var ts=0;
   if(Array.isArray(c.visites))c.visites.forEach(function(v){if(v&&v.date){var t=+new Date(v.date);if(t>ts)ts=t;}});
@@ -523,15 +524,30 @@ function inactiveList(months){
 }
 function renderInactBanner(){
   var b=document.getElementById('inactBanner');if(!b)return;
-  var m=pol().purgeMonths,n=inactiveList(m).length;
-  if(n>0){b.style.display='';b.innerHTML='🗑 '+n+' client'+(n>1?'s':'')+' inactif'+(n>1?'s':'')+' depuis plus de '+m+' mois — <strong>Revoir</strong>';}
+  var p=pol(),n=inactiveList(p.purgeMonths).length;
+  // En mode automatique, les inactifs sont supprimés au chargement : pas de bannière de relance.
+  if(!p.autoPurge && n>0){b.style.display='';b.innerHTML='🗑 '+n+' client'+(n>1?'s':'')+' inactif'+(n>1?'s':'')+' depuis plus de '+p.purgeMonths+' mois — <strong>Revoir</strong>';}
   else b.style.display='none';
 }
-function openInact(){document.getElementById('inactMonths').value=pol().purgeMonths;renderInactList();document.getElementById('ovInact').classList.add('open');}
+function openInact(){var p=pol();document.getElementById('inactMonths').value=p.purgeMonths;document.getElementById('autoPurge').checked=!!p.autoPurge;renderInactList();document.getElementById('ovInact').classList.add('open');}
+// Changement de réglage (toggle auto ou délai) : on enregistre, et si l'auto est actif on purge tout de suite.
+function onPolChange(){
+  var m=parseInt(document.getElementById('inactMonths').value,10)||24;
+  var auto=document.getElementById('autoPurge').checked;
+  polSet({purgeMonths:m,autoPurge:auto});
+  if(auto&&window.DB&&DB.autoPurge){var removed=DB.autoPurge();if(removed&&removed.length)render();}
+  renderInactBanner();renderInactList();
+}
 function renderInactList(){
-  var m=parseInt(document.getElementById('inactMonths').value,10)||12;
-  polSet({purgeMonths:m});renderInactBanner();
-  var list=inactiveList(m),box=document.getElementById('inactList');
+  var p=pol(),m=parseInt(document.getElementById('inactMonths').value,10)||p.purgeMonths;
+  var box=document.getElementById('inactList'),btn=document.getElementById('purgeBtn');
+  var list=inactiveList(m);
+  if(p.autoPurge){
+    if(btn)btn.style.display='none';
+    box.innerHTML='<div style="font-size:.82rem;color:#5E6572;padding:.6rem 0">✅ Suppression automatique active : les clients sans activité depuis <strong>'+m+' mois</strong> sont supprimés à chaque ouverture de l\'application.'+(list.length?' '+list.length+' concerné(s) au prochain chargement.':' Aucun client concerné actuellement. 👍')+'</div>';
+    return;
+  }
+  if(btn)btn.style.display='';
   if(!list.length){box.innerHTML='<div style="font-size:.86rem;color:#5E6572;padding:.6rem 0">Aucun client inactif depuis plus de '+m+' mois. 👍</div>';return;}
   box.innerHTML='<div style="font-size:.78rem;color:#A9B4C2;margin:.2rem 0 .4rem">'+list.length+' client(s) — décoche ceux à conserver :</div>'+list.map(function(c){
     var d=lastActivity(c)?new Date(lastActivity(c)).toLocaleDateString('fr-FR'):'—';
@@ -638,7 +654,8 @@ function close_(){document.getElementById('ov').classList.remove('open');eid=nul
 function bkClose(e){if(e.target===document.getElementById('ov'))close_();}
 
 if(su())document.getElementById('syncRow').style.display='flex';
-if(window.DB){DB.onStatus(function(msg,cls){syncMsg(cls,msg);});DB.boot(function(){render();DB.startAutoSync(render);});}else{render();}
+function notifyPurged(){var n=(window.DB&&DB.takePurged)?DB.takePurged():0;if(n>0)syncMsg('ok','🗑 '+n+' client'+(n>1?'s':'')+' inactif'+(n>1?'s':'')+' supprimé'+(n>1?'s':'')+' automatiquement (rétention '+pol().purgeMonths+' mois).');}
+if(window.DB){DB.onStatus(function(msg,cls){syncMsg(cls,msg);});DB.boot(function(){render();notifyPurged();DB.startAutoSync(render);});}else{render();}
 </script>
 <script>
 (function(){

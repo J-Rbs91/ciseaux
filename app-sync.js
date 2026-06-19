@@ -35,6 +35,39 @@
     };
   }
 
+  // ── Rétention / suppression automatique des clients inactifs ──
+  // Politique partagée avec la page Clients (clé localStorage 'crm-policy-v1').
+  // Par défaut : suppression automatique 24 mois (2 ans) après la dernière activité.
+  var LS_POL = 'crm-policy-v1', purgedCount = 0;
+  function policy(){
+    try { return Object.assign({ purgeMonths: 24, autoPurge: true }, JSON.parse(localStorage.getItem(LS_POL) || '{}')); }
+    catch (e) { return { purgeMonths: 24, autoPurge: true }; }
+  }
+  function lastActivity(c){
+    var ts = 0;
+    if (Array.isArray(c.visites)) c.visites.forEach(function (v) { if (v && v.date) { var t = +new Date(v.date); if (t > ts) ts = t; } });
+    if (c.maj) { var m = +new Date(c.maj); if (m > ts) ts = m; }
+    if (!ts) { var mm = String(c.id || '').match(/^c_(\d+)_/); if (mm) ts = +mm[1]; }
+    return ts;
+  }
+  // Supprime (localement + sur le Drive) les clients sans activité depuis le délai configuré.
+  // Renvoie la liste des id supprimés. Sûr : ne touche jamais un client non datable.
+  function autoPurge(){
+    var pol = policy();
+    if (!pol.autoPurge) return [];
+    var m = parseInt(pol.purgeMonths, 10) || 24;
+    if (m < 1) return [];
+    var cut = Date.now() - m * 30.44 * 86400000;
+    var keep = [], removed = [];
+    lc().forEach(function (c) { var t = lastActivity(c); if (t && t < cut) removed.push(c.id); else keep.push(c); });
+    if (removed.length) {
+      sc(keep);
+      removed.forEach(function (id) { remove(id); });   // file de suppression + Drive si configuré
+      purgedCount += removed.length;
+    }
+    return removed;
+  }
+
   function jget(key){ try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) { return []; } }
   function jset(key, a){ localStorage.setItem(key, JSON.stringify(a)); }
   function addId(key, id){ var a = jget(key); if (a.indexOf(id) < 0) { a.push(id); jset(key, a); } }
@@ -123,13 +156,14 @@
       if (r && r.ok) {
         var a = []; try { a = JSON.parse(r.data || '[]'); } catch (e) {}
         sc(a.filter(function (c) { return c && (c.id || c.nom); }).map(normClient));
+        autoPurge();   // applique la rétention après chaque récupération (converge le Drive)
         statusSynced(); if (cb) cb(true);
       } else { status('⚠ hors-ligne (données locales)', 'err'); if (cb) cb(false); }
     });
   }
 
   function boot(cb){
-    if (!su()) { if (cb) cb(false); return; }    // synchro non configurée -> cache local
+    if (!su()) { autoPurge(); if (cb) cb(false); return; }   // local seul : on applique quand même la rétention
     flush(function () { pull(function (ok) { if (cb) cb(ok); }); });
   }
 
@@ -169,6 +203,8 @@
     su: su, configured: function () { return !!su(); },
     pending: function () { return jget(LS_DIRTY).length + jget(LS_DEL).length; },
     onStatus: function (fn) { statusCb = fn; },
+    autoPurge: autoPurge,
+    takePurged: function () { var n = purgedCount; purgedCount = 0; return n; },
     _normClient: normClient
   };
 })(window);

@@ -60,6 +60,11 @@ et droits des personnes. Le formulaire exige le consentement à cette politique 
 et propose un opt-in marketing **distinct**. La date de naissance est **facultative** (offre
 d'anniversaire uniquement).
 
+**Rétention / suppression automatique** : un client sans aucune visite ni mise à jour depuis un
+délai configurable (par défaut **2 ans**) est **supprimé automatiquement** (en local et sur le
+Drive) à l'ouverture de l'application. Le délai et l'activation se règlent dans **Clients →
+Inactifs & rétention**.
+
 ## Synchro Google Drive
 
 Voir [`apps-script/README.md`](apps-script/README.md) ou la page **docs/sync-drive/** dans l'application.

@@ -7,6 +7,9 @@
 <title>Prendre rendez-vous</title>
 <style>
   :root{--rose:#b87c6e;--rose-d:#9c5f50;--bg:#fdf3ef;--card:#fff;--txt:#3d2b27;--muted:#9a8077;--line:#f0dbd5;--err:#A22C29}
+  @media (prefers-color-scheme: dark){
+    :root{--rose:#c98e80;--rose-d:#d9a596;--bg:#17120f;--card:#221b18;--txt:#ece3df;--muted:#a8978d;--line:#3a2e29;--err:#e0635d}
+  }
   *{box-sizing:border-box}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--txt);line-height:1.5}
   .wrap{max-width:540px;margin:0 auto;padding:24px 18px 48px}
@@ -15,7 +18,7 @@
   .sub{color:var(--muted);font-size:.9rem;margin:0 0 1.4rem}
   label{display:block;font-weight:600;font-size:.86rem;margin:.9rem 0 .3rem}
   .req:after{content:" *";color:var(--rose-d)}
-  input,select,textarea{width:100%;padding:.6rem .7rem;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff;color:var(--txt)}
+  input,select,textarea{width:100%;padding:.6rem .7rem;border:1px solid var(--line);border-radius:10px;font:inherit;background:var(--card);color:var(--txt)}
   input:focus,select,textarea:focus{outline:2px solid var(--rose);outline-offset:-1px}
   textarea{resize:vertical;min-height:64px}
   .hint{font-size:.76rem;color:var(--muted);margin-top:.3rem}

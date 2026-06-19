@@ -532,7 +532,9 @@ function renderInactBanner(){
 function openInact(){var p=pol();document.getElementById('inactMonths').value=p.purgeMonths;document.getElementById('autoPurge').checked=!!p.autoPurge;renderInactList();document.getElementById('ovInact').classList.add('open');}
 // Changement de réglage (toggle auto ou délai) : on enregistre, et si l'auto est actif on purge tout de suite.
 function onPolChange(){
-  var m=parseInt(document.getElementById('inactMonths').value,10)||24;
+  var f=document.getElementById('inactMonths');
+  var m=Math.max(1,Math.floor(parseInt(f.value,10)||24));
+  f.value=m;                       // force un entier de mois >= 1
   var auto=document.getElementById('autoPurge').checked;
   polSet({purgeMonths:m,autoPurge:auto});
   if(auto&&window.DB&&DB.autoPurge){var removed=DB.autoPurge();if(removed&&removed.length)render();}

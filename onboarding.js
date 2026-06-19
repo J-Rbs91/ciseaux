@@ -267,7 +267,37 @@
     // aucun champ ne peut prendre le focus → pas de clavier mobile intempestif.
     document.documentElement.classList.add("kt-touring");
     document.addEventListener("focusin", guardFocus, true);
+    lockFields();
     blurActive();
+  }
+
+  // Verrouille tous les champs en lecture seule AVANT que les formulaires
+  // présentés ne tentent de se focus : un champ readonly n'ouvre jamais le
+  // clavier mobile. Restauré à la fin du tour.
+  var lockedFields = [];
+  function lockFields() {
+    lockedFields = [];
+    var nodes = document.querySelectorAll("input, textarea");
+    for (var i = 0; i < nodes.length; i++) {
+      var n = nodes[i];
+      var t = (n.type || "").toLowerCase();
+      if (t === "checkbox" || t === "radio" || t === "file" || t === "hidden")
+        continue;
+      if (n.readOnly) continue; // déjà readonly : on n'y touche pas
+      n.readOnly = true;
+      n.setAttribute("data-kt-locked", "1");
+      n.setAttribute("inputmode", "none");
+      lockedFields.push(n);
+    }
+  }
+  function unlockFields() {
+    for (var i = 0; i < lockedFields.length; i++) {
+      var n = lockedFields[i];
+      n.readOnly = false;
+      n.removeAttribute("data-kt-locked");
+      n.removeAttribute("inputmode");
+    }
+    lockedFields = [];
   }
 
   // Empêche tout champ de garder le focus pendant le tour.
@@ -306,6 +336,7 @@
     window.removeEventListener("scroll", reposition, { capture: true });
     document.removeEventListener("keydown", onKey, true);
     document.removeEventListener("focusin", guardFocus, true);
+    unlockFields();
     document.documentElement.classList.remove("kt-touring");
     if (ov && ov.parentNode) ov.parentNode.removeChild(ov);
     ov = spot = pop = curEl = null;

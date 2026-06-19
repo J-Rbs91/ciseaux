@@ -523,7 +523,7 @@ function close_(){document.getElementById('ov').classList.remove('open');eid=nul
 function bkClose(e){if(e.target===document.getElementById('ov'))close_();}
 
 if(su())document.getElementById('syncRow').style.display='flex';
-if(window.DB){DB.onStatus(function(msg,cls){syncMsg(cls,msg);});DB.boot(function(){render();});}else{render();}
+if(window.DB){DB.onStatus(function(msg,cls){syncMsg(cls,msg);});DB.boot(function(){render();DB.startAutoSync(render);});}else{render();}
 </script>
 <script>
 (function(){

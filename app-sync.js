@@ -60,8 +60,8 @@
     var url = su(); if (!url) return;            // pas de synchro -> cache local seul
     addId(LS_DIRTY, c.id);
     jsonp(url, { action:'upsertClient', client: JSON.stringify(c) }, function (r) {
-      if (r && r.ok) { rmId(LS_DIRTY, c.id); status('✓ synchronisé', 'ok'); }
-      else status('⚠ hors-ligne — renvoi automatique', 'err');
+      if (r && r.ok) rmId(LS_DIRTY, c.id);
+      statusSynced();
     });
   }
   function remove(id){
@@ -91,14 +91,15 @@
     })();
   }
 
-  function pull(cb){
+  function statusSynced(){ var p = jget(LS_DIRTY).length + jget(LS_DEL).length; if (p) status('⚠ ' + p + ' modif. en attente', 'err'); else status('✓ à jour', 'ok'); }
+  function pull(cb, quiet){
     var url = su(); if (!url) { if (cb) cb(false); return; }
-    status('⏳ synchro…', 'work');
+    if (!quiet) status('⏳ synchro…', 'work');
     jsonp(url, { action:'loadClients' }, function (r) {
       if (r && r.ok) {
         var a = []; try { a = JSON.parse(r.data || '[]'); } catch (e) {}
         sc(a.filter(function (c) { return c && (c.id || c.nom); }).map(normClient));
-        status('✓ à jour', 'ok'); if (cb) cb(true);
+        statusSynced(); if (cb) cb(true);
       } else { status('⚠ hors-ligne (données locales)', 'err'); if (cb) cb(false); }
     });
   }
@@ -108,8 +109,33 @@
     flush(function () { pull(function (ok) { if (cb) cb(ok); }); });
   }
 
+  // ---- Actualisation auto multi-appareils + garde-fou anti-perte ----
+  var busy = false, autoTimer = null, autoCb = null;
+  function syncNow(){
+    if (!su() || busy) return;
+    try { if (document.querySelector && document.querySelector('.overlay.open')) return; } catch (e) {} // ne pas perturber une saisie en cours
+    busy = true;
+    flush(function () { pull(function () { busy = false; if (autoCb) try { autoCb(); } catch (e) {} }, true); });
+  }
+  function startAutoSync(cb){
+    autoCb = cb || null;
+    try {
+      window.addEventListener('beforeunload', function (e) {
+        if (su() && (jget(LS_DIRTY).length + jget(LS_DEL).length) > 0) { e.preventDefault(); e.returnValue = ''; return ''; }
+      });
+    } catch (e) {}
+    if (!su()) return;
+    try {
+      document.addEventListener('visibilitychange', function () { if (!document.hidden) syncNow(); });
+      window.addEventListener('focus', syncNow);
+    } catch (e) {}
+    if (autoTimer) clearInterval(autoTimer);
+    autoTimer = setInterval(function () { try { if (document.hidden) return; } catch (e) {} syncNow(); }, 30000);
+  }
+
   global.DB = {
     boot: boot, upsert: upsert, remove: remove, pull: pull, flush: flush,
+    startAutoSync: startAutoSync, syncNow: syncNow,
     su: su, configured: function () { return !!su(); },
     pending: function () { return jget(LS_DIRTY).length + jget(LS_DEL).length; },
     onStatus: function (fn) { statusCb = fn; },

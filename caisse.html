@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Caisse — KuT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Manrope",-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#EEF1EF;color:#1C2321;min-height:100vh;line-height:1.4}
+
+/* ── HEADER ── */
+header{background:linear-gradient(135deg,#050517,#07071a);color:#fff;padding:.9rem 1.2rem;display:flex;align-items:center;gap:.9rem;flex-wrap:wrap}
+.back{color:#fff;text-decoration:none;font-size:1.4rem;opacity:.85;line-height:1}
+.back:hover{opacity:1}
+.hdr-info{flex:1;min-width:0}
+.hdr-title{font-size:1.08rem;font-weight:800}
+.hdr-sub{font-size:.78rem;opacity:.82;margin-top:.1rem}
+.hdr-date{font-size:.82rem;font-weight:600;opacity:.9;white-space:nowrap;text-transform:capitalize}
+
+/* ── LAYOUT ── */
+main{padding:1.1rem 1.1rem 3rem;max-width:1080px;margin:0 auto}
+.grid-top{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1rem}
+.grid-bottom{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+
+/* ── CARTES ── */
+.card{background:#fffaf2;border-radius:14px;overflow:hidden;box-shadow:0 2px 14px rgba(0,0,6,.25)}
+.grid-top .card,.grid-bottom .card{margin-bottom:0}
+
+.card-head{padding:.85rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:.6rem}
+.card-head h2{font-size:.82rem;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.06em}
+.card-badge{font-size:.62rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:rgba(255,255,255,.22);color:#fff;padding:.2rem .65rem;border-radius:20px;white-space:nowrap}
+
+/* La Ferraille — terracotta principal */
+.card--ferraille .card-head{background:#7a2e18}
+/* Le Papier — vert */
+.card--papier .card-head{background:#2f6b4a}
+/* L'Électronique — mauve chaud */
+.card--elec .card-head{background:#574177}
+/* Comptage Espèces — terracotta foncé */
+.card--comptage .card-head{background:#5a2212}
+/* Calcul Écart — vert foncé */
+.card--ecart .card-head{background:#18183c}
+/* Historique — warm muted */
+.card--history .card-head{background:#141430}
+
+/* ── TABLES ── */
+.cnt-table{width:100%;border-collapse:collapse}
+.cnt-table thead th{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:.55rem .85rem;border-bottom:1.5px solid #d4c8b0;color:#D3D5D7;text-align:left}
+.cnt-table thead th.th-r{text-align:right}
+.cnt-table thead th.th-c{text-align:center}
+.cnt-table tbody td{padding:.4rem .85rem;font-size:.87rem;border-bottom:1px solid #f0e8d8;vertical-align:middle}
+.cnt-table tbody td.td-c{text-align:center}
+.cnt-table tbody td.td-r{text-align:right;font-weight:700}
+.cnt-table tbody td.td-lbl{font-weight:600}
+.cnt-table tfoot td{padding:.6rem .85rem;font-size:.85rem;font-weight:800;background:#f0e8d8;border-top:1.5px solid #d4c8b0;color:#EFC88B}
+.cnt-table tfoot td.td-r{text-align:right}
+
+.card--ferraille .cnt-table tbody tr:nth-child(even) td{background:#f0e8d8}
+.card--papier    .cnt-table tbody tr:nth-child(even) td{background:#f0e8d8}
+.card--elec      .cnt-table tbody tr:nth-child(even) td{background:#f0e8d8}
+
+/* ── CHAMP QUANTITÉ ── */
+.qty-input{width:60px;font-family:inherit;font-size:.9rem;font-weight:700;text-align:center;color:#F4E3B2;border:1.5px solid #d4c8b0;border-radius:8px;padding:.32rem .45rem;background:#fffaf2;transition:border-color .15s;-moz-appearance:textfield}
+.qty-input:focus{outline:none;border-color:#CF5C36}
+.qty-input::-webkit-inner-spin-button,.qty-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+
+/* ── CHAMP MONTANT (élec) ── */
+.amt-input{width:110px;font-family:inherit;font-size:.9rem;font-weight:700;text-align:right;color:#F4E3B2;border:1.5px solid #d4c8b0;border-radius:8px;padding:.32rem .6rem;background:#fffaf2;transition:border-color .15s;-moz-appearance:textfield}
+.amt-input:focus{outline:none;border-color:#8a6db0}
+.amt-input::-webkit-inner-spin-button,.amt-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+
+/* ── RÉSERVE / FOND CIBLE ── */
+.fond-row{display:flex;align-items:center;gap:.6rem;padding:.75rem 1rem;background:#f0e8d8;border-top:1.5px solid #d4c8b0}
+.fond-row label{flex:1;font-size:.85rem;font-weight:700;color:#EFC88B}
+.fond-input{width:90px;font-family:inherit;font-size:.9rem;font-weight:700;text-align:right;color:#EFC88B;border:1.5px solid #d4c8b0;border-radius:8px;padding:.35rem .55rem;background:#fffaf2;transition:border-color .15s;-moz-appearance:textfield}
+.fond-input:focus{outline:none;border-color:#CF5C36}
+.fond-input::-webkit-inner-spin-button,.fond-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.fond-eur{font-size:.85rem;font-weight:700;color:#EFC88B}
+
+/* ── COMPTAGE ESPÈCES ── */
+.comptage-body{padding:1.6rem 1.2rem 1.4rem;text-align:center}
+.comptage-lbl{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#D3D5D7;margin-bottom:.35rem}
+.comptage-total{font-size:2.6rem;font-weight:800;color:#CF5C36;letter-spacing:-1px;line-height:1}
+.comptage-sub{font-size:.76rem;color:#9193a8;margin-top:.45rem}
+.comptage-breakdown{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.9rem 1.1rem;margin-top:1.3rem}
+.cb-item{text-align:center}
+.cb-item .cb-val{font-size:1.05rem;font-weight:800;color:#F4E3B2}
+.cb-item .cb-lbl{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#D3D5D7;margin-top:.15rem}
+.cb-sep{font-size:1.3rem;color:#d4c8b0;font-weight:300;line-height:1}
+
+/* ── CALCUL ÉCART ── */
+.ecart-body{padding:1.1rem 1.1rem 1.2rem}
+.ecart-field{display:flex;align-items:center;gap:.6rem;margin-bottom:.9rem}
+.ecart-field label{flex:1;font-size:.85rem;font-weight:600;color:#D3D5D7}
+.ref-input{width:130px;font-family:inherit;font-size:.95rem;font-weight:700;text-align:right;color:#F4E3B2;border:1.5px solid #d4c8b0;border-radius:8px;padding:.45rem .65rem;background:#fffaf2;transition:border-color .15s;-moz-appearance:textfield}
+.ref-input:focus{outline:none;border-color:#CF5C36}
+.ref-input::-webkit-inner-spin-button,.ref-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.ref-eur{font-size:.82rem;font-weight:600;color:#D3D5D7}
+.ecart-result{display:flex;align-items:center;justify-content:space-between;padding:.7rem .9rem;background:#F4E3B2;border:1px solid #d4c8b0;border-radius:10px;margin-bottom:.8rem}
+.er-lbl{font-size:.85rem;font-weight:600;color:#D3D5D7}
+.er-val{font-size:1.4rem;font-weight:800}
+.er-val.pos{color:#6bbf8a}
+.er-val.neg{color:#e5736b}
+.er-val.zero{color:#9193a8}
+.remise-alert{padding:.65rem .85rem;background:#f0e8d8;border:1px solid #d4c8b0;border-left:4px solid #CF5C36;border-radius:8px;font-size:.84rem;font-weight:600;color:#EFC88B;margin-bottom:.9rem}
+
+/* ── BANDEAU REPORT DE LA VEILLE ── */
+.prefill-banner{display:flex;align-items:center;gap:.5rem;padding:.7rem .95rem;background:#f0e8d8;border:1px solid #d4c8b0;border-left:4px solid #CF5C36;border-radius:10px;font-size:.84rem;font-weight:600;color:#D3D5D7;margin-bottom:1rem}
+
+.btn-save{width:100%;padding:.75rem;background:#CF5C36;color:#050517;border:none;border-radius:10px;font-family:inherit;font-size:.92rem;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-save:hover{background:#dc6a45}
+
+/* ── HISTORIQUE ── */
+.history-body{overflow-x:auto}
+.history-table{width:100%;border-collapse:collapse}
+.history-table thead th{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:.6rem .9rem;text-align:left;color:#D3D5D7;border-bottom:1.5px solid #d4c8b0;white-space:nowrap}
+.history-table tbody tr:nth-child(even) td{background:#f0e8d8}
+.history-table tbody td{padding:.6rem .9rem;font-size:.84rem;border-bottom:1px solid #f0e8d8;vertical-align:middle;white-space:nowrap}
+.h-r{text-align:right}
+.history-table .ht-pos{color:#6bbf8a;font-weight:700}
+.history-table .ht-neg{color:#e5736b;font-weight:700}
+.history-table .ht-zero{color:#9193a8;font-weight:700}
+.history-table .ht-bold{font-weight:700}
+.history-empty{padding:1.6rem;text-align:center;color:#6b6c88;font-size:.86rem;font-style:italic}
+.btn-del{background:none;border:1px solid #5a3a3a;color:#e5736b;border-radius:6px;font-size:.7rem;font-weight:700;padding:.25rem .6rem;cursor:pointer;transition:all .15s;font-family:inherit}
+.btn-del:hover{background:#2a1f1f}
+
+/* ── ACTIONS ── */
+.actions-bar{display:flex;justify-content:flex-end;margin-top:.6rem}
+.btn-reset{background:#ede8da;border:1.5px solid #d4c8b0;color:#D3D5D7;border-radius:10px;font-family:inherit;font-size:.84rem;font-weight:600;padding:.6rem 1.1rem;cursor:pointer;transition:all .15s}
+.btn-reset:hover{border-color:#7a4a4a;color:#e5736b;background:#2a1f1f}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;right:20px;background:#F4E3B2;color:#fff;padding:.7rem 1.1rem;border-radius:10px;font-size:.84rem;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,.6);opacity:0;transform:translateY(8px);transition:all .22s;pointer-events:none;z-index:100}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){.grid-top{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.grid-top{grid-template-columns:1fr}.grid-bottom{grid-template-columns:1fr}.comptage-total{font-size:2.1rem}}
+
+
+/* ── MODE SOBRE — Carbon + accent rouge ── */
+body{background:#EEF1EF!important;color:#1C2321!important}
+header{background:#1C2321!important}
+.search-wrap,.sync-row{background:#EEF1EF!important}
+.card,.modal,.client-panel,.search-box,.top-card,.offre-card,.tpl-card{background:#fff!important;color:#1C2321!important;border:1px solid #dde4e8!important;box-shadow:0 1px 6px rgba(28,35,33,.07)!important}
+.card:hover{box-shadow:0 4px 18px rgba(28,35,33,.1)!important;border-color:#A9B4C2!important}
+input:not([type=file]):not([type=checkbox]):not([type=search]),textarea,select{background:#fff!important;color:#1C2321!important;border:1.5px solid #c8d4da!important}
+input:not([type=file]):not([type=checkbox]):not([type=search]):focus,textarea:focus,select:focus{border-color:#5E6572!important;box-shadow:0 0 0 3px rgba(94,101,114,.18)!important}
+.qty-input,.amt-input,.fond-input,.ref-input{background:#fff!important;color:#1C2321!important;border-color:#c8d4da!important}
+.qty-input:focus,.amt-input:focus,.fond-input:focus,.ref-input:focus{border-color:#5E6572!important}
+.field label{color:#5E6572!important;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase}
+.hint{color:#A9B4C2!important}
+.sub,.t-sub,.offre-desc,.offre-date,.tpl-sujet,.picker-sujet,.count,.hdr-sub,.salon-name,.desc{color:#5E6572!important}
+.fond-row{background:#f5f8fa!important;border-top-color:#dde4e8!important}
+.fond-row label,.fond-eur{color:#5E6572!important}
+.cnt-table tfoot td{background:#f5f8fa!important;color:#5E6572!important;border-top-color:#dde4e8!important}
+.cnt-table thead th,.history-table thead th{color:#A9B4C2!important;font-size:.64rem;letter-spacing:.07em}
+.cnt-table tbody td,.history-table tbody td{color:#1C2321!important}
+.card--ferraille .cnt-table tbody tr:nth-child(even) td,
+.card--papier .cnt-table tbody tr:nth-child(even) td,
+.card--elec .cnt-table tbody tr:nth-child(even) td,
+.history-table tbody tr:nth-child(even) td{background:#f5f8fa!important}
+.ecart-result{background:#f5f8fa!important;border-color:#dde4e8!important;border-radius:10px}
+.er-lbl{color:#5E6572!important}
+.prog-bar{background:#e4eaed!important}
+.prog-fill{background:linear-gradient(90deg,#5E6572,#A9B4C2)!important}
+.reward-banner{background:#fff!important;border:1.5px solid #A22C29!important;color:#A22C29!important;display:flex}
+.tpl-loaded{background:#f0f7f4!important;border-color:#5E6572!important;color:#1C2321!important}
+.info-banner{background:#f0f7f4!important;border-color:#5E6572!important;color:#1C2321!important}
+.notice{background:#fef2f2!important;border-color:#A22C29!important;color:#7a1c1a!important}
+.history-empty,.empty,.no-offres,.quota{color:#A9B4C2!important}
+.status,.counter,.sync-st{color:#A9B4C2!important}
+.card .sep{color:#5E6572!important;font-size:.75rem;letter-spacing:.07em}
+.card .sep::after{background:#dde4e8!important}
+.card h3{color:#5E6572!important;font-size:.78rem;letter-spacing:.07em}
+.badge{background:#f5f8fa!important;color:#5E6572!important;border:1px solid #dde4e8!important}
+.offre-badge{background:#fef2f2!important;color:#A22C29!important}
+.toggle.on{background:#1C2321!important}
+.toggle.off{background:#c8d4da!important}
+.toggle::after{background:#fff!important}
+.btn-primary,.btn-p,.btn-save{background:#A22C29!important;color:#fff!important;border:none!important}
+.btn-primary:hover,.btn-p:hover,.btn-save:hover{background:#8a2422!important}
+.btn-outline,.btn-o,.btn-sm{background:#fff!important;color:#1C2321!important;border:1.5px solid #c8d4da!important}
+.btn-outline:hover,.btn-o:hover,.btn-sm:hover{background:#f5f8fa!important;border-color:#5E6572!important;color:#1C2321!important}
+.btn-tpl{background:#f5f8fa!important;color:#5E6572!important;border:1.5px solid #dde4e8!important}
+.btn-tpl:hover{background:#e4eaed!important;color:#1C2321!important}
+.preview-box,.preview-body{background:#1C2321!important;color:#EEF1EF!important}
+.preview-header{background:#A22C29!important;color:#fff!important}
+.preview-footer{background:#111a18!important;color:#5E6572!important;border-top:1px solid #2a3532!important}
+.prefill-banner{background:#f5f8fa!important;border:1px solid #dde4e8!important;border-left:4px solid #5E6572!important;color:#5E6572!important}
+.remise-alert{background:#fef2f2!important;border:1px solid #dde4e8!important;border-left:4px solid #A22C29!important;color:#A22C29!important}
+.btn-del{border:1px solid #A22C29!important;color:#A22C29!important;background:none!important}
+.btn-del:hover{background:#fef2f2!important}
+.btn-reset{background:#fff!important;border:1.5px solid #c8d4da!important;color:#5E6572!important}
+.btn-reset:hover{border-color:#A22C29!important;color:#A22C29!important;background:#fef2f2!important}
+.xbtn,.btn-close{color:#A9B4C2!important}
+.xbtn:hover,.btn-close:hover{color:#1C2321!important}
+.mh h2,.modal-header h2{color:#1C2321!important;font-size:1.08rem}
+.avatar,.cp-av,.res-av{background:linear-gradient(135deg,#A9B4C2,#5E6572)!important;color:#fff!important}
+.offre-chk{background:#f5f8fa!important;border-radius:8px}
+.search-box input,.search-wrap input[type=search]{background:#f5f8fa!important;color:#1C2321!important;border:1.5px solid #dde4e8!important}
+.search-box input:focus,.search-wrap input[type=search]:focus{border-color:#5E6572!important}
+.picker-card{background:#f5f8fa!important;color:#1C2321!important;border:1px solid #dde4e8!important}
+.picker-card:hover{background:#e4eaed!important;border-color:#5E6572!important}
+.tpl-card:hover{border-color:#A9B4C2!important;box-shadow:0 4px 16px rgba(28,35,33,.1)!important}
+.tpl-card.selected{border-color:#5E6572!important;box-shadow:0 0 0 3px rgba(94,101,114,.18)!important}
+.btn-xs{background:#f5f8fa!important;border:1px solid #dde4e8!important;color:#5E6572!important}
+.btn-xs:hover{background:#e4eaed!important;color:#1C2321!important}
+.btn-xs.send{background:#5E6572!important;color:#fff!important;border-color:#5E6572!important}
+.btn-xs.send:hover{background:#5E6572!important;border-color:#5E6572!important}
+.action-msg{color:#5E6572!important}
+.sync-bar{color:#A9B4C2}
+.sync-bar.ok{color:#5E6572!important}
+.sync-bar.err{color:#A22C29!important}
+.res-item:hover{background:#f5f8fa!important}
+.result.ok{color:#5E6572!important}
+.result.err{color:#A22C29!important}
+.toast{background:#1C2321!important;color:#EEF1EF!important;box-shadow:0 4px 20px rgba(28,35,33,.25)!important}
+.fab{background:#A22C29!important;box-shadow:0 4px 18px rgba(162,44,41,.35)!important}
+.card--ferraille .card-head{background:#A22C29!important}
+.card--papier .card-head{background:#5E6572!important}
+.card--elec .card-head{background:#1C2321!important}
+.card--comptage .card-head{background:#5E6572!important}
+.card--ecart .card-head{background:#5E6572!important}
+.card--history .card-head{background:#1C2321!important}
+.card-badge{background:rgba(255,255,255,.2)!important;color:#fff!important}
+.notice a,.hint a,a[style*="color:#5E6572"]{color:#5E6572!important}
+.t-pts{color:#5E6572!important;font-weight:800}
+.t-pts.reward{color:#A22C29!important}
+.btn-ic:hover{border-color:#5E6572!important;color:#5E6572!important;background:#f5f8fa!important}
+.btn-ic.del:hover{border-color:#A22C29!important;color:#A22C29!important;background:#fef2f2!important}
+.logo-preview{background:#f5f8fa!important;border-color:#dde4e8!important}
+.logo-del{color:#A22C29!important}
+.btn-send{background:#5E6572!important;color:#fff!important}
+.btn-send:hover{background:#5E6572!important}
+.recap{color:#5E6572!important}
+.btn-p:disabled{background:#c8d4da!important;color:#fff!important}
+.section-title{color:#A9B4C2!important}
+.section-title::after{background:#dde4e8!important}
+
+
+/* ── BOUTON BASCULE CLAIR/SOMBRE ── */
+.theme-toggle{width:38px;height:38px;border-radius:50%;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.18);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;transition:background .15s}
+.theme-toggle:hover{background:rgba(255,255,255,.28)}
+
+/* ── Correctifs couleurs mode clair (caisse) ── */
+.comptage-total{color:#A22C29!important}
+.cb-item .cb-val{color:#1C2321!important}
+.comptage-lbl,.cb-item .cb-lbl,.comptage-sub,.ecart-field label{color:#5E6572!important}
+.cb-sep{color:#c8d4da!important}
+.er-val.pos,.history-table .ht-pos{color:#5E6572!important}
+.er-val.neg,.history-table .ht-neg{color:#A22C29!important}
+
+/* ── MODE SOMBRE (accent rouge conservé) ── */
+html[data-theme="dark"] body{background:#14181A!important;color:#E7ECEE!important}
+html[data-theme="dark"] header{background:#0E1214!important}
+html[data-theme="dark"] .search-wrap,
+html[data-theme="dark"] .sync-row{background:#14181A!important}
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .modal,
+html[data-theme="dark"] .client-panel,
+html[data-theme="dark"] .search-box,
+html[data-theme="dark"] .top-card,
+html[data-theme="dark"] .offre-card,
+html[data-theme="dark"] .tpl-card{background:#1F2528!important;color:#E7ECEE!important;border:1px solid #313A3F!important;box-shadow:0 1px 6px rgba(0,0,0,.4)!important}
+html[data-theme="dark"] .card:hover{border-color:#3d484e!important;box-shadow:0 6px 20px rgba(0,0,0,.55)!important}
+html[data-theme="dark"] input:not([type=file]):not([type=checkbox]):not([type=search]),
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select{background:#171C1F!important;color:#E7ECEE!important;border-color:#313A3F!important}
+html[data-theme="dark"] input:not([type=file]):not([type=checkbox]):not([type=search]):focus,
+html[data-theme="dark"] textarea:focus,
+html[data-theme="dark"] select:focus{border-color:#7a8791!important;box-shadow:0 0 0 3px rgba(122,135,145,.2)!important}
+html[data-theme="dark"] .qty-input,
+html[data-theme="dark"] .amt-input,
+html[data-theme="dark"] .fond-input,
+html[data-theme="dark"] .ref-input{background:#171C1F!important;color:#E7ECEE!important;border-color:#313A3F!important}
+html[data-theme="dark"] .field label{color:#9AA6AE!important}
+html[data-theme="dark"] .hint,
+html[data-theme="dark"] .sub,
+html[data-theme="dark"] .t-sub,
+html[data-theme="dark"] .offre-desc,
+html[data-theme="dark"] .offre-date,
+html[data-theme="dark"] .tpl-sujet,
+html[data-theme="dark"] .picker-sujet,
+html[data-theme="dark"] .count,
+html[data-theme="dark"] .hdr-sub,
+html[data-theme="dark"] .salon-name,
+html[data-theme="dark"] .desc{color:#9AA6AE!important}
+html[data-theme="dark"] .fond-row{background:#171C1F!important;border-top-color:#313A3F!important}
+html[data-theme="dark"] .fond-row label,
+html[data-theme="dark"] .fond-eur{color:#9AA6AE!important}
+html[data-theme="dark"] .cnt-table tfoot td{background:#171C1F!important;color:#9AA6AE!important;border-top-color:#313A3F!important}
+html[data-theme="dark"] .cnt-table thead th,
+html[data-theme="dark"] .history-table thead th{color:#7F8C94!important}
+html[data-theme="dark"] .cnt-table tbody td,
+html[data-theme="dark"] .history-table tbody td{color:#E7ECEE!important;border-bottom-color:#262d31!important}
+html[data-theme="dark"] .card--ferraille .cnt-table tbody tr:nth-child(even) td,
+html[data-theme="dark"] .card--papier .cnt-table tbody tr:nth-child(even) td,
+html[data-theme="dark"] .card--elec .cnt-table tbody tr:nth-child(even) td,
+html[data-theme="dark"] .history-table tbody tr:nth-child(even) td{background:#191F22!important}
+html[data-theme="dark"] .ecart-result{background:#171C1F!important;border-color:#313A3F!important}
+html[data-theme="dark"] .er-lbl{color:#9AA6AE!important}
+html[data-theme="dark"] .cb-item .cb-val{color:#E7ECEE!important}
+html[data-theme="dark"] .comptage-lbl,
+html[data-theme="dark"] .cb-item .cb-lbl,
+html[data-theme="dark"] .comptage-sub,
+html[data-theme="dark"] .ecart-field label{color:#9AA6AE!important}
+html[data-theme="dark"] .cb-sep{color:#3d484e!important}
+html[data-theme="dark"] .prog-bar{background:#2a3236!important}
+html[data-theme="dark"] .badge{background:#272F33!important;color:#9AA6AE!important;border-color:#313A3F!important}
+html[data-theme="dark"] .stats-block{background:#171C1F!important;border-color:#313A3F!important}
+html[data-theme="dark"] .stat .v{color:#E7ECEE!important}
+html[data-theme="dark"] .stat .k,
+html[data-theme="dark"] .pass-item .pd,
+html[data-theme="dark"] .pass-item .pi{color:#9AA6AE!important}
+html[data-theme="dark"] .pass-item{border-bottom-color:#262d31!important}
+html[data-theme="dark"] .history-empty,
+html[data-theme="dark"] .empty,
+html[data-theme="dark"] .no-offres,
+html[data-theme="dark"] .quota,
+html[data-theme="dark"] .pass-empty,
+html[data-theme="dark"] .presta-empty{color:#9AA6AE!important}
+html[data-theme="dark"] .empty-ico{background:#1F2528!important;border-color:#313A3F!important}
+html[data-theme="dark"] .empty-title{color:#E7ECEE!important}
+html[data-theme="dark"] .empty-text{color:#9AA6AE!important}
+html[data-theme="dark"] .status,
+html[data-theme="dark"] .counter,
+html[data-theme="dark"] .sync-st{color:#9AA6AE!important}
+html[data-theme="dark"] .card .sep{color:#9AA6AE!important}
+html[data-theme="dark"] .card .sep::after{background:#313A3F!important}
+html[data-theme="dark"] .card h3{color:#9AA6AE!important}
+html[data-theme="dark"] .section-title{color:#7F8C94!important}
+html[data-theme="dark"] .section-title::after{background:#313A3F!important}
+html[data-theme="dark"] .btn-outline,
+html[data-theme="dark"] .btn-o,
+html[data-theme="dark"] .btn-sm,
+html[data-theme="dark"] .btn-reset,
+html[data-theme="dark"] .sync-btn{background:#1F2528!important;color:#E7ECEE!important;border-color:#313A3F!important}
+html[data-theme="dark"] .btn-outline:hover,
+html[data-theme="dark"] .btn-o:hover,
+html[data-theme="dark"] .btn-sm:hover,
+html[data-theme="dark"] .btn-reset:hover{background:#272F33!important;border-color:#3d484e!important;color:#E7ECEE!important}
+html[data-theme="dark"] .btn-tpl{background:#1F2528!important;color:#9AA6AE!important;border-color:#313A3F!important}
+html[data-theme="dark"] .btn-tpl:hover{background:#272F33!important;color:#E7ECEE!important}
+html[data-theme="dark"] .btn-xs{background:#1F2528!important;border-color:#313A3F!important;color:#9AA6AE!important}
+html[data-theme="dark"] .btn-xs:hover{background:#272F33!important;color:#E7ECEE!important}
+html[data-theme="dark"] .picker-card{background:#171C1F!important;color:#E7ECEE!important;border-color:#313A3F!important}
+html[data-theme="dark"] .picker-card:hover{background:#272F33!important;border-color:#3d484e!important}
+html[data-theme="dark"] .search-box input,
+html[data-theme="dark"] .search-wrap input[type=search]{background:#171C1F!important;color:#E7ECEE!important;border-color:#313A3F!important}
+html[data-theme="dark"] .offre-chk{background:#171C1F!important}
+html[data-theme="dark"] .mh h2,
+html[data-theme="dark"] .modal-header h2{color:#E7ECEE!important}
+html[data-theme="dark"] .xbtn,
+html[data-theme="dark"] .btn-close{color:#9AA6AE!important}
+html[data-theme="dark"] .xbtn:hover,
+html[data-theme="dark"] .btn-close:hover{color:#E7ECEE!important}
+html[data-theme="dark"] .prefill-banner{background:#171C1F!important;border-color:#313A3F!important;border-left-color:#A22C29!important;color:#9AA6AE!important}
+html[data-theme="dark"] .tpl-loaded,
+html[data-theme="dark"] .info-banner{background:#171C1F!important;border-color:#313A3F!important;color:#9AA6AE!important}
+html[data-theme="dark"] .offre-badge{background:#2a1614!important;color:#E0635D!important}
+html[data-theme="dark"] .reward-banner{background:#1F2528!important;border-color:#A22C29!important;color:#E0635D!important}
+html[data-theme="dark"] .notice{background:#2a1614!important;border-color:#A22C29!important;color:#E0635D!important}
+html[data-theme="dark"] .remise-alert{background:#2a1614!important;border-color:#3d484e!important;border-left-color:#A22C29!important;color:#E0635D!important}
+html[data-theme="dark"] .stats-block h4{color:#E0635D!important}
+html[data-theme="dark"] .er-val.neg,
+html[data-theme="dark"] .history-table .ht-neg,
+html[data-theme="dark"] .pass-item .pm{color:#E0635D!important}
+html[data-theme="dark"] .er-val.pos,
+html[data-theme="dark"] .history-table .ht-pos{color:#9AA6AE!important}
+html[data-theme="dark"] .btn-del{border-color:#E0635D!important;color:#E0635D!important}
+html[data-theme="dark"] .btn-del:hover{background:#2a1614!important}
+html[data-theme="dark"] .toggle.on{background:#5E6572!important}
+html[data-theme="dark"] .toggle.off{background:#313A3F!important}
+html[data-theme="dark"] .toast{background:#0E1214!important;color:#E7ECEE!important}
+html[data-theme="dark"] .logo span{color:#E0635D!important}
+</style>
+<script>(function(){try{if(localStorage.getItem("kut-theme")==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();</script>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back" aria-label="Retour à l'accueil"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" style="display:block" aria-hidden="true"><path d="M13.41,12l3.3-3.29a1,1,0,1,0-1.42-1.42l-4,4a1,1,0,0,0,0,1.42l4,4a1,1,0,0,0,1.42,0,1,1,0,0,0,0-1.42ZM8,7A1,1,0,0,0,7,8v8a1,1,0,0,0,2,0V8A1,1,0,0,0,8,7Z"></path></svg></a>
+  <div class="hdr-info">
+    <div class="hdr-title"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#A22C29" style="vertical-align:-.18em" aria-hidden="true"><path d="M9.5,10.5H12a1,1,0,0,0,0-2H11V8A1,1,0,0,0,9,8v.55a2.5,2.5,0,0,0,.5,4.95h1a.5.5,0,0,1,0,1H8a1,1,0,0,0,0,2H9V17a1,1,0,0,0,2,0v-.55a2.5,2.5,0,0,0-.5-4.95h-1a.5.5,0,0,1,0-1ZM21,12H18V3a1,1,0,0,0-.5-.87,1,1,0,0,0-1,0l-3,1.72-3-1.72a1,1,0,0,0-1,0l-3,1.72-3-1.72a1,1,0,0,0-1,0A1,1,0,0,0,2,3V19a3,3,0,0,0,3,3H19a3,3,0,0,0,3-3V13A1,1,0,0,0,21,12ZM5,20a1,1,0,0,1-1-1V4.73L6,5.87a1.08,1.08,0,0,0,1,0l3-1.72,3,1.72a1.08,1.08,0,0,0,1,0l2-1.14V19a3,3,0,0,0,.18,1Zm15-1a1,1,0,0,1-2,0V14h2Z"></path></svg> Caisse</div>
+    <div class="hdr-sub" id="hdr-sub">Mon salon</div>
+  </div>
+  <div class="hdr-date" id="js-date"></div>
+</header>
+
+<main>
+
+  <div class="prefill-banner" id="prefill-banner" style="display:none"></div>
+
+  <div class="grid-top">
+
+    <!-- LA FERRAILLE -->
+    <section class="card card--ferraille">
+      <div class="card-head"><h2>La Ferraille</h2><span class="card-badge">Pièces</span></div>
+      <table class="cnt-table">
+        <thead><tr><th class="th-c">Qté</th><th>Valeur</th><th class="th-r">Total</th></tr></thead>
+        <tbody id="coins-tbody"></tbody>
+        <tfoot><tr><td colspan="2">Total pièces</td><td class="td-r" id="total-coins">0,00 €</td></tr></tfoot>
+      </table>
+    </section>
+
+    <!-- LE PAPIER -->
+    <section class="card card--papier">
+      <div class="card-head"><h2>Le Papier</h2><span class="card-badge">Billets</span></div>
+      <table class="cnt-table">
+        <thead><tr><th class="th-c">Qté</th><th>Valeur</th><th class="th-r">Total</th></tr></thead>
+        <tbody id="bills-tbody"></tbody>
+        <tfoot><tr><td colspan="2">Total billets</td><td class="td-r" id="total-bills">0,00 €</td></tr></tfoot>
+      </table>
+      <div class="fond-row">
+        <label for="reserve-monnaie">Réserve de monnaie</label>
+        <input class="fond-input" type="number" id="reserve-monnaie" min="0" step="0.01">
+        <span class="fond-eur">€</span>
+      </div>
+    </section>
+
+    <!-- L'ÉLECTRONIQUE -->
+    <section class="card card--elec">
+      <div class="card-head"><h2>L'Électronique</h2><span class="card-badge">Paiements</span></div>
+      <table class="cnt-table">
+        <thead><tr><th>Type</th><th class="th-r">Montant</th></tr></thead>
+        <tbody id="elec-tbody"></tbody>
+        <tfoot><tr><td>Total électronique</td><td class="td-r" id="total-elec">0,00 €</td></tr></tfoot>
+      </table>
+    </section>
+
+  </div>
+
+  <div class="grid-bottom">
+
+    <!-- COMPTAGE ESPÈCES -->
+    <section class="card card--comptage">
+      <div class="card-head"><h2>Comptage espèces</h2><span class="card-badge">Total caisse</span></div>
+      <div class="comptage-body">
+        <div class="comptage-lbl">Total espèces en caisse</div>
+        <div class="comptage-total" id="total-especes">0,00 €</div>
+        <div class="comptage-sub">Pièces + Billets + Réserve de monnaie</div>
+        <div class="comptage-breakdown">
+          <div class="cb-item"><div class="cb-val" id="sub-coins">0,00 €</div><div class="cb-lbl">Pièces</div></div>
+          <div class="cb-sep">+</div>
+          <div class="cb-item"><div class="cb-val" id="sub-bills">0,00 €</div><div class="cb-lbl">Billets</div></div>
+          <div class="cb-sep">+</div>
+          <div class="cb-item"><div class="cb-val" id="sub-reserve">0,00 €</div><div class="cb-lbl">Réserve</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CALCUL DE L'ÉCART -->
+    <section class="card card--ecart">
+      <div class="card-head"><h2>Calcul de l'écart de caisse</h2><span class="card-badge">Clôture</span></div>
+      <div class="ecart-body">
+        <div class="ecart-field">
+          <label for="fond-cible">Fond de caisse cible</label>
+          <input class="ref-input fond-input" type="number" id="fond-cible" placeholder="0,00" min="0" step="0.01">
+          <span class="ref-eur">€</span>
+        </div>
+        <div class="ecart-field">
+          <label for="ref">Montant logiciel de caisse</label>
+          <input class="ref-input" type="number" id="ref" placeholder="0,00" min="0" step="0.01">
+          <span class="ref-eur">€</span>
+        </div>
+        <div class="ecart-result">
+          <span class="er-lbl">Écart de caisse</span>
+          <strong class="er-val zero" id="ecart-value">—</strong>
+        </div>
+        <div class="remise-alert" id="remise-alert" style="display:none"></div>
+        <button class="btn-save" id="btn-save" type="button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M18.71,7.21a1,1,0,0,0-1.42,0L9.84,14.67,6.71,11.53A1,1,0,1,0,5.29,13l3.84,3.84a1,1,0,0,0,1.42,0l8.16-8.16A1,1,0,0,0,18.71,7.21Z"></path></svg> Enregistrer le comptage</button>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- HISTORIQUE -->
+  <section class="card card--history">
+    <div class="card-head"><h2>Historique</h2><span class="card-badge" id="history-count">0 entrée</span></div>
+    <div class="history-body">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Date</th><th class="h-r">Pièces + billets</th><th class="h-r">Réserve monnaie</th>
+            <th class="h-r">Fond cible</th><th class="h-r">Sortie</th><th class="h-r">Logiciel</th>
+            <th class="h-r">Écart</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="history-tbody">
+          <tr><td class="history-empty" colspan="8">Aucun comptage enregistré pour le moment.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="actions-bar">
+    <button class="btn-reset" id="btn-reset" type="button">Réinitialiser le formulaire</button>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  var COINS=[
+    {label:'2,00 €',value:2.00},{label:'1,00 €',value:1.00},{label:'0,50 €',value:0.50},
+    {label:'0,20 €',value:0.20},{label:'0,10 €',value:0.10},{label:'0,05 €',value:0.05},
+    {label:'0,02 €',value:0.02},{label:'0,01 €',value:0.01}
+  ];
+  var BILLS=[
+    {label:'200 €',value:200},{label:'100 €',value:100},{label:'50 €',value:50},
+    {label:'20 €',value:20},{label:'10 €',value:10},{label:'5 €',value:5}
+  ];
+  var ELEC=['CB','Sans Contact','Amex','Autre'];
+
+  var LS_CAISSE='cloture-caisse-v1', LS_RESERVE='cloture-fond-v1', LS_FOND_CIBLE='cloture-fond-cible-v1';
+  var HISTORY_DAYS=15, MAX_QTY=9999, MAX_AMOUNT=999999.99;
+
+  function profilMagasin(){try{return JSON.parse(localStorage.getItem('profil-magasin-v1')||'{}');}catch(e){return{};}}
+  function reserveDefaut(){var f=parseFloat(localStorage.getItem(LS_RESERVE));return isNaN(f)?0:f;}
+  function fondCibleDefaut(){var f=parseFloat(localStorage.getItem(LS_FOND_CIBLE));return isNaN(f)?0:f;}
+  function storeSubtitle(){return(profilMagasin().nom||'').trim()||'Mon salon';}
+  function fmt(n){return n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';}
+  function r2(n){return Math.round(n*100)/100;}
+
+  function qtyValue(el){var q=parseInt(el.value,10)||0;if(q<0)q=0;if(q>MAX_QTY)q=MAX_QTY;return q;}
+  function normalizeQtyField(el){if(el.value==='')return;var q=qtyValue(el);if(el.value!==String(q))el.value=q;}
+  function amountValue(el){var v=parseFloat(el.value)||0;if(v<0)v=0;if(v>MAX_AMOUNT)v=MAX_AMOUNT;return r2(v);}
+  function normalizeAmountField(el){if(el.value==='')return;var v=parseFloat(el.value);if(isNaN(v))return;if(v<0||v>MAX_AMOUNT)el.value=amountValue(el);}
+
+  function buildCoins(){
+    var tbody=document.getElementById('coins-tbody');
+    COINS.forEach(function(coin,i){
+      var tr=document.createElement('tr'),tdQty=document.createElement('td');
+      tdQty.className='td-c';
+      var inp=document.createElement('input');inp.className='qty-input';inp.type='number';inp.id='coin-qty-'+i;inp.placeholder='0';inp.min='0';inp.max=String(MAX_QTY);inp.step='1';
+      tdQty.appendChild(inp);
+      var tdLbl=document.createElement('td');tdLbl.className='td-lbl';tdLbl.textContent=coin.label;
+      var tdTot=document.createElement('td');tdTot.className='td-r';tdTot.id='coin-tot-'+i;tdTot.textContent='0,00 €';
+      tr.appendChild(tdQty);tr.appendChild(tdLbl);tr.appendChild(tdTot);tbody.appendChild(tr);
+    });
+  }
+
+  function buildBills(){
+    var tbody=document.getElementById('bills-tbody');
+    BILLS.forEach(function(bill,i){
+      var tr=document.createElement('tr'),tdQty=document.createElement('td');
+      tdQty.className='td-c';
+      var inp=document.createElement('input');inp.className='qty-input';inp.type='number';inp.id='bill-qty-'+i;inp.placeholder='0';inp.min='0';inp.max=String(MAX_QTY);inp.step='1';
+      tdQty.appendChild(inp);
+      var tdLbl=document.createElement('td');tdLbl.className='td-lbl';tdLbl.textContent=bill.label;
+      var tdTot=document.createElement('td');tdTot.className='td-r';tdTot.id='bill-tot-'+i;tdTot.textContent='0,00 €';
+      tr.appendChild(tdQty);tr.appendChild(tdLbl);tr.appendChild(tdTot);tbody.appendChild(tr);
+    });
+  }
+
+  function buildElec(){
+    var tbody=document.getElementById('elec-tbody');
+    ELEC.forEach(function(type,i){
+      var tr=document.createElement('tr'),tdLbl=document.createElement('td');
+      tdLbl.className='td-lbl';tdLbl.textContent=type;
+      var tdAmt=document.createElement('td');tdAmt.className='td-r';
+      var inp=document.createElement('input');inp.className='amt-input';inp.type='number';inp.id='elec-'+i;inp.placeholder='0,00';inp.min='0';inp.max=String(MAX_AMOUNT);inp.step='0.01';
+      tdAmt.appendChild(inp);tr.appendChild(tdLbl);tr.appendChild(tdAmt);tbody.appendChild(tr);
+    });
+  }
+
+  function initEnterNavigation(){
+    var SEL='.qty-input, .fond-input, .amt-input, .ref-input';
+    var fields=Array.prototype.slice.call(document.querySelectorAll(SEL));
+    function isOverwriteKey(e){return e.key&&e.key.length===1&&!e.ctrlKey&&!e.metaKey&&!e.altKey;}
+    function focusField(f){f.focus();if(f.matches&&f.matches(SEL))f.dataset.armed='1';try{if(typeof f.select==='function')f.select();}catch(e){}}
+    fields.forEach(function(field,i){
+      field.addEventListener('keydown',function(e){
+        if(e.key==='Enter'){e.preventDefault();focusField(fields[i+1]||document.getElementById('btn-save'));return;}
+        if(field.dataset.armed==='1'){if(isOverwriteKey(e))field.value='';field.dataset.armed='';}
+      });
+      field.addEventListener('mousedown',function(){field.dataset.armed='';});
+      field.addEventListener('input',function(){field.dataset.armed='';});
+    });
+  }
+
+  function calculate(){
+    var totalCoins=0;
+    COINS.forEach(function(coin,i){
+      var qty=qtyValue(document.getElementById('coin-qty-'+i));
+      var line=r2(qty*coin.value);
+      document.getElementById('coin-tot-'+i).textContent=fmt(line);
+      totalCoins=r2(totalCoins+line);
+    });
+    document.getElementById('total-coins').textContent=fmt(totalCoins);
+    document.getElementById('sub-coins').textContent=fmt(totalCoins);
+
+    var totalBills=0;
+    BILLS.forEach(function(bill,i){
+      var qty=qtyValue(document.getElementById('bill-qty-'+i));
+      var line=r2(qty*bill.value);
+      document.getElementById('bill-tot-'+i).textContent=fmt(line);
+      totalBills=r2(totalBills+line);
+    });
+    document.getElementById('total-bills').textContent=fmt(totalBills);
+    document.getElementById('sub-bills').textContent=fmt(totalBills);
+
+    var reserve=r2(parseFloat(document.getElementById('reserve-monnaie').value)||0);
+    document.getElementById('sub-reserve').textContent=fmt(reserve);
+    var totalEspeces=r2(totalCoins+totalBills);
+    var totalCaisse=r2(totalEspeces+reserve);
+    document.getElementById('total-especes').textContent=fmt(totalCaisse);
+
+    var totalElec=0;
+    ELEC.forEach(function(_,i){totalElec=r2(totalElec+amountValue(document.getElementById('elec-'+i)));});
+    document.getElementById('total-elec').textContent=fmt(totalElec);
+
+    var ref=parseFloat(document.getElementById('ref').value)||0;
+    var ecartEl=document.getElementById('ecart-value');
+    if(ref>0||document.getElementById('ref').value!==''){
+      var ecart=r2(totalCaisse-ref);
+      ecartEl.textContent=(ecart>=0?'+':'')+fmt(ecart);
+      ecartEl.className='er-val '+(ecart>0.005?'pos':ecart<-0.005?'neg':'zero');
+    }else{ecartEl.textContent='—';ecartEl.className='er-val zero';}
+
+    var fondCible=r2(parseFloat(document.getElementById('fond-cible').value)||0);
+    var remise=r2(Math.max(0,totalCaisse-fondCible));
+    var remiseEl=document.getElementById('remise-alert');
+    if(fondCible>0&&remise>0){remiseEl.textContent='Sortie de caisse à effectuer : '+fmt(remise)+'.';remiseEl.style.display='block';}
+    else remiseEl.style.display='none';
+  }
+
+  function loadHistory(){try{return JSON.parse(localStorage.getItem(LS_CAISSE)||'[]');}catch(e){return [];}}
+  function saveHistoryData(d){localStorage.setItem(LS_CAISSE,JSON.stringify(d));}
+
+  function capHistory(data){
+    if(!Array.isArray(data))return[];
+    var byDate={};
+    data.forEach(function(e){if(!e||!e.date)return;var p=byDate[e.date];if(!p||(e.ts||0)>=(p.ts||0))byDate[e.date]=e;});
+    var arr=Object.keys(byDate).map(function(k){return byDate[k];});
+    arr.sort(function(a,b){return(b.ts||0)-(a.ts||0);});
+    return arr.slice(0,HISTORY_DAYS);
+  }
+
+  function renderHistory(){
+    var data=loadHistory(),tbody=document.getElementById('history-tbody'),countEl=document.getElementById('history-count');
+    countEl.textContent=data.length+(data.length<=1?' entrée':' entrées');
+    while(tbody.firstChild)tbody.removeChild(tbody.firstChild);
+    if(!data.length){
+      var et=document.createElement('tr'),ed=document.createElement('td');
+      ed.className='history-empty';ed.colSpan=8;ed.textContent='Aucun comptage enregistré pour le moment.';
+      et.appendChild(ed);tbody.appendChild(et);return;
+    }
+    data.forEach(function(entry,i){
+      var tr=document.createElement('tr');
+      var eCls=entry.ecart>0.005?'ht-pos':entry.ecart<-0.005?'ht-neg':'ht-zero';
+      var eSign=entry.ecart>0.005?'+':'';
+      var cells=[
+        {cls:'',text:entry.date},
+        {cls:'h-r ht-bold',text:fmt(entry.comptage)},
+        {cls:'h-r',text:fmt(typeof entry.reserve==='number'?entry.reserve:entry.fond||0)},
+        {cls:'h-r',text:typeof entry.fondCible==='number'?fmt(entry.fondCible):'—'},
+        {cls:'h-r',text:typeof entry.sortie==='number'?fmt(entry.sortie):'—'},
+        {cls:'h-r',text:entry.ref>0?fmt(entry.ref):'—'},
+        {cls:'h-r '+eCls,text:eSign+fmt(entry.ecart)}
+      ];
+      cells.forEach(function(c){var td=document.createElement('td');if(c.cls)td.className=c.cls;td.textContent=c.text;tr.appendChild(td);});
+      var tdDel=document.createElement('td');tdDel.className='h-r';
+      var btnDel=document.createElement('button');btnDel.className='btn-del';btnDel.type='button';btnDel.textContent='Supprimer';btnDel.dataset.idx=i;
+      btnDel.addEventListener('click',function(){var idx=parseInt(this.dataset.idx,10),d=loadHistory();d.splice(idx,1);saveHistoryData(d);renderHistory();showToast('Entrée supprimée');});
+      tdDel.appendChild(btnDel);tr.appendChild(tdDel);tbody.appendChild(tr);
+    });
+  }
+
+  function saveEntry(){
+    var coinQtys=[],totalCoins=0;
+    COINS.forEach(function(coin,i){var el=document.getElementById('coin-qty-'+i);normalizeQtyField(el);var q=qtyValue(el);coinQtys.push(q);totalCoins=r2(totalCoins+r2(q*coin.value));});
+    var billQtys=[],totalBills=0;
+    BILLS.forEach(function(bill,i){var el=document.getElementById('bill-qty-'+i);normalizeQtyField(el);var q=qtyValue(el);billQtys.push(q);totalBills=r2(totalBills+r2(q*bill.value));});
+    var totalEspeces=r2(totalCoins+totalBills);
+    var reserve=r2(parseFloat(document.getElementById('reserve-monnaie').value)||0);
+    var fondCible=r2(parseFloat(document.getElementById('fond-cible').value)||0);
+    var totalCaisse=r2(totalEspeces+reserve);
+    var sortie=r2(Math.max(0,totalCaisse-fondCible));
+    var ref=r2(parseFloat(document.getElementById('ref').value)||0);
+    var ecart=r2(totalCaisse-ref);
+    var now=new Date(),dateStr=now.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
+    var entry={date:dateStr,ts:now.getTime(),comptage:totalEspeces,reserve:reserve,fondCible:fondCible,sortie:sortie,ref:ref,ecart:ecart,coins:coinQtys,bills:billQtys};
+    var data=loadHistory(),existsToday=data.some(function(e){return e.date===dateStr;});
+    data.unshift(entry);data=capHistory(data);saveHistoryData(data);renderHistory();
+    showToast(existsToday?'Comptage du jour mis à jour':'Comptage enregistré ✔');
+  }
+
+  function prefillFromLast(){
+    var data=loadHistory();if(!data.length)return;
+    var last=data[0];if(!last.coins&&!last.bills)return;
+    if(last.coins)last.coins.forEach(function(qty,i){var el=document.getElementById('coin-qty-'+i);if(el&&qty>0)el.value=qty;});
+    if(last.bills)last.bills.forEach(function(qty,i){var el=document.getElementById('bill-qty-'+i);if(el&&qty>0)el.value=qty;});
+    var lastReserve=typeof last.reserve==='number'?last.reserve:last.fond;
+    if(typeof lastReserve==='number')document.getElementById('reserve-monnaie').value=lastReserve.toFixed(2);
+    var banner=document.getElementById('prefill-banner');
+    banner.textContent='Comptage pré-rempli depuis la dernière clôture du '+last.date+'. Vérifiez et ajustez les quantités avant d’enregistrer.';
+    banner.style.display='flex';
+  }
+
+  var toastTimer;
+  function showToast(msg){
+    var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');
+    clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove('show');},2600);
+  }
+
+  function resetForm(){
+    if(!window.confirm('Réinitialiser tous les champs ? L’historique sera conservé.'))return;
+    COINS.forEach(function(_,i){document.getElementById('coin-qty-'+i).value='';});
+    BILLS.forEach(function(_,i){document.getElementById('bill-qty-'+i).value='';});
+    ELEC.forEach(function(_,i){document.getElementById('elec-'+i).value='';});
+    document.getElementById('ref').value='';
+    document.getElementById('reserve-monnaie').value=reserveDefaut().toFixed(2);
+    document.getElementById('fond-cible').value=fondCibleDefaut()?fondCibleDefaut().toFixed(2):'';
+    document.getElementById('prefill-banner').style.display='none';
+    calculate();showToast('Formulaire réinitialisé');
+  }
+
+  /* ── INIT ── */
+  document.getElementById('hdr-sub').textContent=storeSubtitle();
+  document.getElementById('reserve-monnaie').value=reserveDefaut().toFixed(2);
+  document.getElementById('fond-cible').value=fondCibleDefaut()?fondCibleDefaut().toFixed(2):'';
+
+  buildCoins();buildBills();buildElec();
+  initEnterNavigation();
+  saveHistoryData(capHistory(loadHistory()));
+  prefillFromLast();renderHistory();calculate();
+
+  var nowDate=new Date();
+  document.getElementById('js-date').textContent=nowDate.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  document.getElementById('coins-tbody').addEventListener('input',calculate);
+  document.getElementById('bills-tbody').addEventListener('input',calculate);
+  document.getElementById('elec-tbody').addEventListener('input',calculate);
+
+  function onQtyChange(e){if(e.target&&e.target.classList.contains('qty-input')){normalizeQtyField(e.target);calculate();}}
+  document.getElementById('coins-tbody').addEventListener('change',onQtyChange);
+  document.getElementById('bills-tbody').addEventListener('change',onQtyChange);
+  document.getElementById('elec-tbody').addEventListener('change',function(e){
+    if(e.target&&e.target.classList.contains('amt-input')){normalizeAmountField(e.target);calculate();}
+  });
+  document.getElementById('reserve-monnaie').addEventListener('input',function(){
+    var v=parseFloat(document.getElementById('reserve-monnaie').value);
+    if(!isNaN(v))localStorage.setItem(LS_RESERVE,v);
+    calculate();
+  });
+  document.getElementById('fond-cible').addEventListener('input',function(){
+    var v=parseFloat(document.getElementById('fond-cible').value);
+    if(isNaN(v))localStorage.removeItem(LS_FOND_CIBLE);else localStorage.setItem(LS_FOND_CIBLE,v);
+    calculate();
+  });
+  document.getElementById('ref').addEventListener('input',calculate);
+  document.getElementById('btn-save').addEventListener('click',saveEntry);
+  document.getElementById('btn-reset').addEventListener('click',resetForm);
+</script>
+<script>
+(function(){
+  var K="kut-theme";
+  function cur(){try{return localStorage.getItem(K)==="dark"?"dark":"light";}catch(e){return "light";}}
+  function apply(t){if(t==="dark")document.documentElement.setAttribute("data-theme","dark");else document.documentElement.removeAttribute("data-theme");}
+  var SUN='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 7a5 5 0 1 0 5 5 5 5 0 0 0-5-5Zm0 8a3 3 0 1 1 3-3 3 3 0 0 1-3 3Zm0-9a1 1 0 0 0 1-1V3a1 1 0 0 0-2 0v2a1 1 0 0 0 1 1Zm0 12a1 1 0 0 0-1 1v2a1 1 0 0 0 2 0v-2a1 1 0 0 0-1-1ZM5.99 7.41a1 1 0 0 0 1.42-1.41l-1-1a1 1 0 0 0-1.42 1.41Zm11.6 9.18a1 1 0 0 0-1.42 1.42l1 1a1 1 0 0 0 1.42-1.42ZM21 11h-2a1 1 0 0 0 0 2h2a1 1 0 0 0 0-2ZM5 12a1 1 0 0 0-1-1H2a1 1 0 0 0 0 2h2a1 1 0 0 0 1-1Zm11.59-4.59a1 1 0 0 0 .7-.29l1-1a1 1 0 1 0-1.42-1.42l-1 1a1 1 0 0 0 .72 1.71ZM5.99 16.59l-1 1a1 1 0 1 0 1.42 1.42l1-1a1 1 0 0 0-1.42-1.42Z"/></svg>';
+  var MOON='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M21.64 13a1 1 0 0 0-1.05-.14 8.05 8.05 0 0 1-3.37.73A8.15 8.15 0 0 1 9.08 5.49a8.59 8.59 0 0 1 .25-2A1 1 0 0 0 8 2.36 10.14 10.14 0 1 0 22 14.05a1 1 0 0 0-.36-1.05Zm-9.5 6.69A8.14 8.14 0 0 1 7.08 5.22v.27A10.15 10.15 0 0 0 17.19 15.6a9.79 9.79 0 0 0 2.1-.22 8.11 8.11 0 0 1-7.15 4.31Z"/></svg>';
+  var b=document.createElement("button");b.id="themeToggle";b.type="button";b.className="theme-toggle";
+  function refresh(){var d=cur()==="dark";b.innerHTML=d?SUN:MOON;var l=d?"Passer en mode clair":"Passer en mode sombre";b.setAttribute("aria-label",l);b.title=l;}
+  b.addEventListener("click",function(){var t=cur()==="dark"?"light":"dark";try{localStorage.setItem(K,t);}catch(e){}apply(t);refresh();});
+  apply(cur());refresh();var H=document.querySelector("header");(H||document.body).appendChild(b);
+})();
+</script>
+</body>
+</html>

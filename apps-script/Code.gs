@@ -11,9 +11,10 @@
 
 var DOSSIER  = 'Hub_Facilities';
 var FICHIER  = 'profil-magasin.json';
+var OFFRES   = 'offres.json';
 var CLASSEUR = 'base-clients';
 var ONGLET   = 'Clients';
-var ENTETES  = ['id','nom','tel','mail','points','visitsCount','offre','notes','optin','maj','visites','ledger'];
+var ENTETES  = ['id','nom','tel','mail','dob','points','visitsCount','offre','notes','optin','maj','visites','ledger'];
 
 function doGet(e) {
   var p = e.parameter || {}, cb = p.callback, res;
@@ -27,7 +28,10 @@ function doGet(e) {
       case 'load':         res={ok:true,data:lireProfil_()}; break;
       case 'saveClients':  ecrireClients_(JSON.parse(p.data||'[]')); res={ok:true}; break;
       case 'loadClients':  res={ok:true,data:lireClients_()}; break;
+      case 'saveOffres':   JSON.parse(p.data||'[]'); ecrireOffres_(p.data||'[]'); res={ok:true}; break;
+      case 'loadOffres':   res={ok:true,data:lireOffres_()}; break;
       case 'sendCampaign': res=envoyerCampagne_(p); break;
+      case 'sendBirthdays':res=envoyerAnniversaires_(); break;
       case 'quota':        res={ok:true,quota:MailApp.getRemainingDailyQuota()}; break;
       default:             res={ok:true,data:lireProfil_()};
     }
@@ -58,6 +62,23 @@ function ecrireProfil_(contenu) {
   var f = fichierProfil_();
   if (f) { f.setContent(contenu); }
   else   { dossier_().createFile(FICHIER, contenu, 'application/json'); }
+}
+
+// ── Offres commerciales (fichier JSON) ────────────────────────
+// Synchronisées depuis la page Offres, lues par l'envoi automatique des anniversaires.
+
+function fichierOffres_() {
+  var it = dossier_().getFilesByName(OFFRES);
+  return it.hasNext() ? it.next() : null;
+}
+function lireOffres_() {
+  var f = fichierOffres_();
+  return f ? f.getBlob().getDataAsString() : '[]';
+}
+function ecrireOffres_(contenu) {
+  var f = fichierOffres_();
+  if (f) { f.setContent(contenu); }
+  else   { dossier_().createFile(OFFRES, contenu, 'application/json'); }
 }
 
 // ── Clients (Google Sheet) ────────────────────────────────────
@@ -157,6 +178,89 @@ function estOptin_(v) {
   if (v === true) return true;
   var s = String(v == null ? '' : v).trim().toLowerCase();
   return s === 'oui' || s === 'true' || s === '1' || s === 'x' || s === 'yes';
+}
+
+// ── Anniversaires (envoi automatique) ─────────────────────────
+// À planifier via un déclencheur quotidien (voir creerDeclencheurAnniversaire).
+// Envoie le mail de l'offre anniversaire ACTIVE aux clients opt-in dont c'est
+// l'anniversaire (jour + mois), une seule fois par an et par client.
+
+function anniversaireAujourdhui_(dob, today) {
+  if (dob instanceof Date && !isNaN(dob)) {
+    return dob.getMonth() === today.getMonth() && dob.getDate() === today.getDate();
+  }
+  var m = String(dob == null ? '' : dob).match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return false;
+  return (parseInt(m[2], 10) === today.getMonth() + 1) && (parseInt(m[3], 10) === today.getDate());
+}
+
+function envoyerAnniversaires_() {
+  var offres = [];
+  try { offres = JSON.parse(lireOffres_() || '[]') || []; } catch(e) {}
+  // Première offre anniversaire active (cochée « actif » dans l'onglet Offres).
+  var offre = offres.filter(function(o){ return o && o.anniv && o.actif !== false; })[0];
+  if (!offre) return { ok:true, offreAnniversaire:false, envoyes:0, message:'Aucune offre anniversaire active.' };
+
+  var profil = {};
+  try { profil = JSON.parse(lireProfil_() || '{}') || {}; } catch(e) {}
+  var clients = JSON.parse(lireClients_() || '[]');
+  var baseUrl = ScriptApp.getService().getUrl() || '';
+  var logoUrl = profil.logoUrl || profil.logo || '';
+
+  var today = new Date();
+  var annee = today.getFullYear();
+  var props = PropertiesService.getScriptProperties();
+
+  var prestaTxt = (Array.isArray(offre.prestations) && offre.prestations.length) ? offre.prestations.join(', ') : '';
+  var offreTxt = String(offre.reduction || offre.nom || 'une offre spéciale');
+  var sujet = String(offre.emailSujet || '').trim() || 'Joyeux anniversaire 🎂';
+  var corpsTpl = String(offre.emailCorps || '').trim();
+  if (!corpsTpl) {
+    corpsTpl = 'Bonjour {prenom},\n\nToute l\'équipe de ' + (profil.nom || 'notre salon')
+      + ' vous souhaite un très joyeux anniversaire ! 🎂\n\nPour l\'occasion, profitez de votre cadeau : {offre}'
+      + (prestaTxt ? ' sur {prestations}' : '') + '.\n\nÀ très bientôt !';
+  }
+
+  var quota = MailApp.getRemainingDailyQuota();
+  var cibles = 0, envoyes = 0, ignores = 0, erreurs = 0, dejaEnvoyes = 0;
+
+  for (var i = 0; i < clients.length; i++) {
+    var c = clients[i];
+    if (!c || !c.dob) continue;
+    if (!anniversaireAujourdhui_(c.dob, today)) continue;
+    if (!c.mail || String(c.mail).indexOf('@') < 0) continue;
+    if (!estOptin_(c.optin)) continue;            // autorisation communications commerciales
+    cibles++;
+    var cle = 'anniv-' + annee + '-' + String(c.id || c.mail);
+    if (props.getProperty(cle)) { dejaEnvoyes++; continue; }   // déjà envoyé cette année
+    if (envoyes >= quota) { ignores++; continue; }
+    var corps = corpsTpl.replace(/\{offre\}/gi, offreTxt).replace(/\{prestations\}/gi, prestaTxt);
+    try {
+      MailApp.sendEmail({
+        to: String(c.mail),
+        subject: sujet,
+        body: construireTexte_(corps, c, profil, baseUrl),
+        htmlBody: construireEmail_(corps, c, profil, baseUrl, logoUrl),
+        name: (profil.nom || 'Mon salon')
+      });
+      props.setProperty(cle, today.toISOString());
+      envoyes++;
+    } catch(e) { erreurs++; }
+  }
+
+  return { ok:true, offreAnniversaire:true, cibles:cibles, envoyes:envoyes,
+           dejaEnvoyes:dejaEnvoyes, ignores:ignores, erreurs:erreurs,
+           quotaRestant:MailApp.getRemainingDailyQuota() };
+}
+
+// À exécuter UNE fois depuis l'éditeur Apps Script pour planifier l'envoi
+// quotidien automatique (chaque jour vers 9h).
+function creerDeclencheurAnniversaire() {
+  var trigs = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < trigs.length; i++) {
+    if (trigs[i].getHandlerFunction() === 'envoyerAnniversaires_') ScriptApp.deleteTrigger(trigs[i]);
+  }
+  ScriptApp.newTrigger('envoyerAnniversaires_').timeBased().everyDays(1).atHour(9).create();
 }
 
 function personnaliser_(txt, c, prenom) {

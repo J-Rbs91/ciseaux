@@ -460,12 +460,12 @@ function envoyerAnniversaires_() {
 
   var prestaTxt = (Array.isArray(offre.prestations) && offre.prestations.length) ? offre.prestations.join(', ') : '';
   var offreTxt = String(offre.reduction || offre.nom || 'une offre spéciale');
-  var sujet = String(offre.emailSujet || '').trim() || 'Joyeux anniversaire 🎂';
+  var sujet = String(offre.emailSujet || '').trim() || 'Un cadeau pour votre anniversaire';
   var corpsTpl = String(offre.emailCorps || '').trim();
   if (!corpsTpl) {
-    corpsTpl = 'Bonjour {prenom},\n\nToute l\'équipe de ' + (profil.nom || 'notre salon')
-      + ' vous souhaite un très joyeux anniversaire ! 🎂\n\nPour l\'occasion, profitez de votre cadeau : {offre}'
-      + (prestaTxt ? ' sur {prestations}' : '') + '.\n\nÀ très bientôt !';
+    corpsTpl = 'Bonjour {prenom},\n\nÀ l\'occasion de votre anniversaire, toute l\'équipe de ' + (profil.nom || 'notre salon')
+      + ' a le plaisir de vous offrir {offre}'
+      + (prestaTxt ? ' sur {prestations}' : '') + '.\n\nRéservez votre rendez-vous dès maintenant pour profiter de votre cadeau.\n\nAu plaisir de vous accueillir.';
   }
 
   var quota = MailApp.getRemainingDailyQuota();

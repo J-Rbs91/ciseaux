@@ -184,6 +184,9 @@
     if (document.getElementById("kt-tour-css")) return;
     var css =
       "" +
+      // Écrans figés pendant le tour : pas de curseur clignotant ni de sélection.
+      "html.kt-touring input,html.kt-touring textarea{caret-color:transparent}" +
+      "html.kt-touring ::selection{background:transparent}" +
       ".kt-ov{position:fixed;inset:0;z-index:2147483000;pointer-events:auto;opacity:0;transition:opacity .25s ease}" +
       ".kt-ov.kt-in{opacity:1}" +
       ".kt-spot{position:fixed;top:0;left:0;width:0;height:0;border-radius:16px;pointer-events:none;" +
@@ -260,6 +263,29 @@
     window.addEventListener("resize", reposition, { passive: true });
     window.addEventListener("scroll", reposition, { passive: true, capture: true });
     document.addEventListener("keydown", onKey, true);
+    // Rend les écrans montrés non interactifs (effet « capture figée ») :
+    // aucun champ ne peut prendre le focus → pas de clavier mobile intempestif.
+    document.documentElement.classList.add("kt-touring");
+    document.addEventListener("focusin", guardFocus, true);
+    blurActive();
+  }
+
+  // Empêche tout champ de garder le focus pendant le tour.
+  function guardFocus(e) {
+    var t = e.target;
+    if (!t || !t.matches) return;
+    if (t.closest && t.closest(".kt-pop")) return; // nos propres boutons
+    if (t.matches('input,textarea,select,[contenteditable="true"]')) {
+      try {
+        t.blur();
+      } catch (err) {}
+    }
+  }
+  function blurActive() {
+    try {
+      var a = document.activeElement;
+      if (a && a.blur && a !== document.body) a.blur();
+    } catch (e) {}
   }
 
   function onKey(e) {
@@ -279,6 +305,8 @@
     window.removeEventListener("resize", reposition, { passive: true });
     window.removeEventListener("scroll", reposition, { capture: true });
     document.removeEventListener("keydown", onKey, true);
+    document.removeEventListener("focusin", guardFocus, true);
+    document.documentElement.classList.remove("kt-touring");
     if (ov && ov.parentNode) ov.parentNode.removeChild(ov);
     ov = spot = pop = curEl = null;
     curStep = -1;

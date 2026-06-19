@@ -324,7 +324,15 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
       <select id="seg" onchange="recapClear()">
         <option value="all">Tous les clients inscrits aux offres</option>
         <option value="reward">Clients avec récompense disponible</option>
+        <option value="winback">Clients à relancer (en retard sur leurs visites)</option>
       </select>
+      <div class="hint">« À relancer » = clients réguliers (≥ 3 passages) dont le délai depuis la dernière visite dépasse leur délai moyen × le facteur ci-dessous.</div>
+    </div>
+
+    <div class="field">
+      <label>Relance : retard = délai moyen ×</label>
+      <input id="winMult" type="number" min="1" step="0.5" value="2">
+      <div class="hint">2 = retard de +100 % (délai habituel doublé).</div>
     </div>
 
     <div class="field">
@@ -404,12 +412,25 @@ function countChars(){
 }
 function recapClear(){document.getElementById('recap').textContent='';}
 
+function gapStats(c){
+  var v=(Array.isArray(c.visites)?c.visites:[]).filter(function(x){return x&&x.date;}).slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  if(v.length<2)return {n:v.length,avg:0,last:v.length?v[v.length-1].date:null};
+  var g=[],i;for(i=1;i<v.length;i++)g.push((new Date(v[i].date)-new Date(v[i-1].date))/86400000);
+  return {n:v.length,avg:g.reduce(function(a,b){return a+b;},0)/g.length,last:v[v.length-1].date};
+}
+function isWinback(c,mult){
+  var s=gapStats(c);
+  if(s.n<3||!s.avg||!s.last)return false;
+  return (Date.now()-new Date(s.last))/86400000 > mult*s.avg;
+}
+function winMult(){var m=parseFloat((document.getElementById('winMult')||{}).value);return (isNaN(m)||m<1)?2:m;}
 function filtrer(arr){
-  var seg=val('seg'), rules=fideRules();
+  var seg=val('seg'), rules=fideRules(), mult=winMult();
   return arr.filter(function(c){
     if(!c.mail||String(c.mail).indexOf('@')<0)return false;
     if(!isOptin(c.optin))return false;
     if(seg==='reward')return hasReward(c,rules);
+    if(seg==='winback')return isWinback(c,mult);
     return true;
   });
 }
@@ -439,6 +460,7 @@ function send(){
   res('work','⏳ Envoi en cours… ne fermez pas cette page.');
   var params={action:'sendCampaign',subject:sujet,body:corps,segment:seg,seuil:seuil,base:url};
   if(seg==='reward')params.rewardRules=JSON.stringify(fideRules().map(function(r){return {counter:r.counter,threshold:r.threshold};}));
+  if(seg==='winback')params.winbackMult=winMult();
   if(logo&&/^https:\/\//i.test(logo))params.logoUrl=logo;
   jsonp(url,params,function(r){
     btn.disabled=false;

@@ -30,6 +30,8 @@ function doGet(e) {
       case 'loadClients':  res={ok:true,data:lireClients_()}; break;
       case 'saveOffres':   JSON.parse(p.data||'[]'); ecrireOffres_(p.data||'[]'); res={ok:true}; break;
       case 'loadOffres':   res={ok:true,data:lireOffres_()}; break;
+      case 'upsertClient': upsertClient_(JSON.parse(p.client||'{}')); res={ok:true}; break;
+      case 'deleteClient': res={ok:true,deleted:deleteClient_(p.id||'')}; break;
       case 'sendCampaign': res=envoyerCampagne_(p); break;
       case 'sendBirthdays':res=envoyerAnniversaires_(); break;
       case 'quota':        res={ok:true,quota:MailApp.getRemainingDailyQuota()}; break;
@@ -93,7 +95,19 @@ function feuille_() {
     DriveApp.getFileById(ss.getId()).moveTo(d);
   }
   var sh = ss.getSheetByName(ONGLET) || ss.insertSheet(ONGLET);
-  if (sh.getLastRow() === 0) sh.appendRow(ENTETES);
+  if (sh.getLastRow() === 0) { sh.appendRow(ENTETES); return sh; }
+  // Mise à niveau de l'en-tête si d'anciennes colonnes diffèrent (ajout visitsCount/ledger…)
+  var head = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+  if (head.join('|') !== ENTETES.join('|')) {
+    var rows = sh.getDataRange().getValues(); rows.shift();
+    var remapped = rows.map(function(r) {
+      var o = {}; head.forEach(function(h, i) { o[h] = r[i]; });
+      return ENTETES.map(function(h) { return o[h] != null ? o[h] : ''; });
+    });
+    sh.clearContents();
+    sh.appendRow(ENTETES);
+    if (remapped.length) sh.getRange(2, 1, remapped.length, ENTETES.length).setValues(remapped);
+  }
   return sh;
 }
 function lireClients_() {
@@ -121,6 +135,41 @@ function ecrireClients_(arr) {
   });
 }
 
+// Écrit (ou met à jour) UN client par son id — petite charge utile, pas de réécriture globale.
+function ligneClient_(o) {
+  return ENTETES.map(function(h) {
+    if (h === 'visites' || h === 'ledger') return o[h] ? JSON.stringify(o[h]) : '';
+    return o[h] != null ? o[h] : '';
+  });
+}
+function upsertClient_(client) {
+  if (!client || !client.id) return false;
+  var sh = feuille_();
+  var idCol = ENTETES.indexOf('id');
+  var n = sh.getLastRow() - 1;
+  var ids = n > 0 ? sh.getRange(2, idCol + 1, n, 1).getValues() : [];
+  var row = ligneClient_(client);
+  for (var i = 0; i < ids.length; i++) {
+    if (String(ids[i][0]) === String(client.id)) {
+      sh.getRange(i + 2, 1, 1, ENTETES.length).setValues([row]);
+      return true;
+    }
+  }
+  sh.appendRow(row);
+  return true;
+}
+function deleteClient_(id) {
+  if (!id) return false;
+  var sh = feuille_();
+  var idCol = ENTETES.indexOf('id');
+  var n = sh.getLastRow() - 1;
+  var ids = n > 0 ? sh.getRange(2, idCol + 1, n, 1).getValues() : [];
+  for (var i = 0; i < ids.length; i++) {
+    if (String(ids[i][0]) === String(id)) { sh.deleteRow(i + 2); return true; }
+  }
+  return false;
+}
+
 // ── Campagnes email (Gmail) ──────────────────────────────────
 // Envoie un email personnalisé à chaque client opt-in, depuis le Gmail du salon.
 // Quota Gmail : 100 destinataires/jour (compte perso), 1500/jour (Workspace).
@@ -132,6 +181,7 @@ function envoyerCampagne_(p) {
   var seuil   = parseInt(p.seuil || '0', 10) || 0;
   var rules   = [];
   try { if (p.rewardRules) rules = JSON.parse(p.rewardRules) || []; } catch(e) {}
+  var winMult = parseFloat(p.winbackMult) || 2;
   var baseUrl = ScriptApp.getService().getUrl() || (p.base || '');
   var logoUrl = p.logoUrl || '';
 
@@ -149,6 +199,7 @@ function envoyerCampagne_(p) {
       });
       return (Number(c.points) || 0) >= seuil;
     }
+    if (segment === 'winback') return estEnRetard_(c, winMult);
     return true;
   });
 
@@ -172,6 +223,18 @@ function envoyerCampagne_(p) {
 
   return { ok:true, cibles:dest.length, envoyes:envoyes, ignores:ignores,
            erreurs:erreurs, quotaRestant:MailApp.getRemainingDailyQuota() };
+}
+
+// Client « régulier en retard » : délai depuis la dernière visite > délai moyen × mult (≥ 3 passages).
+function estEnRetard_(c, mult) {
+  var v = (c.visites && c.visites.length ? c.visites : []).filter(function(x){ return x && x.date; })
+            .sort(function(a, b){ return new Date(a.date) - new Date(b.date); });
+  if (v.length < 3) return false;
+  var gaps = [], i;
+  for (i = 1; i < v.length; i++) gaps.push((new Date(v[i].date) - new Date(v[i - 1].date)) / 86400000);
+  var avg = gaps.reduce(function(a, b){ return a + b; }, 0) / gaps.length;
+  if (!avg) return false;
+  return (Date.now() - new Date(v[v.length - 1].date)) / 86400000 > (mult || 2) * avg;
 }
 
 function estOptin_(v) {

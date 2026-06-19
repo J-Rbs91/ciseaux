@@ -1,4 +1,4 @@
-# Script Google Apps Script — 6-o
+# Script Google Apps Script — KuT
 
 Ce script à déployer sur **votre propre compte Google** permet :
 - La **synchro Drive** du profil salon entre plusieurs appareils
@@ -73,5 +73,5 @@ Le script s'arrête proprement quand le quota est atteint et indique combien d'e
 ## Sécurité & conformité
 
 - L'URL `…/exec` est longue et aléatoire — elle sert de clé secrète. Ne la partagez pas.
-- Aucune donnée n'est hébergée par le projet 6-o : tout vit sur votre compte Google.
+- Aucune donnée n'est hébergée par le projet KuT : tout vit sur votre compte Google.
 - Les emails ne partent qu'aux clients **opt-in** et incluent un **lien de désinscription** (RGPD).

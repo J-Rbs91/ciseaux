@@ -1,6 +1,6 @@
-# Contribuer à 6-o
+# Contribuer à KuT
 
-Merci de votre intérêt pour 6-o ! ✂️ Ce projet est pensé pour rester
+Merci de votre intérêt pour KuT ! ✂️ Ce projet est pensé pour rester
 **simple, statique et sans dépendance**. Toute contribution qui respecte cette
 philosophie est la bienvenue.
 

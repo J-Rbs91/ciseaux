@@ -1,8 +1,8 @@
 # Politique de sécurité
 
-## Modèle de sécurité de 6-o
+## Modèle de sécurité de KuT
 
-6-o est une application **100 % statique** sans backend. Cela a des
+KuT est une application **100 % statique** sans backend. Cela a des
 implications importantes pour la sécurité :
 
 - Toutes les données (clients, fidélité, caisse, profil) sont stockées
@@ -45,4 +45,4 @@ fuite de données entre pages, problème dans le script Apps Script) :
 3. Vous recevrez un accusé de réception sous **72 heures** et serons tenu
    informé de la correction.
 
-Merci de contribuer à la sécurité de 6-o.
+Merci de contribuer à la sécurité de KuT.

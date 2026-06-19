@@ -1,6 +1,6 @@
 ---
 name: "✨ Proposer une fonctionnalité"
-about: "Suggérer une idée pour 6-o"
+about: "Suggérer une idée pour KuT"
 title: "[Idée] "
 labels: enhancement
 assignees: ''

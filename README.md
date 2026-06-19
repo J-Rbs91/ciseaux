@@ -1,4 +1,4 @@
-# 6-o
+# KuT
 
 Outil open source pour salons de coiffure — CRM clients, programme de fidélité, clôture de caisse, campagnes email.
 

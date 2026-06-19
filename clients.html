@@ -333,6 +333,7 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
   </div>
 </div>
 
+<script src="app-sync.js"></script>
 <script>
 var LS='clients-v1', LS_S='sync-url-v1', eid=null;
 function lc(){try{return JSON.parse(localStorage.getItem(LS)||'[]');}catch(e){return[];}}
@@ -441,18 +442,22 @@ function save_(){
   if(!nom){alert('Le nom est requis.');return;}
   var all=lc(), now=new Date().toISOString();
   var optin=document.getElementById('fOpt').checked;
+  var saved=null;
   if(eid){
     var i=all.findIndex(function(x){return x.id===eid;});
-    if(i>=0){all[i].nom=nom;all[i].tel=(document.getElementById('fT').value||'').trim();all[i].mail=(document.getElementById('fE').value||'').trim();all[i].notes=(document.getElementById('fNt').value||'').trim();all[i].optin=optin;all[i].maj=now;}
+    if(i>=0){all[i].nom=nom;all[i].tel=(document.getElementById('fT').value||'').trim();all[i].mail=(document.getElementById('fE').value||'').trim();all[i].notes=(document.getElementById('fNt').value||'').trim();all[i].optin=optin;all[i].maj=now;saved=all[i];}
   }else{
-    all.push({id:'c_'+Date.now()+'_'+Math.floor(Math.random()*9999),nom:nom,tel:(document.getElementById('fT').value||'').trim(),mail:(document.getElementById('fE').value||'').trim(),notes:(document.getElementById('fNt').value||'').trim(),points:0,visitsCount:0,offre:'',optin:optin,maj:now,visites:[],ledger:[]});
+    saved={id:'c_'+Date.now()+'_'+Math.floor(Math.random()*9999),nom:nom,tel:(document.getElementById('fT').value||'').trim(),mail:(document.getElementById('fE').value||'').trim(),notes:(document.getElementById('fNt').value||'').trim(),points:0,visitsCount:0,offre:'',optin:optin,maj:now,visites:[],ledger:[]};
+    all.push(saved);
   }
-  sc(all);close_();render();
+  sc(all);if(saved&&window.DB)DB.upsert(saved);close_();render();
 }
 
 function del_(){
   if(!eid||!confirm('Supprimer ce client définitivement ?'))return;
-  sc(lc().filter(function(c){return c.id!==eid;}));
+  var id=eid;
+  sc(lc().filter(function(c){return c.id!==id;}));
+  if(window.DB)DB.remove(id);
   close_();render();
 }
 
@@ -460,7 +465,7 @@ function close_(){document.getElementById('ov').classList.remove('open');eid=nul
 function bkClose(e){if(e.target===document.getElementById('ov'))close_();}
 
 if(su())document.getElementById('syncRow').style.display='flex';
-render();
+if(window.DB){DB.onStatus(function(msg,cls){syncMsg(cls,msg);});DB.boot(function(){render();});}else{render();}
 </script>
 <script>
 (function(){

@@ -27,6 +27,8 @@ function doGet(e) {
       case 'load':         res={ok:true,data:lireProfil_()}; break;
       case 'saveClients':  ecrireClients_(JSON.parse(p.data||'[]')); res={ok:true}; break;
       case 'loadClients':  res={ok:true,data:lireClients_()}; break;
+      case 'upsertClient': upsertClient_(JSON.parse(p.client||'{}')); res={ok:true}; break;
+      case 'deleteClient': res={ok:true,deleted:deleteClient_(p.id||'')}; break;
       case 'sendCampaign': res=envoyerCampagne_(p); break;
       case 'quota':        res={ok:true,quota:MailApp.getRemainingDailyQuota()}; break;
       default:             res={ok:true,data:lireProfil_()};
@@ -72,7 +74,19 @@ function feuille_() {
     DriveApp.getFileById(ss.getId()).moveTo(d);
   }
   var sh = ss.getSheetByName(ONGLET) || ss.insertSheet(ONGLET);
-  if (sh.getLastRow() === 0) sh.appendRow(ENTETES);
+  if (sh.getLastRow() === 0) { sh.appendRow(ENTETES); return sh; }
+  // Mise à niveau de l'en-tête si d'anciennes colonnes diffèrent (ajout visitsCount/ledger…)
+  var head = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+  if (head.join('|') !== ENTETES.join('|')) {
+    var rows = sh.getDataRange().getValues(); rows.shift();
+    var remapped = rows.map(function(r) {
+      var o = {}; head.forEach(function(h, i) { o[h] = r[i]; });
+      return ENTETES.map(function(h) { return o[h] != null ? o[h] : ''; });
+    });
+    sh.clearContents();
+    sh.appendRow(ENTETES);
+    if (remapped.length) sh.getRange(2, 1, remapped.length, ENTETES.length).setValues(remapped);
+  }
   return sh;
 }
 function lireClients_() {
@@ -98,6 +112,41 @@ function ecrireClients_(arr) {
       return o[h] != null ? o[h] : '';
     }));
   });
+}
+
+// Écrit (ou met à jour) UN client par son id — petite charge utile, pas de réécriture globale.
+function ligneClient_(o) {
+  return ENTETES.map(function(h) {
+    if (h === 'visites' || h === 'ledger') return o[h] ? JSON.stringify(o[h]) : '';
+    return o[h] != null ? o[h] : '';
+  });
+}
+function upsertClient_(client) {
+  if (!client || !client.id) return false;
+  var sh = feuille_();
+  var idCol = ENTETES.indexOf('id');
+  var n = sh.getLastRow() - 1;
+  var ids = n > 0 ? sh.getRange(2, idCol + 1, n, 1).getValues() : [];
+  var row = ligneClient_(client);
+  for (var i = 0; i < ids.length; i++) {
+    if (String(ids[i][0]) === String(client.id)) {
+      sh.getRange(i + 2, 1, 1, ENTETES.length).setValues([row]);
+      return true;
+    }
+  }
+  sh.appendRow(row);
+  return true;
+}
+function deleteClient_(id) {
+  if (!id) return false;
+  var sh = feuille_();
+  var idCol = ENTETES.indexOf('id');
+  var n = sh.getLastRow() - 1;
+  var ids = n > 0 ? sh.getRange(2, idCol + 1, n, 1).getValues() : [];
+  for (var i = 0; i < ids.length; i++) {
+    if (String(ids[i][0]) === String(id)) { sh.deleteRow(i + 2); return true; }
+  }
+  return false;
 }
 
 // ── Campagnes email (Gmail) ──────────────────────────────────

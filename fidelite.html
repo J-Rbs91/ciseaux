@@ -485,6 +485,7 @@ html[data-theme="dark"] .switch .sl{background:#3d484e!important}
   </div>
 </div>
 
+<script src="app-sync.js"></script>
 <script>
 var LS_C='clients-v1', LS_CF='fidelite-config-v1', LS_P='profil-magasin-v1';
 var selId=null, cfgWork=null;
@@ -649,7 +650,7 @@ function validatePassage(){
   c.visites.push({date:new Date().toISOString(),items:items,montant:montant,gp:gp,gv:gv});
   if(gp)applyDelta(c,'points',gp,'passage',montant?eur(montant):'');
   if(gv)applyDelta(c,'visits',gv,'passage','');
-  c.maj=new Date().toISOString();sc(all);closePass();
+  c.maj=new Date().toISOString();sc(all);if(window.DB)DB.upsert(c);closePass();
   var parts=[];if(gp)parts.push('+'+gp+' '+counterLabel(cf,'points'));if(gv)parts.push('+'+gv+' '+counterLabel(cf,'visits'));
   var msg='✓ Passage enregistré'+(parts.length?' ('+parts.join(', ')+')':'')+'.';
   if(availableRewards(c,cf).length)msg+=' 🎁 Récompense débloquée !';
@@ -666,7 +667,7 @@ function undoPassage(){
   var gp=last&&last.gp!=null?last.gp:(cf.ptsParVisite||0),gv=last&&last.gv!=null?last.gv:0;
   if(gp)applyDelta(c,'points',-gp,'correction','Annulation passage');
   if(gv)applyDelta(c,'visits',-gv,'correction','Annulation passage');
-  c.maj=new Date().toISOString();sc(all);
+  c.maj=new Date().toISOString();sc(all);if(window.DB)DB.upsert(c);
   document.getElementById('actionMsg').textContent='↩︎ Dernier passage annulé.';
   renderPanel(c);renderTop();
 }
@@ -688,7 +689,7 @@ function validateVente(){
   var gp=Math.round((+cf.counters.points.perEuro||0)*montant);
   if(!gp){alert('Cette vente ne crédite aucun point (taux par € = 0). Réglez « points par € » dans Réglages.');return;}
   applyDelta(c,'points',gp,'vente',eur(montant));
-  c.maj=new Date().toISOString();sc(all);closeVente();
+  c.maj=new Date().toISOString();sc(all);if(window.DB)DB.upsert(c);closeVente();
   var msg='✓ Vente enregistrée (+'+gp+' '+counterLabel(cf,'points')+').';
   if(availableRewards(c,cf).length)msg+=' 🎁 Récompense débloquée !';
   document.getElementById('actionMsg').textContent=msg;renderPanel(c);renderTop();
@@ -710,7 +711,7 @@ function applyAdjust(){
   var cf=cfg(),c=all[i],note=(document.getElementById('adjNote').value||'').trim(),done=false;
   enabledCounters(cf).forEach(function(k){var el=document.getElementById('adj_'+k),d=parseInt(el&&el.value,10);if(d){applyDelta(c,k,d,'manuel',note);done=true;}});
   if(!done){alert('Saisissez au moins un ajustement.');return;}
-  c.maj=new Date().toISOString();sc(all);closeAdjust();
+  c.maj=new Date().toISOString();sc(all);if(window.DB)DB.upsert(c);closeAdjust();
   document.getElementById('actionMsg').textContent='✓ Ajustement enregistré.';renderPanel(c);renderTop();
 }
 function closeAdjust(){document.getElementById('ovAdj').classList.remove('open');}
@@ -739,7 +740,7 @@ function useReward(rid){
   if(r.reset==='zero')applyDelta(c,r.counter,-bal(c,r.counter),'recompense','Récompense : '+r.name);
   else if(r.reset==='subtract')applyDelta(c,r.counter,-r.threshold,'recompense','Récompense : '+r.name);
   else logMove(c,r.counter,0,'recompense','Récompense (sans remise à zéro) : '+r.name);
-  c.maj=new Date().toISOString();sc(all);
+  c.maj=new Date().toISOString();sc(all);if(window.DB)DB.upsert(c);
   document.getElementById('actionMsg').textContent='🎁 Récompense « '+r.name+' » utilisée.';
   renderPanel(c);renderTop();
 }
@@ -816,7 +817,7 @@ function saveConfig(){
 function closeConfig(){document.getElementById('ov').classList.remove('open');}
 function bkClose(e){if(e.target===document.getElementById('ov'))closeConfig();}
 
-renderTop();
+if(window.DB){DB.boot(function(){renderTop();});}else{renderTop();}
 </script>
 <script>
 (function(){

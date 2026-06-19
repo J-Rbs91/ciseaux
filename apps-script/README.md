@@ -38,7 +38,9 @@ L'URL `…/exec` reste la même, inutile de la recoller.
 | `load` *(défaut)* | Renvoie le profil salon (JSON) |
 | `save` | Enregistre le profil salon |
 | `loadClients` | Renvoie la liste clients depuis la Google Sheet |
-| `saveClients` | Écrase la Google Sheet avec la liste fournie |
+| `saveClients` | Écrase la Google Sheet avec la liste fournie (sauvegarde complète) |
+| `upsertClient` | Crée/met à jour **un seul** client (par `id`) — synchro incrémentale |
+| `deleteClient` | Supprime **un seul** client (par `id`) |
 | `sendCampaign` | Envoie un email personnalisé aux clients opt-in (depuis votre Gmail) |
 | `quota` | Renvoie le nombre d'emails encore envoyables aujourd'hui |
 | `unsub` | Page de désinscription (lien placé dans chaque email) |

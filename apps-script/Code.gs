@@ -160,6 +160,7 @@ function envoyerCampagne_(p) {
   var seuil   = parseInt(p.seuil || '0', 10) || 0;
   var rules   = [];
   try { if (p.rewardRules) rules = JSON.parse(p.rewardRules) || []; } catch(e) {}
+  var winMult = parseFloat(p.winbackMult) || 2;
   var baseUrl = ScriptApp.getService().getUrl() || (p.base || '');
   var logoUrl = p.logoUrl || '';
 
@@ -177,6 +178,7 @@ function envoyerCampagne_(p) {
       });
       return (Number(c.points) || 0) >= seuil;
     }
+    if (segment === 'winback') return estEnRetard_(c, winMult);
     return true;
   });
 
@@ -200,6 +202,18 @@ function envoyerCampagne_(p) {
 
   return { ok:true, cibles:dest.length, envoyes:envoyes, ignores:ignores,
            erreurs:erreurs, quotaRestant:MailApp.getRemainingDailyQuota() };
+}
+
+// Client « régulier en retard » : délai depuis la dernière visite > délai moyen × mult (≥ 3 passages).
+function estEnRetard_(c, mult) {
+  var v = (c.visites && c.visites.length ? c.visites : []).filter(function(x){ return x && x.date; })
+            .sort(function(a, b){ return new Date(a.date) - new Date(b.date); });
+  if (v.length < 3) return false;
+  var gaps = [], i;
+  for (i = 1; i < v.length; i++) gaps.push((new Date(v[i].date) - new Date(v[i - 1].date)) / 86400000);
+  var avg = gaps.reduce(function(a, b){ return a + b; }, 0) / gaps.length;
+  if (!avg) return false;
+  return (Date.now() - new Date(v[v.length - 1].date)) / 86400000 > (mult || 2) * avg;
 }
 
 function estOptin_(v) {

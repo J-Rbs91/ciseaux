@@ -301,6 +301,7 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
   <a href="index.html" class="back"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" style="display:block" aria-hidden="true"><path d="M13.41,12l3.3-3.29a1,1,0,1,0-1.42-1.42l-4,4a1,1,0,0,0,0,1.42l4,4a1,1,0,0,0,1.42,0,1,1,0,0,0,0-1.42ZM8,7A1,1,0,0,0,7,8v8a1,1,0,0,0,2,0V8A1,1,0,0,0,8,7Z"></path></svg></a>
   <h1><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#A22C29" style="vertical-align:-.18em" aria-hidden="true"><path d="M21,10.5H20v-1a1,1,0,0,0-2,0v1H17a1,1,0,0,0,0,2h1v1a1,1,0,0,0,2,0v-1h1a1,1,0,0,0,0-2Zm-7.7,1.72A4.92,4.92,0,0,0,15,8.5a5,5,0,0,0-10,0,4.92,4.92,0,0,0,1.7,3.72A8,8,0,0,0,2,19.5a1,1,0,0,0,2,0,6,6,0,0,1,12,0,1,1,0,0,0,2,0A8,8,0,0,0,13.3,12.22ZM10,11.5a3,3,0,1,1,3-3A3,3,0,0,1,10,11.5Z"></path></svg> Clients</h1>
   <span class="count" id="countEl"></span>
+  <button onclick="openInact()" title="Clients inactifs / nettoyage" style="background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.3);color:#fff;border-radius:16px;padding:.35rem .7rem;cursor:pointer;font-size:.78rem;font-weight:700;font-family:inherit;margin-left:.5rem;white-space:nowrap">Inactifs</button>
 </header>
 
 <div class="search-wrap">
@@ -312,6 +313,7 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
   <span class="sync-st" id="syncSt"></span>
 </div>
 
+<div id="inactBanner" style="display:none;max-width:620px;margin:.2rem auto .7rem;padding:.7rem 1rem;background:#fff8e1;border:1.5px solid #f0d98a;border-radius:12px;font-size:.85rem;color:#6b5800;cursor:pointer" onclick="openInact()"></div>
 <div class="list" id="list"></div>
 <button class="fab" onclick="openNew()" title="Nouveau client">+</button>
 
@@ -329,6 +331,18 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
     <div class="row">
       <button class="btn btn-p" onclick="save_()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M18.71,7.21a1,1,0,0,0-1.42,0L9.84,14.67,6.71,11.53A1,1,0,1,0,5.29,13l3.84,3.84a1,1,0,0,0,1.42,0l8.16-8.16A1,1,0,0,0,18.71,7.21Z"></path></svg> Enregistrer</button>
       <button class="btn btn-d" id="delBtn" style="display:none" onclick="del_()">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ovInact" onclick="bkInact(event)">
+  <div class="modal">
+    <div class="mh"><h2>Clients inactifs</h2><button class="xbtn" onclick="closeInact()">&times;</button></div>
+    <div class="field"><label>Inactif depuis plus de (mois)</label><input id="inactMonths" type="number" min="1" step="1" oninput="renderInactList()"><div style="font-size:.76rem;color:#A9B4C2;margin-top:.35rem">Aucune visite ni mise à jour depuis ce délai. La suppression est définitive (RGPD) : décoche ceux à garder, puis confirme.</div></div>
+    <div id="inactList"></div>
+    <div class="row" style="margin-top:1rem">
+      <button class="btn btn-d" onclick="purgeSelected()">Supprimer la sélection</button>
+      <button class="btn btn-o" onclick="closeInact()">Fermer</button>
     </div>
   </div>
 </div>
@@ -382,7 +396,51 @@ function pullClients(){
   });
 }
 
+var LS_POL='crm-policy-v1';
+function pol(){try{return Object.assign({purgeMonths:12},JSON.parse(localStorage.getItem(LS_POL)||'{}'));}catch(e){return {purgeMonths:12};}}
+function polSet(o){localStorage.setItem(LS_POL,JSON.stringify(o));}
+function lastActivity(c){
+  var ts=0;
+  if(Array.isArray(c.visites))c.visites.forEach(function(v){if(v&&v.date){var t=+new Date(v.date);if(t>ts)ts=t;}});
+  if(c.maj){var m=+new Date(c.maj);if(m>ts)ts=m;}
+  if(!ts){var mm=String(c.id||'').match(/^c_(\d+)_/);if(mm)ts=+mm[1];}
+  return ts;
+}
+function inactiveList(months){
+  var cut=Date.now()-months*30.44*86400000;
+  return lc().filter(function(c){var t=lastActivity(c);return t&&t<cut;}).sort(function(a,b){return lastActivity(a)-lastActivity(b);});
+}
+function renderInactBanner(){
+  var b=document.getElementById('inactBanner');if(!b)return;
+  var m=pol().purgeMonths,n=inactiveList(m).length;
+  if(n>0){b.style.display='';b.innerHTML='🗑 '+n+' client'+(n>1?'s':'')+' inactif'+(n>1?'s':'')+' depuis plus de '+m+' mois — <strong>Revoir</strong>';}
+  else b.style.display='none';
+}
+function openInact(){document.getElementById('inactMonths').value=pol().purgeMonths;renderInactList();document.getElementById('ovInact').classList.add('open');}
+function renderInactList(){
+  var m=parseInt(document.getElementById('inactMonths').value,10)||12;
+  polSet({purgeMonths:m});renderInactBanner();
+  var list=inactiveList(m),box=document.getElementById('inactList');
+  if(!list.length){box.innerHTML='<div style="font-size:.86rem;color:#5E6572;padding:.6rem 0">Aucun client inactif depuis plus de '+m+' mois. 👍</div>';return;}
+  box.innerHTML='<div style="font-size:.78rem;color:#A9B4C2;margin:.2rem 0 .4rem">'+list.length+' client(s) — décoche ceux à conserver :</div>'+list.map(function(c){
+    var d=lastActivity(c)?new Date(lastActivity(c)).toLocaleDateString('fr-FR'):'—';
+    return '<label style="display:flex;align-items:center;gap:.6rem;padding:.5rem .2rem;border-bottom:1px solid #dde4e8;font-size:.9rem"><input type="checkbox" class="inact-chk" value="'+c.id+'" checked><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(c.nom||'(sans nom)')+'</span><span style="color:#A9B4C2;font-size:.78rem;white-space:nowrap">dern. '+d+'</span></label>';
+  }).join('');
+}
+function purgeSelected(){
+  var ids=[].slice.call(document.querySelectorAll('.inact-chk:checked')).map(function(x){return x.value;});
+  if(!ids.length){alert('Aucun client sélectionné.');return;}
+  if(!confirm('Supprimer définitivement '+ids.length+' client(s) ? Cette action est irréversible.'))return;
+  var set={};ids.forEach(function(id){set[id]=1;});
+  sc(lc().filter(function(c){return !set[c.id];}));
+  if(window.DB)ids.forEach(function(id){DB.remove(id);});
+  closeInact();render();
+}
+function closeInact(){document.getElementById('ovInact').classList.remove('open');}
+function bkInact(e){if(e.target===document.getElementById('ovInact'))closeInact();}
+
 function render(){
+  renderInactBanner();
   var q=(document.getElementById('q').value||'').toLowerCase().trim();
   var all=lc();
   document.getElementById('countEl').textContent=all.length+' client'+(all.length>1?'s':'');

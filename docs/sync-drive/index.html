@@ -18,22 +18,27 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:"Manrope",-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#15181c;color:#eceff3;line-height:1.65;padding-bottom:3rem}
-header{background:linear-gradient(135deg,#14181d,#0e1114);color:#fff;padding:1rem 1.5rem;display:flex;align-items:center;gap:.9rem}
+body{font-family:"Manrope",-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#EEF1EF;color:#1C2321;line-height:1.65;padding-bottom:3rem}
+header{background:#1C2321;color:#fff;padding:1rem 1.5rem;display:flex;align-items:center;gap:.9rem}
 .back{color:#fff;text-decoration:none;font-size:1.3rem;opacity:.85}
+.back:hover{opacity:1}
 header h1{font-size:1.05rem;font-weight:800}
 .content{max-width:640px;margin:0 auto;padding:1.5rem 1.2rem}
-h2{font-size:1.1rem;font-weight:800;color:#c8a24b;margin:1.5rem 0 .6rem}
-p,li{font-size:.93rem;color:#aeb7c2}
+h2{font-size:1.1rem;font-weight:800;color:#A22C29;margin:1.6rem 0 .6rem}
+p,li{font-size:.93rem;color:#5E6572}
 ul,ol{margin-left:1.3rem;margin-bottom:.8rem}
 li{margin-bottom:.35rem}
-.step{background:#1c2127;border-radius:14px;padding:1rem 1.2rem;margin-bottom:.8rem;box-shadow:0 2px 10px rgba(0,0,0,.42);display:flex;gap:.9rem;align-items:flex-start}
-.step-num{background:#c8a24b;color:#15181c;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.88rem;flex-shrink:0;margin-top:.1rem}
-.step-body{flex:1}
-.step-body strong{font-weight:700}
-code{background:#232931;padding:.1rem .4rem;border-radius:5px;font-size:.85rem;font-family:'SFMono-Regular',Consolas,monospace}
-.warn{background:#2a2620;border:1.5px solid #c8a24b;border-radius:12px;padding:.9rem 1.1rem;font-size:.85rem;margin:1rem 0;color:#d8b45e}
-.warn strong{font-weight:700}
+a{color:#A22C29;font-weight:600}
+strong{color:#1C2321}
+.step{background:#fff;border:1px solid #dde4e8;border-radius:14px;padding:1rem 1.2rem;margin-bottom:.8rem;box-shadow:0 2px 12px rgba(28,35,33,.1);display:flex;gap:.9rem;align-items:flex-start}
+.step-num{background:#A22C29;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.88rem;flex-shrink:0;margin-top:.1rem}
+.step-body{flex:1;color:#5E6572}
+.step-body strong{font-weight:700;color:#1C2321}
+code{background:#EEF1EF;border:1px solid #dde4e8;padding:.1rem .4rem;border-radius:5px;font-size:.85rem;font-family:'SFMono-Regular',Consolas,monospace;color:#1C2321;word-break:break-all}
+.warn{background:#fef2f2;border:1.5px solid #A22C29;border-radius:12px;padding:.9rem 1.1rem;font-size:.85rem;margin:1rem 0;color:#7a1c1a}
+.warn strong{font-weight:800;color:#A22C29}
+.info{background:#fff;border:1px solid #dde4e8;border-left:4px solid #A22C29;border-radius:12px;padding:.9rem 1.1rem;font-size:.85rem;margin:1rem 0;color:#5E6572}
+.info strong{color:#1C2321}
 </style>
 </head>
 <body>
@@ -45,11 +50,12 @@ code{background:#232931;padding:.1rem .4rem;border-radius:5px;font-size:.85rem;f
   <p>Cette méthode permet de retrouver vos données depuis <strong>n'importe quel appareil</strong> (tablette, téléphone, autre ordi) grâce à votre propre compte Google.</p>
 
   <h2>Comment ça marche ?</h2>
-  <p>Vous déployez un petit script sur <strong>votre</strong> Google Drive. Il stocke vos données dans un fichier que vous seul contrôlez. KuT n'héberge rien.</p>
+  <p>Vous déployez un petit script sur <strong>votre</strong> Google Drive. Il devient la <strong>base de référence</strong> de KuT : il stocke vos données dans des fichiers que vous seul contrôlez. KuT n'héberge rien.</p>
+  <p>Un seul script alimente <strong>toutes</strong> les fonctions partagées : la base clients, le programme de fidélité (compteurs, paliers, journal), l'historique des passages utilisé par les statistiques, les offres, les <strong>mails d'anniversaire automatiques</strong> et l'<strong>envoi des campagnes email</strong> depuis votre Gmail.</p>
 
   <h2>Étapes (5 min)</h2>
 
-  <div class="step"><div class="step-num">1</div><div class="step-body">Ouvrir <strong><a href="https://script.google.com" target="_blank" style="color:#c8a24b">script.google.com</a></strong> et cliquer <strong>Nouveau projet</strong>.</div></div>
+  <div class="step"><div class="step-num">1</div><div class="step-body">Ouvrir <strong><a href="https://script.google.com" target="_blank">script.google.com</a></strong> et cliquer <strong>Nouveau projet</strong>.</div></div>
   <div class="step"><div class="step-num">2</div><div class="step-body">Supprimer le code existant. Copier-coller le contenu du fichier <code>apps-script/Code.gs</code> disponible dans le dépôt GitHub du projet.</div></div>
   <div class="step"><div class="step-num">3</div><div class="step-body">Cliquer <strong>Enregistrer</strong> (icône disquette).</div></div>
   <div class="step"><div class="step-num">4</div><div class="step-body">Cliquer <strong>Déployer → Nouveau déploiement</strong>. Choisir le type <strong>Application web</strong>.</div></div>
@@ -60,12 +66,20 @@ code{background:#232931;padding:.1rem .4rem;border-radius:5px;font-size:.85rem;f
 
   <div class="warn"><strong><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M12,16a1,1,0,1,0,1,1A1,1,0,0,0,12,16Zm10.67,1.47-8.05-14a3,3,0,0,0-5.24,0l-8,14A3,3,0,0,0,3.94,22H20.06a3,3,0,0,0,2.61-4.53Zm-1.73,2a1,1,0,0,1-.88.51H3.94a1,1,0,0,1-.88-.51,1,1,0,0,1,0-1l8-14a1,1,0,0,1,1.78,0l8.05,14A1,1,0,0,1,20.94,19.49ZM12,8a1,1,0,0,0-1,1v4a1,1,0,0,0,2,0V9A1,1,0,0,0,12,8Z"></path></svg> Compte Google Workspace (pro) ?</strong><br>L'option « Tout le monde » peut ne pas être disponible. Solution : créer un compte Gmail personnel dédié (ex. <code>monsalon.sync@gmail.com</code>) et déployer le script depuis ce compte.</div>
 
+  <h2>Déjà déployé une ancienne version ?</h2>
+  <p>Si vous aviez installé le script avant les dernières fonctionnalités (fidélité v2, statistiques, mails d'anniversaire, campagnes), recollez le <code>Code.gs</code> à jour puis :</p>
+  <div class="step"><div class="step-num">1</div><div class="step-body">Coller le nouveau <code>Code.gs</code> et <strong>Enregistrer</strong>.</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Déployer → Gérer les déploiements → Modifier (crayon) → Version : Nouvelle version → Déployer</strong>.</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Réautoriser</strong> : Google demande cette fois l'autorisation d'<strong>envoyer des emails</strong> en votre nom (campagnes + anniversaires). Acceptez.</div></div>
+  <div class="info">L'URL <code>/exec</code> <strong>ne change pas</strong> : inutile de la recoller dans l'app. Au prochain « Envoyer vers Drive », la base clients est complétée avec les nouvelles colonnes (compteurs de fidélité, journal des mouvements) sans perdre vos données existantes.</div>
+
   <h2>Vos données restent chez vous</h2>
-  <p>Le script tourne sur <strong>votre</strong> compte Google. Il crée un dossier <code>Hub_Facilities</code> dans votre Drive avec vos données. KuT n'y a pas accès.</p>
+  <p>Le script tourne sur <strong>votre</strong> compte Google. Il crée un dossier <code>Hub_Facilities</code> dans votre Drive avec un fichier <code>profil-magasin.json</code>, un classeur <code>base-clients</code> et un fichier <code>offres.json</code>. KuT n'y a pas accès.</p>
 
   <h2>Utiliser sur plusieurs appareils</h2>
-  <p>Une fois l'URL <code>/exec</code> obtenue, collez-la <strong>à l'identique</strong> sur chaque appareil (PC, tablette, smartphone) pour partager la même base.</p>
-  <p><a href="../multi-appareils/" style="color:#c8a24b;font-weight:700">→ Procédure multi-appareils (PC, tablette, smartphone)</a></p>
+  <p>Une fois l'URL <code>/exec</code> obtenue, collez-la <strong>à l'identique</strong> sur chaque appareil (PC, tablette, smartphone) pour partager la même base. La synchro est <strong>incrémentale</strong> (client par client) : les modifications remontent automatiquement, même hors-ligne.</p>
+  <p><a href="../multi-appareils/">→ Procédure multi-appareils (PC, tablette, smartphone)</a></p>
+  <p><a href="../campagnes/">→ Envoyer des campagnes email à vos clients</a></p>
 </div>
 </body>
 </html>

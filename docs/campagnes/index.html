@@ -18,24 +18,30 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:"Manrope",-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#15181c;color:#eceff3;line-height:1.65;padding-bottom:3rem}
-header{background:linear-gradient(135deg,#14181d,#0e1114);color:#fff;padding:1rem 1.5rem;display:flex;align-items:center;gap:.9rem}
+body{font-family:"Manrope",-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#EEF1EF;color:#1C2321;line-height:1.65;padding-bottom:3rem}
+header{background:#1C2321;color:#fff;padding:1rem 1.5rem;display:flex;align-items:center;gap:.9rem}
 .back{color:#fff;text-decoration:none;font-size:1.3rem;opacity:.85}
+.back:hover{opacity:1}
 header h1{font-size:1.05rem;font-weight:800}
 .content{max-width:640px;margin:0 auto;padding:1.5rem 1.2rem}
-h2{font-size:1.1rem;font-weight:800;color:#c8a24b;margin:1.5rem 0 .6rem}
-p,li{font-size:.93rem;color:#aeb7c2}
+h2{font-size:1.1rem;font-weight:800;color:#A22C29;margin:1.6rem 0 .6rem}
+p,li{font-size:.93rem;color:#5E6572}
 ul,ol{margin-left:1.3rem;margin-bottom:.8rem}
 li{margin-bottom:.35rem}
-code{background:#232931;padding:.1rem .4rem;border-radius:5px;font-size:.85rem;font-family:'SFMono-Regular',Consolas,monospace}
-.warn{background:#2a2620;border:1.5px solid #c8a24b;border-radius:12px;padding:.9rem 1.1rem;font-size:.85rem;margin:1rem 0;color:#d8b45e}
-.ok{background:#1d2622;border:1.5px solid #2e4a3a;border-radius:12px;padding:.9rem 1.1rem;font-size:.85rem;margin:1rem 0;color:#6bbf8a}
+a{color:#A22C29;font-weight:600}
+strong{color:#1C2321}
+em{color:#1C2321}
+code{background:#EEF1EF;border:1px solid #dde4e8;padding:.1rem .4rem;border-radius:5px;font-size:.85rem;font-family:'SFMono-Regular',Consolas,monospace;color:#1C2321}
+.warn{background:#fef2f2;border:1.5px solid #A22C29;border-radius:12px;padding:.9rem 1.1rem;font-size:.85rem;margin:1rem 0;color:#7a1c1a}
+.warn strong{color:#A22C29}
+.ok{background:#fff;border:1px solid #dde4e8;border-left:4px solid #2f7d56;border-radius:12px;padding:.9rem 1.1rem;font-size:.85rem;margin:1rem 0;color:#5E6572}
+.ok strong{color:#1C2321}
 </style>
 </head>
 <body>
 <header>
   <a href="../../index.html" class="back"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" style="display:block" aria-hidden="true"><path d="M13.41,12l3.3-3.29a1,1,0,1,0-1.42-1.42l-4,4a1,1,0,0,0,0,1.42l4,4a1,1,0,0,0,1.42,0,1,1,0,0,0,0-1.42ZM8,7A1,1,0,0,0,7,8v8a1,1,0,0,0,2,0V8A1,1,0,0,0,8,7Z"></path></svg></a>
-  <h1><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#CF5C36" style="vertical-align:-.18em" aria-hidden="true"><path d="M12,2a10,10,0,1,0,5,18.66,1,1,0,1,0-1-1.73A8,8,0,1,1,20,12v.75a1.75,1.75,0,0,1-3.5,0V8.5a1,1,0,0,0-1-1,1,1,0,0,0-1,.79A4.45,4.45,0,0,0,12,7.5,4.5,4.5,0,1,0,15.3,15,3.74,3.74,0,0,0,22,12.75V12A10,10,0,0,0,12,2Zm0,12.5A2.5,2.5,0,1,1,14.5,12,2.5,2.5,0,0,1,12,14.5Z"></path></svg> Campagnes email</h1>
+  <h1><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#fff" style="vertical-align:-.18em" aria-hidden="true"><path d="M12,2a10,10,0,1,0,5,18.66,1,1,0,1,0-1-1.73A8,8,0,1,1,20,12v.75a1.75,1.75,0,0,1-3.5,0V8.5a1,1,0,0,0-1-1,1,1,0,0,0-1,.79A4.45,4.45,0,0,0,12,7.5,4.5,4.5,0,1,0,15.3,15,3.74,3.74,0,0,0,22,12.75V12A10,10,0,0,0,12,2Zm0,12.5A2.5,2.5,0,1,1,14.5,12,2.5,2.5,0,0,1,12,14.5Z"></path></svg> Campagnes email</h1>
 </header>
 <div class="content">
   <p>KuT permet d'envoyer des offres par email à vos clients, <strong>depuis votre propre adresse Gmail</strong>, grâce au même script Apps Script que la synchro Drive. Aucun service tiers, aucune donnée hébergée ailleurs.</p>
@@ -57,8 +63,30 @@ code{background:#232931;padding:.1rem .4rem;border-radius:5px;font-size:.85rem;f
 
   <div class="warn"><strong><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M12,16a1,1,0,1,0,1,1A1,1,0,0,0,12,16Zm10.67,1.47-8.05-14a3,3,0,0,0-5.24,0l-8,14A3,3,0,0,0,3.94,22H20.06a3,3,0,0,0,2.61-4.53Zm-1.73,2a1,1,0,0,1-.88.51H3.94a1,1,0,0,1-.88-.51,1,1,0,0,1,0-1l8-14a1,1,0,0,1,1.78,0l8.05,14A1,1,0,0,1,20.94,19.49ZM12,8a1,1,0,0,0-1,1v4a1,1,0,0,0,2,0V9A1,1,0,0,0,12,8Z"></path></svg> Quota Gmail</strong><br>Un compte Gmail gratuit peut envoyer à <strong>100 destinataires par jour</strong> (1 500 pour Google Workspace). Au-delà, les envois sont reportés au lendemain. La page Campagnes affiche votre quota restant.</div>
 
+  <h2>Cibler les bons clients (segmentation)</h2>
+  <p>Plutôt que d'écrire à toute votre base, choisissez un <strong>segment</strong> de destinataires dans la page Campagnes. Tous restent filtrés par l'opt-in (seuls les clients ayant accepté les offres sont contactés) :</p>
+  <ul>
+    <li><strong>Tous les clients opt-in</strong> — l'ensemble de vos clients consentants.</li>
+    <li><strong>Récompense disponible</strong> — ceux qui ont atteint un palier de fidélité non encore utilisé.</li>
+    <li><strong>À relancer</strong> — clients en sommeil, sans passage depuis un moment.</li>
+    <li><strong>Clients fidèles</strong> — au-delà d'un nombre de passages que vous fixez.</li>
+    <li><strong>Clients VIP</strong> — au-dessus d'un panier moyen que vous fixez.</li>
+    <li><strong>Ont pris une prestation</strong> — ceux ayant déjà réservé une prestation donnée.</li>
+  </ul>
+
   <h2>Personnalisation</h2>
-  <p>Dans votre message, écrivez <code>{prenom}</code> pour insérer le prénom du client. Exemple : <em>« Bonjour {prenom}, profitez de… »</em>.</p>
+  <p>Insérez ces variables dans l'objet ou le message, elles sont remplacées pour chaque client :</p>
+  <ul>
+    <li><code>{prenom}</code> — le prénom du client</li>
+    <li><code>{nom}</code> — le nom complet</li>
+    <li><code>{offre}</code> — le nom de l'offre liée (mails d'anniversaire)</li>
+    <li><code>{prestations}</code> — la ou les prestations offertes (mails d'anniversaire)</li>
+  </ul>
+  <p>Exemple : <em>« Bonjour {prenom}, profitez de… »</em>.</p>
+
+  <h2>🎂 Mails d'anniversaire automatiques</h2>
+  <p>Depuis la page <strong>Offres</strong>, cochez « Offre anniversaire », choisissez la prestation offerte et rédigez l'objet + le message. Tant que l'offre est active, le mail part <strong>automatiquement chaque année</strong>, le jour de l'anniversaire, à chaque client opt-in dont la <strong>date de naissance</strong> est renseignée — une seule fois par an et par client.</p>
+  <p>L'activation se fait une seule fois dans l'éditeur Apps Script (déclencheur quotidien). Voir la procédure dans <a href="https://github.com/j-rbs91/ciseaux/blob/main/apps-script/README.md" target="_blank"><code>apps-script/README.md</code></a>.</p>
 
   <div class="ok"><strong>Conformité RGPD</strong><br>Seuls les clients ayant explicitement accepté les offres reçoivent vos emails, et chaque message contient un lien de désinscription qui met à jour automatiquement votre base. C'est la base du marketing par email responsable.</div>
 

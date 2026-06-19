@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Utiliser sur plusieurs appareils — KuT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Manrope",-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#15181c;color:#eceff3;line-height:1.65;padding-bottom:3rem}
+header{background:linear-gradient(135deg,#14181d,#0e1114);color:#fff;padding:1rem 1.5rem;display:flex;align-items:center;gap:.9rem}
+.back{color:#fff;text-decoration:none;font-size:1.3rem;opacity:.85}
+header h1{font-size:1.05rem;font-weight:800}
+.content{max-width:640px;margin:0 auto;padding:1.5rem 1.2rem}
+h2{font-size:1.1rem;font-weight:800;color:#c8a24b;margin:1.6rem 0 .6rem}
+p,li{font-size:.93rem;color:#aeb7c2}
+ul,ol{margin-left:1.3rem;margin-bottom:.8rem}
+li{margin-bottom:.4rem}
+a{color:#c8a24b}
+.step{background:#1c2127;border-radius:14px;padding:1rem 1.2rem;margin-bottom:.8rem;box-shadow:0 2px 10px rgba(0,0,0,.42);display:flex;gap:.9rem;align-items:flex-start}
+.step-num{background:#c8a24b;color:#15181c;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.88rem;flex-shrink:0;margin-top:.1rem}
+.step-body{flex:1}
+.step-body strong{font-weight:700;color:#dde3ea}
+code{background:#232931;padding:.1rem .4rem;border-radius:5px;font-size:.85rem;font-family:'SFMono-Regular',Consolas,monospace;color:#e7d6a8;word-break:break-all}
+.warn{background:#2a2620;border:1.5px solid #c8a24b;border-radius:12px;padding:.9rem 1.1rem;font-size:.85rem;margin:1rem 0;color:#d8b45e}
+.warn strong{font-weight:700}
+.diagram{background:#1c2127;border-radius:14px;padding:1.1rem 1.2rem;margin:.6rem 0 .4rem;text-align:center;font-size:.9rem;color:#cdd5de;box-shadow:0 2px 10px rgba(0,0,0,.42)}
+.diagram b{color:#c8a24b}
+.ok{color:#7fce8f;font-weight:700}
+.bad{color:#e08a8a;font-weight:700}
+.rules li{margin-bottom:.5rem;color:#cdd5de}
+.cta{display:inline-block;margin-top:.3rem;background:#c8a24b;color:#15181c;font-weight:800;text-decoration:none;padding:.55rem .9rem;border-radius:10px;font-size:.9rem}
+</style>
+</head>
+<body>
+<header>
+  <a href="../../index.html" class="back"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" style="display:block" aria-hidden="true"><path d="M13.41,12l3.3-3.29a1,1,0,1,0-1.42-1.42l-4,4a1,1,0,0,0,0,1.42l4,4a1,1,0,0,0,1.42,0,1,1,0,0,0,0-1.42ZM8,7A1,1,0,0,0,7,8v8a1,1,0,0,0,2,0V8A1,1,0,0,0,8,7Z"></path></svg></a>
+  <h1>📱💻 Utiliser KuT sur plusieurs appareils</h1>
+</header>
+<div class="content">
+
+  <p>KuT s'utilise sur <strong>PC, tablette et smartphone en même temps</strong>, avec une base clients unique partagée. Le principe est simple :</p>
+
+  <div class="diagram">1 script déployé <b>une fois</b> → 1 URL <code>…/exec</code> → vous collez cette <b>même URL</b> sur chaque appareil → tous lisent &amp; écrivent dans <b>la même base</b> sur votre Google Drive.</div>
+
+  <div class="warn"><strong>La règle d'or :</strong> la <strong>même URL</strong> partout. Deux URL différentes = deux bases séparées qui ne se parlent pas.</div>
+
+  <h2>Étape 0 — Une seule fois : déployer le script</h2>
+  <p>À faire <strong>une seule fois</strong> (sur n'importe quel ordinateur). Vous obtenez une URL qui se termine par <code>/exec</code> : c'est la clé de toute la synchro.</p>
+  <p><a class="cta" href="../sync-drive/">Voir la procédure de déploiement →</a></p>
+  <div class="warn"><strong>Déjà déployé avant ?</strong> Refaites <strong>Déployer → Gérer les déploiements → Modifier (crayon) → Version : Nouvelle version → Déployer</strong>, puis <strong>réautorisez</strong>. C'est nécessaire pour activer la synchro par client (rapide, multi-appareils) et l'envoi des relances. L'URL <code>/exec</code> ne change pas.</div>
+  <p>👉 <strong>Notez / envoyez-vous cette URL</strong> (par email ou note) : vous allez devoir la recopier sur chaque appareil.</p>
+
+  <h2>Étape 1 — Sur chaque appareil : ouvrir l'application</h2>
+  <p>Ouvrez cette adresse dans le navigateur de l'appareil :</p>
+  <div class="diagram"><code>https://j-rbs91.github.io/ciseaux/</code></div>
+  <div class="step"><div class="step-num">💻</div><div class="step-body"><strong>PC / Mac</strong> — Chrome, Edge, Firefox ou Safari. Ajoutez la page aux favoris.</div></div>
+  <div class="step"><div class="step-num"></div><div class="step-body"><strong>iPhone / iPad (Safari)</strong> — bouton <strong>Partager</strong> (carré avec flèche ↑) → <strong>Sur l'écran d'accueil</strong>. Vous obtenez une icône comme une vraie appli.</div></div>
+  <div class="step"><div class="step-num"></div><div class="step-body"><strong>Android (Chrome)</strong> — menu <strong>⋮</strong> en haut à droite → <strong>Ajouter à l'écran d'accueil</strong> (ou « Installer l'application »).</div></div>
+
+  <h2>Étape 2 — Sur chaque appareil : coller la même URL</h2>
+  <div class="step"><div class="step-num">1</div><div class="step-body">Ouvrir <strong>⚙️ Mon salon</strong>.</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-body">Coller l'<strong>URL <code>/exec</code></strong> (la même que sur les autres appareils) dans le champ <em>URL de votre script Apps Script</em>.</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-body">Cliquer <strong>Enregistrer</strong>.</div></div>
+  <p>Répétez l'étape 2 sur <strong>chaque</strong> appareil (et dans chaque navigateur que vous comptez utiliser).</p>
+
+  <h2>Étape 3 — Vérifier que c'est synchronisé</h2>
+  <p>Allez dans <strong>Clients</strong> : un indicateur affiche <span class="ok">✓ à jour</span> quand tout est synchronisé, ou <span class="bad">⚠ N modif. en attente</span> s'il reste des choses à envoyer.</p>
+  <p>Test simple : ajoutez un client sur le PC, puis ouvrez l'app sur le téléphone → il apparaît. Les appareils se mettent à jour <strong>automatiquement</strong> dès que vous revenez sur l'app (et toutes les ~30 secondes), sans avoir à recharger.</p>
+
+  <h2>Les règles d'or au quotidien</h2>
+  <ul class="rules">
+    <li><strong>Même URL partout</strong> — sinon les appareils ne partagent pas la même base.</li>
+    <li><strong>Attendez « ✓ à jour »</strong> avant de fermer. Si vous quittez avec des modifs en attente, l'app vous prévient.</li>
+    <li><strong>Hors-ligne, ça marche quand même</strong> — vous pouvez continuer à saisir ; tout repart tout seul dès que le réseau revient.</li>
+    <li><strong>Évitez de modifier le même client sur deux appareils à la même seconde</strong> — en cas de conflit, c'est le dernier enregistrement qui gagne (pas de fusion).</li>
+    <li><strong>Ne videz pas « les données du site » / le cache du navigateur</strong> tant qu'il reste des modifs « en attente » : ce sont les seules données qui ne sont pas encore sur le Drive.</li>
+  </ul>
+
+  <h2>Dépannage</h2>
+  <p><strong>Je ne vois pas sur un appareil ce que j'ai saisi sur un autre.</strong><br>Vérifiez que l'URL collée est <strong>identique</strong> partout. Revenez sur l'app (ou tirez la page vers le bas pour rafraîchir) et regardez l'indicateur de synchro.</p>
+  <p><strong>L'indicateur affiche « ⚠ hors-ligne ».</strong><br>Pas de réseau, ou l'URL est incorrecte. Recollez l'URL qui se termine bien par <code>/exec</code>.</p>
+  <p><strong>Sur iPhone, rien ne se passe.</strong><br>Utilisez <strong>Safari</strong> et ajoutez l'app à l'écran d'accueil (étape 1).</p>
+  <p><strong>Compte Google Workspace (pro) : « Tout le monde » indisponible.</strong><br>Créez un compte Gmail personnel dédié (ex. <code>monsalon.sync@gmail.com</code>) et déployez le script depuis ce compte.</p>
+
+  <h2>Sécurité</h2>
+  <p>L'URL <code>/exec</code> est longue et aléatoire : elle fait office de <strong>clé secrète</strong>. Ne la publiez pas. Toutes vos données restent sur <strong>votre</strong> Google Drive — KuT n'héberge rien.</p>
+
+</div>
+</body>
+</html>

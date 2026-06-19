@@ -42,6 +42,8 @@ Voir [`docs/campagnes/`](docs/campagnes/) et [`apps-script/README.md`](apps-scri
 
 Voir [`apps-script/README.md`](apps-script/README.md) ou la page **docs/sync-drive/** dans l'application.
 
+Pour utiliser KuT sur **plusieurs appareils** (PC, tablette, smartphone) : déployez le script **une seule fois**, puis collez la **même** URL `…/exec` dans **⚙️ Mon salon** sur chaque appareil. Procédure détaillée : [`docs/multi-appareils/`](docs/multi-appareils/).
+
 ## Licence
 
 MIT — libre d'utilisation, de modification et de redistribution. Voir [LICENSE](LICENSE).

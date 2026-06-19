@@ -59,7 +59,7 @@
   function upsert(c){
     if (!c || !c.id) return;
     var url = su(); if (!url) return;            // pas de synchro -> cache local seul
-    addId(LS_DIRTY, c.id);
+    addId(LS_DIRTY, c.id); renderBanner();
     jsonp(url, { action:'upsertClient', client: JSON.stringify(c) }, function (r) {
       if (r && r.ok) rmId(LS_DIRTY, c.id);
       statusSynced();
@@ -68,9 +68,10 @@
   function remove(id){
     if (!id) return;
     var url = su(); if (!url) return;
-    rmId(LS_DIRTY, id); addId(LS_DEL, id);
+    rmId(LS_DIRTY, id); addId(LS_DEL, id); renderBanner();
     jsonp(url, { action:'deleteClient', id: id }, function (r) {
       if (r && r.ok) rmId(LS_DEL, id);
+      statusSynced();
     });
   }
 
@@ -92,7 +93,28 @@
     })();
   }
 
-  function statusSynced(){ var p = jget(LS_DIRTY).length + jget(LS_DEL).length; if (p) status('⚠ ' + p + ' modif. en attente', 'err'); else status('✓ à jour', 'ok'); }
+  function statusSynced(){ var p = jget(LS_DIRTY).length + jget(LS_DEL).length; if (p) status('⚠ ' + p + ' modif. en attente', 'err'); else status('✓ à jour', 'ok'); renderBanner(); }
+
+  // Bannière d'alerte visible quand on est HORS-LIGNE avec des modifs non envoyées.
+  function renderBanner(){
+    if (typeof document === 'undefined' || !document.body) return;
+    var p = jget(LS_DIRTY).length + jget(LS_DEL).length;
+    var off = (typeof navigator !== 'undefined' && navigator.onLine === false);
+    var el = document.getElementById('kut-sync-banner');
+    if (p > 0 && off) {
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'kut-sync-banner';
+        el.setAttribute('role', 'alert');
+        el.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:9999;background:#A22C29;color:#fff;font-family:inherit;font-size:.85rem;font-weight:700;line-height:1.45;padding:.7rem 1rem;text-align:center;box-shadow:0 -2px 14px rgba(0,0,0,.35)';
+        document.body.appendChild(el);
+      }
+      el.textContent = '⚠ Hors-ligne — ' + p + ' modification' + (p > 1 ? 's' : '') + ' pas encore enregistrée' + (p > 1 ? 's' : '') + ' sur le Drive. Ne fermez pas l’application : tout repartira au retour de la connexion.';
+      el.style.display = 'block';
+    } else if (el) {
+      el.style.display = 'none';
+    }
+  }
   function pull(cb, quiet){
     var url = su(); if (!url) { if (cb) cb(false); return; }
     if (!quiet) status('⏳ synchro…', 'work');
@@ -132,9 +154,12 @@
         else syncNow();                 // retour au premier plan : resynchro complète
       });
       window.addEventListener('focus', syncNow);
+      window.addEventListener('online', function () { renderBanner(); syncNow(); });   // retour du réseau : on masque l'alerte + on resynchronise
+      window.addEventListener('offline', renderBanner);                                 // perte du réseau : on prépare l'alerte
     } catch (e) {}
     if (autoTimer) clearInterval(autoTimer);
     autoTimer = setInterval(function () { try { if (document.hidden) return; } catch (e) {} syncNow(); }, 30000);
+    renderBanner();
   }
 
   global.DB = {

@@ -32,6 +32,7 @@ main{padding:1.1rem;max-width:620px;margin:0 auto}
 .presta-row input:focus{border-color:#5E6572}
 .presta-row .p-nom{flex:1;min-width:0}
 .presta-row .p-prix{width:92px;flex-shrink:0;text-align:right}
+.presta-row .p-duree{width:96px;flex-shrink:0;text-align:right}
 .presta-row .p-del{background:#fef2f2;color:#A22C29;border:none;border-radius:9px;width:38px;height:38px;flex-shrink:0;cursor:pointer;font-size:1rem;line-height:1}
 .presta-row .p-del:hover{background:#fce0e0}
 .presta-empty{font-size:.85rem;color:#5E6572;padding:.3rem 0 .7rem}
@@ -181,7 +182,7 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
 </header>
 
 <main>
-  <p class="intro">Catalogue de vos prestations (nom + tarif). Elles sont cochées lors d'un passage sur la page <strong>Fidélité</strong> ; le tarif alimente le calcul du panier moyen par client.</p>
+  <p class="intro">Catalogue de vos prestations : <strong>nom</strong>, <strong>tarif</strong> et <strong>durée</strong> (en minutes). Elles sont cochées lors d'un passage sur la page <strong>Fidélité</strong> ; le tarif alimente le panier moyen. La <strong>durée</strong> (prise en charge → paiement → remise en état du poste) servira à proposer les créneaux disponibles lors de la réservation en ligne.</p>
 
   <div class="card">
     <div id="prestaList"></div>
@@ -207,12 +208,13 @@ function renderPresta(){
     return '<div class="presta-row">'+
       '<input class="p-nom" value="'+escAttr(p.nom)+'" placeholder="Ex : Coupe homme" oninput="updPresta('+i+',\'nom\',this.value)">'+
       '<input class="p-prix" type="number" min="0" step="0.01" value="'+(p.prix!=null?p.prix:'')+'" placeholder="€" oninput="updPresta('+i+',\'prix\',this.value)">'+
+      '<input class="p-duree" type="number" min="0" step="5" value="'+(p.duree!=null&&p.duree!==''?p.duree:'')+'" placeholder="min" title="Durée (minutes) : prise en charge, paiement et remise en état du poste" oninput="updPresta('+i+',\'duree\',this.value)">'+
       '<button class="p-del" title="Supprimer" onclick="delPresta('+i+')">✕</button>'+
     '</div>';
   }).join('');
 }
 function addPresta(){
-  prestaWork.push({id:'p_'+Date.now()+'_'+Math.floor(Math.random()*9999),nom:'',prix:''});
+  prestaWork.push({id:'p_'+Date.now()+'_'+Math.floor(Math.random()*9999),nom:'',prix:'',duree:30});
   renderPresta();
   var ins=document.getElementById('prestaList').querySelectorAll('.p-nom');
   if(ins.length)ins[ins.length-1].focus();
@@ -243,13 +245,13 @@ function syncPush(profil){
 
 function savePresta(){
   var prestations=prestaWork.map(function(x){
-    return {id:x.id||('p_'+Date.now()+'_'+Math.floor(Math.random()*9999)),nom:String(x.nom||'').trim(),prix:Math.round((parseFloat(x.prix)||0)*100)/100};
+    return {id:x.id||('p_'+Date.now()+'_'+Math.floor(Math.random()*9999)),nom:String(x.nom||'').trim(),prix:Math.round((parseFloat(x.prix)||0)*100)/100,duree:Math.max(0,Math.round((parseInt(x.duree,10)||0)/5)*5)};
   }).filter(function(x){return x.nom;});
   var p=lp();
   p.prestations=prestations;
   localStorage.setItem(LS_P,JSON.stringify(p));
-  // recharge la liste normalisée (tarifs arrondis, lignes vides retirées)
-  prestaWork=prestations.map(function(x){return {id:x.id,nom:x.nom,prix:x.prix};});
+  // recharge la liste normalisée (tarifs arrondis, durées en pas de 5 min, lignes vides retirées)
+  prestaWork=prestations.map(function(x){return {id:x.id,nom:x.nom,prix:x.prix,duree:x.duree};});
   renderPresta();
   document.getElementById('saveMsg').textContent='✓ Enregistré';
   syncPush(p);
@@ -259,7 +261,7 @@ function savePresta(){
 // Init
 prestaWork=(function(){
   var p=lp();
-  return Array.isArray(p.prestations)?p.prestations.map(function(x){return {id:x.id||('p_'+Date.now()+'_'+Math.floor(Math.random()*9999)),nom:String(x.nom||''),prix:(x.prix!=null?x.prix:'')};}):[];
+  return Array.isArray(p.prestations)?p.prestations.map(function(x){return {id:x.id||('p_'+Date.now()+'_'+Math.floor(Math.random()*9999)),nom:String(x.nom||''),prix:(x.prix!=null?x.prix:''),duree:(x.duree!=null&&x.duree!==''?x.duree:'')};}):[];
 })();
 renderPresta();
 </script>

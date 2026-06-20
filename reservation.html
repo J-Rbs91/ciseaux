@@ -149,7 +149,7 @@ var MODE = 'capacite', COLLABS = [];
       dEl.max = max.toISOString().slice(0,10);
       CATALOGUE = (r.prestations || []);
       fillPrestations();
-      fillCollabs();
+      refreshCollabs();
     } else {
       setSlotsState('Réservation en ligne momentanément indisponible.');
     }
@@ -159,13 +159,22 @@ var MODE = 'capacite', COLLABS = [];
   dEl.addEventListener('change', onCriteriaChange);
 })();
 
-function fillCollabs(){
+// Reconstruit la liste « Avec qui ? » en ne gardant que les collaborateurs
+// capables de réaliser TOUTES les prestations sélectionnées.
+function refreshCollabs(){
   var wrap = document.getElementById('collabWrap'), sel = document.getElementById('collab');
   if (MODE !== 'collaborateurs' || !COLLABS.length) { wrap.style.display='none'; return; }
   wrap.style.display='block';
+  var noms = selectedPrestas().noms, prev = sel.value;
+  var elig = COLLABS.filter(function(c){
+    var sp = (c.prestations||[]).map(function(x){return String(x||'').trim();}).filter(Boolean);
+    if (!sp.length) return true;
+    return noms.every(function(n){ return sp.indexOf(n) >= 0; });
+  });
   sel.innerHTML='';
   var o0 = document.createElement('option'); o0.value=''; o0.textContent='Sans préférence'; sel.appendChild(o0);
-  COLLABS.forEach(function(nom){ var o=document.createElement('option'); o.value=nom; o.textContent=nom; sel.appendChild(o); });
+  elig.forEach(function(c){ var o=document.createElement('option'); o.value=c.nom; o.textContent=c.nom; sel.appendChild(o); });
+  sel.value = (prev && elig.some(function(c){return c.nom===prev;})) ? prev : '';
 }
 function currentCollab(){
   return (MODE === 'collaborateurs') ? (document.getElementById('collab').value || '') : '';
@@ -205,6 +214,7 @@ function selectedPrestas(){
 
 function onCriteriaChange(){
   selectedSlot = '';
+  refreshCollabs();
   var sel = selectedPrestas(), date = document.getElementById('date').value;
   var hint = document.getElementById('prestaHint');
   hint.textContent = sel.noms.length
@@ -217,7 +227,7 @@ function onCriteriaChange(){
 
 function loadSlots(sel, date){
   loadingSlots = true; setSlotsState('Recherche des créneaux…');
-  jsonp(CONFIG.api, { action:'availability', date:date, duree:(sel.duree||''), collab:currentCollab() }, function(r){
+  jsonp(CONFIG.api, { action:'availability', date:date, duree:(sel.duree||''), collab:currentCollab(), prestations:JSON.stringify(sel.noms) }, function(r){
     loadingSlots = false;
     if (!r || !r.ok) { setSlotsState('Impossible de charger les créneaux. Réessayez.'); return; }
     var slots = r.slots || [];

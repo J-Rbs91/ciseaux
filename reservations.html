@@ -110,7 +110,12 @@ html[data-theme="dark"] .share-url{background:#14181A;color:#E7ECEE;border-color
 <div class="overlay" id="ovAgenda" onclick="bkAgenda(event)">
   <div class="modal">
     <div class="mh"><h2>Réglages de l'agenda</h2><button class="xbtn" onclick="closeAgenda()">&times;</button></div>
-    <div class="fld"><label>Organisation</label><select id="agMode" onchange="toggleMode()"><option value="capacite">Postes anonymes (capacité)</option><option value="collaborateurs">Collaborateurs nommés (plannings séparés)</option></select><div class="hint">« Collaborateurs » : le client peut choisir avec qui (ou « sans préférence »), chacun a ses horaires.</div></div>
+    <div class="fld"><label>Organisation</label><select id="agMode" onchange="toggleMode()"><option value="capacite">Postes anonymes (capacité)</option><option value="collaborateurs">Collaborateurs nommés (plannings séparés)</option></select><div class="hint">« Collaborateurs » : le client peut choisir avec qui (ou « sans préférence »), chacun a ses horaires et ses prestations.</div></div>
+    <div class="fld"><label>Emails automatiques</label>
+      <label style="display:flex;gap:.45rem;align-items:center;font-weight:400;margin:.2rem 0"><input type="checkbox" id="agMailConfirm" style="width:auto"> Email de confirmation à la réservation</label>
+      <label style="display:flex;gap:.45rem;align-items:center;font-weight:400"><input type="checkbox" id="agMailRappel" style="width:auto"> Email de rappel la veille (vers 7h)</label>
+      <div class="hint">Nécessite l'autorisation Gmail du script (et, pour le rappel, le déclencheur <code>creerDeclencheurRappels</code>).</div>
+    </div>
     <div class="grid2">
       <div class="fld" id="capField"><label>Postes en parallèle</label><input id="agCap" type="number" min="1" step="1"><div class="hint">RDV simultanés</div></div>
       <div class="fld"><label>Pas des créneaux</label><select id="agGran"><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="60">60 min</option></select></div>
@@ -283,7 +288,7 @@ var AG_DEF={capacite:1,granularite:15,delaiMin:60,horizonJours:30,jours:{
   '5':{open:true,start:'09:00',end:'19:00',pause:['','']},
   '6':{open:true,start:'09:00',end:'18:00',pause:['','']}
 }};
-var agProfil=null, collabState=[];
+var agProfil=null, collabState=[], PRESTA_NOMS=[];
 function clone(x){return JSON.parse(JSON.stringify(x));}
 
 function openAgenda(){
@@ -295,7 +300,10 @@ function openAgenda(){
     agProfil={};
     if(r&&r.ok&&r.data){try{agProfil=JSON.parse(r.data)||{};}catch(e){agProfil={};}}
     var ag=agProfil.agenda||AG_DEF;
+    PRESTA_NOMS=(Array.isArray(agProfil.prestations)?agProfil.prestations:[]).map(function(p){return String(p.nom||'').trim();}).filter(Boolean);
     document.getElementById('agMode').value=(ag.mode==='collaborateurs')?'collaborateurs':'capacite';
+    document.getElementById('agMailConfirm').checked=(ag.mailConfirm!==false);
+    document.getElementById('agMailRappel').checked=(ag.mailRappel!==false);
     document.getElementById('agCap').value=ag.capacite||1;
     document.getElementById('agGran').value=String(ag.granularite||15);
     document.getElementById('agDelai').value=(ag.delaiMin!=null?ag.delaiMin:60);
@@ -341,22 +349,33 @@ function readDays(prefix){
   return jours;
 }
 
+function prestaChecks(i,selected){
+  if(!PRESTA_NOMS.length) return '<div class="hint">Renseignez d\'abord vos prestations (page Prestations) pour les attribuer.</div>';
+  var sel={};(selected||[]).forEach(function(n){sel[String(n).trim()]=1;});
+  return '<div class="hint" style="margin:.3rem 0 .2rem">Prestations réalisées (aucune cochée = toutes) :</div>'+
+    '<div style="display:flex;flex-wrap:wrap;gap:.3rem .8rem">'+PRESTA_NOMS.map(function(nom,j){
+      return '<label style="display:flex;gap:.3rem;align-items:center;font-size:.8rem;font-weight:400"><input type="checkbox" id="cp'+i+'_'+j+'" style="width:auto"'+(sel[nom]?' checked':'')+'> '+esc(nom)+'</label>';
+    }).join('')+'</div>';
+}
 function renderCollabs(){
-  // Mémorise les saisies en cours avant re-render
   var box=document.getElementById('collabBox');
   box.innerHTML=collabState.map(function(c,i){
     return '<div style="border:1px solid var(--line,#e1e8e6);border-radius:10px;padding:.6rem;margin-bottom:.6rem">'+
       '<div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.4rem">'+
         '<input id="cn'+i+'" value="'+esc(c.nom||'')+'" placeholder="Nom du collaborateur" style="flex:1;padding:.45rem .6rem;border:1.5px solid #c8d4da;border-radius:9px;font:inherit">'+
         '<button class="btn btn-del" onclick="removeCollab('+i+')">Suppr.</button>'+
-      '</div>'+ dayRows('c'+i+'_', c.jours||AG_DEF.jours)+
+      '</div>'+ prestaChecks(i, c.prestations) + dayRows('c'+i+'_', c.jours||AG_DEF.jours)+
     '</div>';
   }).join('')||'<div class="hint">Aucun collaborateur. Ajoutez-en au moins un.</div>';
+}
+function readPrestas(i){
+  var out=[];PRESTA_NOMS.forEach(function(nom,j){var el=document.getElementById('cp'+i+'_'+j);if(el&&el.checked)out.push(nom);});
+  return out;
 }
 function syncCollabState(){
   collabState=collabState.map(function(c,i){
     var nEl=document.getElementById('cn'+i);
-    return { nom:(nEl?nEl.value:c.nom)||'', jours:readDays('c'+i+'_') };
+    return { nom:(nEl?nEl.value:c.nom)||'', jours:readDays('c'+i+'_'), prestations:readPrestas(i) };
   });
 }
 function addCollab(){
@@ -372,7 +391,7 @@ function saveAgenda(){
   var mode=document.getElementById('agMode').value==='collaborateurs'?'collaborateurs':'capacite';
   syncCollabState();
   var collaborateurs=collabState.filter(function(c){return String(c.nom||'').trim();})
-    .map(function(c){return {nom:String(c.nom).trim(),jours:c.jours};});
+    .map(function(c){return {nom:String(c.nom).trim(),jours:c.jours,prestations:(c.prestations||[])};});
   if(mode==='collaborateurs'){
     if(!collaborateurs.length){document.getElementById('agSt').textContent='Ajoutez au moins un collaborateur.';return;}
     var noms={},dup=false;
@@ -381,6 +400,8 @@ function saveAgenda(){
   }
   var ag={
     mode:mode,
+    mailConfirm:document.getElementById('agMailConfirm').checked,
+    mailRappel:document.getElementById('agMailRappel').checked,
     capacite:Math.max(1,parseInt(document.getElementById('agCap').value,10)||1),
     granularite:parseInt(document.getElementById('agGran').value,10)||15,
     delaiMin:Math.max(0,parseInt(document.getElementById('agDelai').value,10)||0),

@@ -133,9 +133,11 @@ Le formulaire public `reservation.html` est un **vrai agenda** : le client chois
 **Réglages (depuis l'app, page Réservations → ⚙ Réglages agenda)** : pas des créneaux, délai
 minimum avant RDV, horizon de réservation, et l'**organisation** au choix —
 - **Postes anonymes (capacité)** : N rendez-vous en parallèle, horaires communs du salon ;
-- **Collaborateurs nommés** : chaque collaborateur a ses propres horaires (un RDV à la fois).
-  Le client choisit **avec qui** (ou « sans préférence » → le script affecte automatiquement un
-  collaborateur libre, dont le nom est enregistré en colonne `collab`).
+- **Collaborateurs nommés** : chaque collaborateur a ses propres **horaires** (un RDV à la fois)
+  et ses **prestations** (spécialités). Le client choisit **avec qui** (ou « sans préférence » →
+  le script affecte automatiquement un collaborateur libre **capable de réaliser les prestations
+  demandées**, dont le nom est enregistré en colonne `collab`). Une liste de prestations vide pour
+  un collaborateur = **polyvalent** (fait tout).
 
 Tout est enregistré dans le profil (`profil.agenda`) et synchronisé.
 
@@ -145,6 +147,8 @@ page **Réservations → 🔗 Lien de réservation**, copiez le lien et placez-l
 **« Prendre rendez-vous »** sur votre fiche Google Business, Instagram, etc.
 
 ### Emails de rendez-vous
+
+Chaque envoi est **activable/désactivable** depuis **Réglages agenda** (cases « Emails automatiques »).
 
 - **Confirmation immédiate** : à l'enregistrement, le client reçoit un email de confirmation
   (date, heure, prestation(s), collaborateur). Envoyé depuis votre Gmail ; n'échoue jamais la résa.

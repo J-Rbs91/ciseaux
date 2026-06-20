@@ -96,7 +96,7 @@ function doGet(e) {
       case 'quota':        res={ok:true,quota:MailApp.getRemainingDailyQuota()}; break;
       // Réservations en ligne
       case 'createBooking':    res=creerReservation_(p); break;                 // PUBLIC (formulaire)
-      case 'availability':     res={ok:true, slots:creneauxLibres_(String(p.date||''), p.duree, p.collab)}; break;  // PUBLIC
+      case 'availability':     res={ok:true, slots:creneauxLibres_(String(p.date||''), p.duree, p.collab, jsonArr_(p.prestations))}; break;  // PUBLIC
       case 'catalogue':        res=cataloguePublic_(); break;                   // PUBLIC
       case 'loadBookings':     res={ok:true,data:lireReservations_()}; break;
       case 'setBookingStatus': res={ok:true,updated:majStatutReservation_(p.id||'', p.statut||'')}; break;
@@ -288,11 +288,34 @@ function agendaConfig_() {
     jours: (ag.jours && typeof ag.jours === 'object') ? ag.jours : AGENDA_DEFAUT.jours,
     collaborateurs: (Array.isArray(ag.collaborateurs) ? ag.collaborateurs : []).filter(function(c) {
       return c && String(c.nom || '').trim();
-    })
+    }),
+    mailConfirm: ag.mailConfirm !== false,   // défaut : activé
+    mailRappel: ag.mailRappel !== false      // défaut : activé
   };
   cfg.profil = profil;
   return cfg;
 }
+
+// Un collaborateur peut-il réaliser TOUTES les prestations demandées ?
+// (liste de spécialités vide = polyvalent, fait tout)
+function collabPeutFaire_(collab, noms) {
+  var sp = (collab && Array.isArray(collab.prestations)) ? collab.prestations.map(function(x){ return String(x||'').trim(); }).filter(Boolean) : [];
+  if (!sp.length) return true;
+  if (!noms || !noms.length) return true;
+  for (var i = 0; i < noms.length; i++) { if (sp.indexOf(String(noms[i]).trim()) < 0) return false; }
+  return true;
+}
+
+// Collaborateurs éligibles à une demande (nom imposé éventuel + spécialités requises).
+function collabsEligibles_(cfg, collabVoulu, prestaNoms) {
+  collabVoulu = String(collabVoulu || '').trim();
+  return cfg.collaborateurs.filter(function(c) {
+    if (collabVoulu && String(c.nom).trim() !== collabVoulu) return false;
+    return collabPeutFaire_(c, prestaNoms);
+  });
+}
+
+function jsonArr_(s) { try { var a = JSON.parse(s || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
 
 // Un collaborateur travaille-t-il sur [t, fin[ ce jour-là (horaires + hors pause) ?
 function collabTravaille_(collab, dow, t, fin) {
@@ -306,16 +329,13 @@ function collabTravaille_(collab, dow, t, fin) {
   return true;
 }
 
-// Renvoie le nom d'un collaborateur libre sur [t, fin[, ou '' si aucun.
-// collabVoulu : nom imposé par le client (sinon premier disponible).
-function collabLibre_(cfg, dow, t, fin, occ, collabVoulu) {
-  var liste = cfg.collaborateurs;
-  if (collabVoulu) liste = liste.filter(function(c) { return String(c.nom).trim() === String(collabVoulu).trim(); });
+// Renvoie le nom d'un collaborateur (parmi les éligibles) libre sur [t, fin[, ou '' si aucun.
+function collabLibre_(eligibles, dow, t, fin, occ) {
   // Un RDV sans collaborateur (legacy/capacité) bloque tout le monde, par sécurité.
   for (var k = 0; k < occ.length; k++) { if (!occ[k].collab && t < occ[k].end && fin > occ[k].start) return ''; }
-  for (var i = 0; i < liste.length; i++) {
-    var nom = String(liste[i].nom).trim();
-    if (!collabTravaille_(liste[i], dow, t, fin)) continue;
+  for (var i = 0; i < eligibles.length; i++) {
+    var nom = String(eligibles[i].nom).trim();
+    if (!collabTravaille_(eligibles[i], dow, t, fin)) continue;
     var pris = false;
     for (var j = 0; j < occ.length; j++) {
       if (String(occ[j].collab) === nom && t < occ[j].end && fin > occ[j].start) { pris = true; break; }
@@ -363,8 +383,8 @@ function resaDuJour_(dateStr) {
   return out;
 }
 
-// Liste des créneaux de début libres ("HH:MM") pour une date / durée / (collaborateur).
-function creneauxLibres_(dateStr, dureeMin, collabVoulu) {
+// Liste des créneaux de début libres ("HH:MM") pour une date / durée / (collaborateur) / prestations.
+function creneauxLibres_(dateStr, dureeMin, collabVoulu, prestaNoms) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return [];
   var cfg = agendaConfig_();
   var duree = parseInt(dureeMin, 10) > 0 ? parseInt(dureeMin, 10) : cfg.granularite;
@@ -384,9 +404,7 @@ function creneauxLibres_(dateStr, dureeMin, collabVoulu) {
   var libres = [], t, fin;
 
   if (cfg.mode === 'collaborateurs') {
-    collabVoulu = String(collabVoulu || '').trim();
-    var liste = cfg.collaborateurs;
-    if (collabVoulu) liste = liste.filter(function(c) { return String(c.nom).trim() === collabVoulu; });
+    var liste = collabsEligibles_(cfg, collabVoulu, prestaNoms);
     if (!liste.length) return [];
     // Fenêtre de balayage = union des plages d'ouverture des collaborateurs concernés ce jour-là.
     var minOpen = null, maxClose = null;
@@ -402,7 +420,7 @@ function creneauxLibres_(dateStr, dureeMin, collabVoulu) {
     for (t = minOpen; t + duree <= maxClose; t += cfg.granularite) {
       fin = t + duree;
       if (estAujourdhui && t < minToday) continue;
-      if (collabLibre_(cfg, dow, t, fin, occ, collabVoulu)) libres.push(mh_(t));
+      if (collabLibre_(liste, dow, t, fin, occ)) libres.push(mh_(t));
     }
     return libres;
   }
@@ -473,7 +491,8 @@ function creerReservation_(p) {
     var collabAssigne = '';
     if (cfg.mode === 'collaborateurs') {
       var d2 = new Date(date + 'T00:00:00'), fin = (hm_(heure) || 0) + duree;
-      collabAssigne = collabLibre_(cfg, d2.getDay(), hm_(heure), fin, resaDuJour_(date), collabVoulu);
+      var eligibles = collabsEligibles_(cfg, collabVoulu, noms);
+      collabAssigne = collabLibre_(eligibles, d2.getDay(), hm_(heure), fin, resaDuJour_(date));
       if (!collabAssigne) {
         return { ok:false, error: collabVoulu
           ? collabVoulu + ' n\'est plus disponible sur ce créneau. Choisissez-en un autre.'
@@ -497,7 +516,7 @@ function creerReservation_(p) {
     var sh = feuilleResa_();
     var head = enTetesResa_(sh);
     sh.appendRow(head.map(function(h) { return o[h] != null ? o[h] : ''; }));
-    try { envoiMailRdv_('confirm', o, cfg.profil); } catch (e) {}   // confirmation (n'échoue jamais la résa)
+    if (cfg.mailConfirm) { try { envoiMailRdv_('confirm', o, cfg.profil); } catch (e) {} }   // n'échoue jamais la résa
     return { ok:true, collab: collabAssigne };
   } finally {
     lock.releaseLock();
@@ -546,7 +565,9 @@ function envoyerRappels_() {
       iPre = head.indexOf('prestation'), iCo = head.indexOf('collab'), iNom = head.indexOf('nom'),
       iMail = head.indexOf('mail'), iRap = head.indexOf('rappel');
   if (iRap < 0) return { ok:false, error:'colonne rappel manquante' };
-  var profil = agendaConfig_().profil;
+  var cfg = agendaConfig_();
+  if (!cfg.mailRappel) return { ok:true, envoyes:0, desactive:true };   // rappel désactivé par le salon
+  var profil = cfg.profil;
   var demain = new Date(); demain.setDate(demain.getDate() + 1);
   var ds = Utilities.formatDate(demain, Session.getScriptTimeZone(), 'yyyy-MM-dd');
   var quota = MailApp.getRemainingDailyQuota(), envoyes = 0;
@@ -596,7 +617,9 @@ function cataloguePublic_() {
     salon: String(profil.nom || ''),
     prestations: prestations,
     mode: cfg.mode,
-    collaborateurs: cfg.collaborateurs.map(function(c) { return String(c.nom || '').trim(); }),
+    collaborateurs: cfg.collaborateurs.map(function(c) {
+      return { nom: String(c.nom || '').trim(), prestations: (Array.isArray(c.prestations) ? c.prestations : []) };
+    }),
     horizonJours: cfg.horizonJours,
     granularite: cfg.granularite
   };

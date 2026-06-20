@@ -4,9 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#1C2321">
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<title>Politique de confidentialité — KuT</title>
+<link rel="icon" type="image/svg+xml" href="favicon-salon.svg">
+<title>Politique de confidentialité</title>
 <style>
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#EEF1EF;color:#1C2321;line-height:1.6}
   .wrap{max-width:760px;margin:0 auto;padding:32px 20px 64px}
@@ -103,7 +102,7 @@ var CONFIG = {
   document.getElementById('maj').textContent = new Date().toLocaleDateString('fr-FR');
   document.getElementById('salon').textContent = CONFIG.salon;
   document.getElementById('adresse').textContent = CONFIG.adresse;
-  document.title = 'Confidentialité · ' + CONFIG.salon + ' — KuT';
+  document.title = 'Confidentialité · ' + CONFIG.salon;
   ['email','email2'].forEach(function(id){ document.getElementById(id).textContent = CONFIG.email; });
   ['mailto','mailto2'].forEach(function(id){ document.getElementById(id).href = 'mailto:'+CONFIG.email; });
 })();

@@ -5,9 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#1C2321">
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<title>Prendre rendez-vous — KuT</title>
+<link rel="icon" type="image/svg+xml" href="favicon-salon.svg">
+<title>Prendre rendez-vous</title>
 <style>
   :root{--rose:#A22C29;--rose-d:#8a2422;--bg:#EEF1EF;--card:#fff;--txt:#1C2321;--muted:#5E6572;--line:#dde4e8;--err:#A22C29}
   @media (prefers-color-scheme: dark){
@@ -143,7 +142,7 @@ var IS_MANAGE = false, MANAGE_ID = '', MANAGE_TOKEN = '', MODIFYING = false, BOO
   if (qs.get('salon')) CONFIG.salon = qs.get('salon');
   if (qs.get('manage') && qs.get('token')) { IS_MANAGE = true; MANAGE_ID = qs.get('manage'); MANAGE_TOKEN = qs.get('token'); }
   document.getElementById('foot').textContent = CONFIG.salon;
-  document.title = 'Rendez-vous · ' + CONFIG.salon + ' — KuT';
+  document.title = 'Rendez-vous · ' + CONFIG.salon;
   var today = new Date().toISOString().slice(0,10);
   var dEl = document.getElementById('date');
   dEl.min = today;
@@ -151,7 +150,7 @@ var IS_MANAGE = false, MANAGE_ID = '', MANAGE_TOKEN = '', MODIFYING = false, BOO
   if (!CONFIG.api) { setSlotsState('Formulaire non configuré (URL du salon manquante).'); return; }
   jsonp(CONFIG.api, { action:'catalogue' }, function(r){
     if (r && r.ok) {
-      if (r.salon) { CONFIG.salon = r.salon; document.getElementById('foot').textContent = r.salon; document.title = 'Rendez-vous · ' + r.salon + ' — KuT'; }
+      if (r.salon) { CONFIG.salon = r.salon; document.getElementById('foot').textContent = r.salon; document.title = 'Rendez-vous · ' + r.salon; }
       HORIZON = r.horizonJours || 30; GRAN = r.granularite || 15;
       MODE = r.mode || 'capacite'; COLLABS = r.collaborateurs || [];
       var max = new Date(); max.setDate(max.getDate() + HORIZON);

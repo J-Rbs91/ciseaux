@@ -16,7 +16,7 @@ var CLASSEUR = 'base-clients';
 var ONGLET   = 'Clients';
 var ENTETES  = ['id','nom','tel','mail','dob','points','visitsCount','offre','notes','optin','maj','visites','ledger'];
 var RESA       = 'Réservations';
-var ENTETES_RESA = ['id','createdAt','statut','date','heure','duree','prestation','collab','nom','tel','mail','dob','notes','optin'];
+var ENTETES_RESA = ['id','createdAt','statut','date','heure','duree','prestation','collab','nom','tel','mail','dob','notes','optin','rappel'];
 
 // Réglages d'agenda par défaut (le salon les personnalise depuis l'app → profil.agenda).
 // jours : 0=dimanche … 6=samedi (Date.getDay).
@@ -255,7 +255,12 @@ function feuilleResa_() {
   if (it.hasNext()) { ss = SpreadsheetApp.open(it.next()); }
   else { ss = SpreadsheetApp.create(CLASSEUR); DriveApp.getFileById(ss.getId()).moveTo(d); }
   var sh = ss.getSheetByName(RESA) || ss.insertSheet(RESA);
-  if (sh.getLastRow() === 0) { sh.appendRow(ENTETES_RESA); return sh; }
+  if (sh.getLastRow() === 0) {
+    sh.appendRow(ENTETES_RESA);
+    // Force les colonnes date/heure en texte pour éviter l'auto-conversion de Sheets.
+    ['date','heure'].forEach(function(c){ var i = ENTETES_RESA.indexOf(c); if (i >= 0) sh.getRange(1, i+1, sh.getMaxRows(), 1).setNumberFormat('@'); });
+    return sh;
+  }
   // Migration : ajoute en fin de ligne les colonnes manquantes (ex. « duree ») des anciens classeurs.
   var head = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
   ENTETES_RESA.forEach(function(col) {
@@ -320,6 +325,10 @@ function collabLibre_(cfg, dow, t, fin, occ, collabVoulu) {
   return '';
 }
 
+// Sheets convertit parfois les colonnes date/heure en objets Date : on renormalise à la lecture.
+function asDate_(v) { return (v instanceof Date) ? Utilities.formatDate(v, Session.getScriptTimeZone(), 'yyyy-MM-dd') : String(v || ''); }
+function asTime_(v) { return (v instanceof Date) ? Utilities.formatDate(v, Session.getScriptTimeZone(), 'HH:mm') : String(v || ''); }
+
 function hm_(s) { var m = String(s || '').match(/^(\d{1,2}):(\d{2})/); return m ? (+m[1]) * 60 + (+m[2]) : null; }
 function mh_(n) { var h = Math.floor(n / 60), m = n % 60; return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m; }
 
@@ -343,10 +352,10 @@ function resaDuJour_(dateStr) {
       iSt = head.indexOf('statut'), iPre = head.indexOf('prestation'), iCo = head.indexOf('collab');
   var profil = null, out = [];
   data.forEach(function(r) {
-    if (String(r[iDate]) !== dateStr) return;
+    if (asDate_(r[iDate]) !== dateStr) return;
     var st = String(r[iSt] || '');
     if (st === 'refuse') return;                 // un RDV refusé/annulé libère le créneau
-    var start = hm_(r[iH]); if (start == null) return;
+    var start = hm_(asTime_(r[iH])); if (start == null) return;
     var dur = parseInt(r[iDur], 10) || 0;
     if (!dur) { if (!profil) profil = agendaConfig_().profil; dur = dureePresta_(profil, r[iPre]) || 0; }
     out.push({ start: start, end: start + (dur || 0), collab: (iCo >= 0 ? String(r[iCo] || '') : '') });
@@ -426,11 +435,9 @@ function creerReservation_(p) {
   var mail = String(p.mail || '').trim();
   var date = String(p.date || '').trim();
   var heure = String(p.heure || '').trim();
-  var prestation = String(p.prestation || '').trim();
 
   if (!nom) return { ok:false, error:'Nom requis' };
-  if (!tel && !mail) return { ok:false, error:'Téléphone ou email requis' };
-  if (mail && mail.indexOf('@') < 0) return { ok:false, error:'Email invalide' };
+  if (!mail || mail.indexOf('@') < 0) return { ok:false, error:'Email valide requis' };
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { ok:false, error:'Date invalide' };
   if (!/^\d{1,2}:\d{2}$/.test(heure)) return { ok:false, error:'Heure invalide' };
 
@@ -438,10 +445,18 @@ function creerReservation_(p) {
   var auj = new Date(); auj.setHours(0,0,0,0);
   if (isNaN(d) || d < auj) return { ok:false, error:'Date dans le passé' };
 
-  // Durée : fournie par le formulaire (selon la prestation) ou déduite du catalogue.
+  // Prestation(s) : on accepte une liste (multi-prestations). Durée calculée côté serveur
+  // depuis le catalogue (autorité), repli sur la valeur transmise sinon.
   var cfg = agendaConfig_();
-  var duree = parseInt(p.duree, 10) > 0 ? parseInt(p.duree, 10) : dureePresta_(cfg.profil, prestation);
-  if (!duree) duree = cfg.granularite;
+  var noms = [];
+  try { noms = JSON.parse(p.prestations || '[]'); } catch (e) { noms = []; }
+  if (!Array.isArray(noms)) noms = [];
+  noms = noms.map(function(x){ return String(x || '').trim(); }).filter(Boolean);
+  if (!noms.length && String(p.prestation || '').trim()) noms = [String(p.prestation).trim()];
+  var prestation = noms.join(' + ');
+  var duree = 0;
+  noms.forEach(function(nm){ duree += dureePresta_(cfg.profil, nm); });
+  if (!duree) duree = parseInt(p.duree, 10) > 0 ? parseInt(p.duree, 10) : cfg.granularite;
 
   // Garde-fou anti-flood (global, fenêtre d'une minute) : limite les abus du formulaire public.
   var cache = CacheService.getScriptCache();
@@ -482,10 +497,80 @@ function creerReservation_(p) {
     var sh = feuilleResa_();
     var head = enTetesResa_(sh);
     sh.appendRow(head.map(function(h) { return o[h] != null ? o[h] : ''; }));
+    try { envoiMailRdv_('confirm', o, cfg.profil); } catch (e) {}   // confirmation (n'échoue jamais la résa)
     return { ok:true, collab: collabAssigne };
   } finally {
     lock.releaseLock();
   }
+}
+
+// ── Emails de rendez-vous (confirmation + rappel) ────────────
+var MOIS_FR = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+var JOURS_FR = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+function frDateLong_(s) {
+  var m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})/); if (!m) return String(s || '');
+  var d = new Date(s + 'T00:00:00');
+  return JOURS_FR[d.getDay()] + ' ' + (+m[3]) + ' ' + MOIS_FR[+m[2] - 1] + ' ' + m[1];
+}
+function envoiMailRdv_(type, o, profil) {
+  var mail = String(o.mail || '').trim();
+  if (!mail || mail.indexOf('@') < 0) return;
+  var salon = String((profil && profil.nom) || 'le salon');
+  var quand = frDateLong_(o.date) + ' à ' + asTime_(o.heure);
+  var presta = o.prestation ? (' — ' + o.prestation) : '';
+  var avec = o.collab ? (' avec ' + o.collab) : '';
+  var prenom = String(o.nom || '').trim().split(' ')[0] || '';
+  var coords = [];
+  if (profil && profil.adresse) coords.push(profil.adresse);
+  if (profil && profil.tel) coords.push('Tél. ' + profil.tel);
+  var pied = '\n\n' + salon + (coords.length ? '\n' + coords.join('\n') : '');
+  var sujet, corps;
+  if (type === 'rappel') {
+    sujet = 'Rappel : votre rendez-vous demain chez ' + salon;
+    corps = 'Bonjour ' + prenom + ',\n\nNous vous rappelons votre rendez-vous de demain, ' + quand + presta + avec + '.'
+      + '\n\nEn cas d\'empêchement, merci de nous prévenir au plus tôt.\n\nÀ très bientôt.' + pied;
+  } else {
+    sujet = 'Confirmation de votre rendez-vous chez ' + salon;
+    corps = 'Bonjour ' + prenom + ',\n\nVotre rendez-vous est confirmé : ' + quand + presta + avec + '.'
+      + '\n\nEn cas d\'empêchement, merci de nous prévenir.\n\nAu plaisir de vous accueillir.' + pied;
+  }
+  MailApp.sendEmail({ to: mail, subject: sujet, body: corps, name: salon });
+}
+
+// Rappels J-1 : à déclencher chaque jour vers 7h (voir creerDeclencheurRappels).
+function envoyerRappels_() {
+  var sh = feuilleResa_();
+  var data = sh.getDataRange().getValues();
+  var head = data.shift() || [];
+  var iSt = head.indexOf('statut'), iDate = head.indexOf('date'), iH = head.indexOf('heure'),
+      iPre = head.indexOf('prestation'), iCo = head.indexOf('collab'), iNom = head.indexOf('nom'),
+      iMail = head.indexOf('mail'), iRap = head.indexOf('rappel');
+  if (iRap < 0) return { ok:false, error:'colonne rappel manquante' };
+  var profil = agendaConfig_().profil;
+  var demain = new Date(); demain.setDate(demain.getDate() + 1);
+  var ds = Utilities.formatDate(demain, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  var quota = MailApp.getRemainingDailyQuota(), envoyes = 0;
+  for (var r = 0; r < data.length; r++) {
+    var row = data[r];
+    if (asDate_(row[iDate]) !== ds) continue;
+    if (String(row[iSt] || '') !== 'confirme') continue;
+    if (String(row[iRap] || '').toLowerCase() === 'oui') continue;
+    var mail = String(row[iMail] || '').trim();
+    if (!mail || mail.indexOf('@') < 0) continue;
+    if (envoyes >= quota) break;
+    var o = { date: asDate_(row[iDate]), heure: asTime_(row[iH]), prestation: row[iPre],
+              collab: (iCo >= 0 ? row[iCo] : ''), nom: row[iNom], mail: mail };
+    try { envoiMailRdv_('rappel', o, profil); envoyes++; sh.getRange(r + 2, iRap + 1).setValue('oui'); } catch (e) {}
+  }
+  return { ok:true, envoyes:envoyes };
+}
+
+// À exécuter UNE fois depuis l'éditeur : programme le rappel quotidien à 7h.
+function creerDeclencheurRappels() {
+  var existe = ScriptApp.getProjectTriggers().some(function(t){ return t.getHandlerFunction() === 'envoyerRappels_'; });
+  if (existe) return 'Déclencheur déjà en place.';
+  ScriptApp.newTrigger('envoyerRappels_').timeBased().atHour(7).everyDays(1).create();
+  return 'Déclencheur de rappels créé (tous les jours vers 7h).';
 }
 
 function lireReservations_() {
@@ -493,7 +578,9 @@ function lireReservations_() {
   var rows = sh.getDataRange().getValues();
   var head = rows.shift() || ENTETES_RESA;
   return JSON.stringify(rows.map(function(r) {
-    var o = {}; head.forEach(function(h, i) { o[h] = r[i]; }); return o;
+    var o = {}; head.forEach(function(h, i) { o[h] = r[i]; });
+    o.date = asDate_(o.date); o.heure = asTime_(o.heure);   // normalise pour l'affichage
+    return o;
   }));
 }
 

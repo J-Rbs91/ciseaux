@@ -120,7 +120,9 @@ Le formulaire public `reservation.html` est un **vrai agenda** : le client chois
 **Réservations** (confirmer, annuler, ajouter le client au fichier).
 
 - Stockage dans l'onglet **`Réservations`** du classeur `base-clients` :
-  `id | createdAt | statut | date | heure | duree | prestation | collab | nom | tel | mail | dob | notes | optin`
+  `id | createdAt | statut | date | heure | duree | prestation | collab | nom | tel | mail | dob | notes | optin | rappel`
+- Le client choisit **une ou plusieurs prestations** (durées cumulées). **Email obligatoire**
+  (confirmation + rappel), **téléphone et date de naissance facultatifs**.
 - Calcul des créneaux : à partir des **horaires d'ouverture**, de la **durée de la prestation**,
   de la **capacité** (RDV simultanés) et des RDV déjà pris. L'action publique `availability`
   ne renvoie **que des heures** (aucune donnée client).
@@ -142,8 +144,19 @@ automatiquement par le formulaire via `catalogue`). Pour mettre le formulaire en
 page **Réservations → 🔗 Lien de réservation**, copiez le lien et placez-le comme bouton
 **« Prendre rendez-vous »** sur votre fiche Google Business, Instagram, etc.
 
-> Migration : le nouveau code ajoute la colonne `duree`. Refaites **Déployer → Gérer les
-> déploiements → Modifier → Nouvelle version** ; la colonne est ajoutée automatiquement.
+### Emails de rendez-vous
+
+- **Confirmation immédiate** : à l'enregistrement, le client reçoit un email de confirmation
+  (date, heure, prestation(s), collaborateur). Envoyé depuis votre Gmail ; n'échoue jamais la résa.
+- **Rappel la veille à 7h** : activez-le **une fois** en exécutant la fonction
+  **`creerDeclencheurRappels`** depuis l'éditeur Apps Script (Exécuter). Elle programme un
+  déclencheur quotidien (~7h) qui envoie un rappel pour les RDV confirmés du **lendemain**
+  (colonne `rappel` = `oui` une fois envoyé, pour ne pas doublonner). Test manuel possible via
+  la fonction `envoyerRappels_`.
+
+> Migration : le nouveau code ajoute les colonnes `duree`, `collab` et `rappel`. Refaites
+> **Déployer → Gérer les déploiements → Modifier → Nouvelle version** ; les colonnes sont
+> ajoutées automatiquement. Réautorisez (scope **Gmail** requis pour les emails de RDV).
 
 ## Clé admin (sécurité) 🔐
 

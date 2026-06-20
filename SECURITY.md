@@ -10,12 +10,15 @@ implications importantes pour la sécurité :
 - Aucune donnée n'est transmise à un serveur du projet. Le projet n'héberge
   **aucune** donnée.
 - La synchronisation optionnelle passe par un script **Google Apps Script
-  déployé par l'utilisateur sur son propre compte Google**. L'URL `…/exec`
-  générée fait office de clé secrète.
-- Une **clé admin** (optionnelle, vivement recommandée) protège les actions
-  sensibles du script (lecture/écriture des clients, suppression, campagnes).
-  Seules les actions **publiques** du formulaire de réservation
-  (`createBooking`, `securite`) restent accessibles sans clé.
+  déployé par l'utilisateur sur son propre compte Google**. Le script étant
+  **fermé par défaut**, une **clé admin** doit y être posée pour autoriser la
+  synchronisation : l'URL `…/exec` seule ne suffit pas.
+- Une **clé admin** protège les actions sensibles du script (lecture/écriture
+  des clients, suppression, campagnes). Le script est **fermé par défaut** :
+  tant qu'aucune clé n'est posée, ces actions sont **refusées** (`non configuré`),
+  jamais ouvertes. Seules les actions **publiques** du formulaire de réservation
+  (`createBooking`, `availability`, `catalogue`, gestion d'un RDV par jeton…) et
+  `securite` restent accessibles sans clé.
 
 ## Formulaire de réservation public
 
@@ -26,15 +29,17 @@ Le formulaire `reservation.html` est conçu pour être exposé publiquement :
 - Protections anti-abus : champ piège anti-robot, refus des dates passées, limite
   anti-flood. Les demandes restent à **valider** par le salon, jamais inscrites
   directement dans un agenda confirmé.
-- **Avant de publier ce formulaire, définissez une clé admin** : sans elle, l'URL
-  `…/exec` — désormais publique — donnerait accès à toutes vos données.
+- L'URL `…/exec` est publique, mais le script étant **fermé par défaut**, elle ne
+  donne accès qu'aux actions du formulaire : la base reste inaccessible tant que la
+  clé admin n'est pas posée et fournie.
 
 ## Recommandations aux utilisateurs
 
-- **Ne partagez jamais votre URL `…/exec`** tant qu'aucune clé admin n'est définie :
-  quiconque la possède peut alors lire et écrire vos données.
-- **Définissez une clé admin** dès que vous ouvrez le formulaire de réservation,
-  et utilisez la **même clé** sur tous vos appareils.
+- **Définissez une clé admin** : c'est elle, et non l'URL `…/exec`, qui protège
+  vos données. Sans clé posée, le script refuse toute action sensible (`non configuré`)
+  — votre back-office ne fonctionnera pas tant qu'elle n'est pas activée.
+- Utilisez la **même clé** sur tous vos appareils (recopie manuelle ou via la
+  sauvegarde fichier, qui l'inclut).
 - Les données du `localStorage` ne sont **pas chiffrées**. Sur un poste
   partagé, utilisez la sauvegarde fichier et videz les données après usage.
 - La **sauvegarde fichier `.json`** contient désormais l'URL `…/exec` et la

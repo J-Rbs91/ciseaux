@@ -36,11 +36,13 @@ var AGENDA_DEFAUT = {
   }
 };
 
-// ── Contrôle d'accès ──────────────────────────────────────────
+// ── Contrôle d'accès (fermé par défaut) ───────────────────────
 // Seule une poignée d'actions est PUBLIQUE (formulaire de réservation en ligne) ;
-// toutes les autres exigent la clé admin si une clé a été définie. Tant qu'aucune
-// clé n'est configurée, le script reste en mode « ouvert » (compatibilité des
-// déploiements existants) — d'où l'avertissement affiché dans l'application.
+// toutes les autres sont SENSIBLES et exigent la clé admin. Tant qu'AUCUNE clé n'est
+// posée sur le script, les actions sensibles sont REFUSÉES (« non configuré ») et non
+// ouvertes : la base clients/réservations n'est jamais exposée par simple oubli de
+// configuration. La protection doit être activée explicitement depuis l'application
+// (Mon salon → Clé admin), ce qui déclenche « claimKey » et pose la clé côté script.
 var ACTIONS_PUBLIQUES = { createBooking:1, availability:1, catalogue:1, getBooking:1, cancelBooking:1, modifyBooking:1, securite:1, unsub:1 };
 
 function cleAdmin_() {
@@ -75,10 +77,16 @@ function doGet(e) {
   // Lien de désinscription cliqué depuis un email : navigation directe (page HTML)
   if (action === 'unsub') return pageDesinscription_(p);
 
-  // Garde d'accès : si une clé admin est définie, tout sauf les actions publiques l'exige.
+  // Garde d'accès (fermé par défaut). Trois niveaux :
+  //   1. Action publique (formulaire de réservation, état sécurité, désinscription) → ouverte.
+  //   2. claimKey → amorçage de la première clé : laissé passer (revendiquerCle_ refuse
+  //      de lui-même si une clé existe déjà), sinon impossible d'activer la sécurité.
+  //   3. Toute autre action est SENSIBLE → exige une clé admin posée ET correspondante.
+  //      Sans clé posée : REFUS (« non configuré »), jamais d'accès ouvert par défaut.
   var cle = cleAdmin_();
-  if (cle && !ACTIONS_PUBLIQUES[action] && String(p.key || '') !== cle) {
-    return sortie_({ ok:false, error:'non autorisé' }, cb);
+  if (!ACTIONS_PUBLIQUES[action] && action !== 'claimKey') {
+    if (!cle)                        return sortie_({ ok:false, error:'non configuré' }, cb);
+    if (String(p.key || '') !== cle) return sortie_({ ok:false, error:'non autorisé' }, cb);
   }
 
   try {

@@ -448,8 +448,11 @@ function setSt(id,cls,msg){var el=document.getElementById(id);if(el){el.classNam
 function syncPush(profil){
   var url=su();if(!url)return;
   jsonp(url,{action:'save',data:JSON.stringify(profil)},function(r){
-    var sb=document.getElementById('syncBar');
-    if(sb){sb.textContent=r&&r.ok?'✓ Synchronisé avec Drive':'⚠ Synchro Drive échouée';sb.className='sync-bar '+(r&&r.ok?'ok':'err');}
+    var sb=document.getElementById('syncBar');if(!sb)return;
+    if(r&&r.ok){sb.textContent='✓ Synchronisé avec Drive';sb.className='sync-bar ok';}
+    else if(r&&r.error==='non configuré'){sb.textContent='⚠ Sécurité non activée — définissez une clé admin (Mon salon) pour synchroniser.';sb.className='sync-bar err';}
+    else if(r&&r.error==='non autorisé'){sb.textContent='⚠ Clé admin incorrecte sur cet appareil — vérifiez Mon salon.';sb.className='sync-bar err';}
+    else{sb.textContent='⚠ Synchro Drive échouée';sb.className='sync-bar err';}
   });
 }
 
@@ -474,17 +477,19 @@ function saveProfil(){
   localStorage.setItem(LS_P,JSON.stringify(p));
   if(url)localStorage.setItem(LS_S,url);
   if(key)localStorage.setItem(LS_K,key);else localStorage.removeItem(LS_K);
-  renderHeader();syncPush(p);
-  // Revendique la clé côté script (n'aboutit que si aucune clé n'y est encore définie).
+  renderHeader();
+  // Le script est fermé par défaut : on pose d'abord la clé (claimKey), PUIS on pousse
+  // le profil — sinon le serveur refuserait l'écriture (« non configuré »).
   if(url&&key){
     setSt('keySt','','⏳ Activation de la clé…');
     jsonp(url,{action:'claimKey',key:key},function(r){
       if(r&&r.ok)setSt('keySt','ok','✓ Clé activée sur le script. Sécurité en place.');
       else if(r&&r.error==='clé déjà définie')setSt('keySt','ok','✓ Clé enregistrée sur cet appareil.');
       else setSt('keySt','err','Clé enregistrée localement (activation script : '+((r&&r.error)||'échec')+').');
+      syncPush(p);
       setTimeout(closeModal,1200);
     });
-  } else closeModal();
+  } else { syncPush(p); closeModal(); }
 }
 
 function fillForm(p){
@@ -551,7 +556,9 @@ if(su()){
   jsonp(su(),{action:'load'},function(r){
     if(r&&r.ok&&r.data){
       try{var p=JSON.parse(r.data);localStorage.setItem(LS_P,JSON.stringify(p));renderHeader();sb.textContent='✓ Synchronisé';sb.className='sync-bar ok';}catch(e){sb.textContent='';}
-    }else{sb.textContent='';}
+    }else if(r&&r.error==='non configuré'){sb.textContent='⚠ Sécurité non activée — vos données ne sont pas protégées. Définissez une clé admin dans Mon salon.';sb.className='sync-bar err';}
+    else if(r&&r.error==='non autorisé'){sb.textContent='⚠ Clé admin incorrecte sur cet appareil — vérifiez Mon salon.';sb.className='sync-bar err';}
+    else{sb.textContent='';}
   });
   majBadgeResa();
 }

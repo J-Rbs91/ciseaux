@@ -195,14 +195,20 @@ clients, suppression, campagnes…) : seules `createBooking` et `securite` reste
 3. (Alternative experte) Exécuter `genererCleAdmin` depuis l'éditeur Apps Script : la clé
    s'affiche dans les **journaux**, à recopier dans l'app.
 
-> Tant qu'aucune clé n'est définie, le script reste en mode **ouvert** (compatibilité des
-> déploiements existants) et l'app affiche un avertissement. **N'activez pas le formulaire
-> public sans avoir défini une clé.**
+> Le script est **fermé par défaut** : tant qu'aucune clé n'est posée, les actions sensibles
+> (lecture/écriture des clients et réservations, campagnes…) sont **refusées** (`non configuré`).
+> Seules les actions publiques du formulaire et `claimKey` (amorçage de la première clé)
+> répondent. L'app affiche un avertissement tant que la sécurité n'est pas activée.
+>
+> **Migration depuis un ancien déploiement « ouvert » :** après mise à jour du code,
+> définissez une clé (étapes ci-dessus) pour retrouver l'accès à vos données — elles
+> ne sont pas perdues, simplement protégées jusqu'à l'activation de la clé.
 
 ## Sécurité & conformité
 
-- L'URL `…/exec` est longue et aléatoire. Tant que vous n'ouvrez pas de formulaire public,
-  elle fait office de secret ; **dès que vous publiez `reservation.html`, définissez une clé admin.**
+- L'URL `…/exec` est longue et aléatoire, mais le script est **fermé par défaut** : une
+  **clé admin** doit être posée pour que la synchronisation et le back-office fonctionnent
+  (sans elle, les actions sensibles renvoient `non configuré`). Définissez-la dès le déploiement.
 - Aucune donnée n'est hébergée par le projet KuT : tout vit sur votre compte Google.
 - Les emails ne partent qu'aux clients **opt-in** et incluent un **lien de désinscription** (RGPD).
 - Le formulaire de réservation affiche un lien vers `confidentialite.html` et exige le

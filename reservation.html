@@ -35,17 +35,35 @@
   .foot{text-align:center;font-size:.75rem;color:var(--muted);margin-top:1.2rem}
   .ok-box{text-align:center;padding:10px 0}
   .ok-box .big{font-size:42px}
+  /* Créneaux */
+  .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:.5rem;margin-top:.5rem}
+  .slot{padding:.55rem .2rem;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--txt);font:inherit;font-weight:600;cursor:pointer;text-align:center}
+  .slot:hover{border-color:var(--rose)}
+  .slot.sel{background:var(--rose);border-color:var(--rose);color:#fff}
+  .slots-state{font-size:.84rem;color:var(--muted);margin-top:.5rem}
+  .price{color:var(--muted);font-weight:400}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="card" id="formCard">
     <h1 id="title">Prendre rendez-vous</h1>
-    <p class="sub" id="subtitle">Remplissez ce formulaire : le salon vous confirmera votre créneau.</p>
+    <p class="sub" id="subtitle">Choisissez votre prestation, puis un créneau disponible.</p>
 
     <form id="resaForm" autocomplete="on" novalidate>
       <!-- piège anti-robot : doit rester vide -->
       <div class="hp" aria-hidden="true"><label>Ne pas remplir<input type="text" id="hp" name="website" tabindex="-1" autocomplete="off"></label></div>
+
+      <label class="req" for="prestation">Prestation</label>
+      <select id="prestation" required></select>
+      <div class="hint" id="prestaHint"></div>
+
+      <label class="req" for="date">Date souhaitée</label>
+      <input id="date" type="date" required>
+
+      <label>Créneaux disponibles</label>
+      <div id="slots" class="slots" style="display:none"></div>
+      <div class="slots-state" id="slotsState">Choisissez d'abord une prestation et une date.</div>
 
       <div class="two">
         <div><label class="req" for="prenom">Prénom</label><input id="prenom" type="text" autocomplete="given-name" required></div>
@@ -59,24 +77,16 @@
       <input id="mail" type="email" autocomplete="email">
       <div class="hint">Pour recevoir la confirmation de votre rendez-vous.</div>
 
-      <label id="prestaLabel" for="prestation" style="display:none">Prestation souhaitée</label>
-      <select id="prestation" style="display:none"></select>
-
-      <div class="two">
-        <div><label class="req" for="date">Date souhaitée</label><input id="date" type="date" required></div>
-        <div><label for="heure">Heure</label><input id="heure" type="time"></div>
-      </div>
-
       <label for="dob">Date de naissance</label>
       <input id="dob" type="date">
-      <div class="hint">Facultatif — uniquement pour vous offrir un cadeau le jour de votre anniversaire. Vous pouvez laisser vide.</div>
+      <div class="hint">Facultatif — uniquement pour vous offrir un cadeau le jour de votre anniversaire.</div>
 
       <label for="notes">Précisions (facultatif)</label>
-      <textarea id="notes" placeholder="Ex : coloration, demande particulière…"></textarea>
+      <textarea id="notes" placeholder="Demande particulière…"></textarea>
 
       <label class="consent">
         <input type="checkbox" id="cgu" required>
-        <span>J'ai lu et j'accepte la <a href="confidentialite.html" target="_blank" rel="noopener">politique de confidentialité</a> et que mes coordonnées soient utilisées pour gérer ma demande de rendez-vous. <strong>(obligatoire)</strong></span>
+        <span>J'ai lu et j'accepte la <a href="confidentialite.html" target="_blank" rel="noopener">politique de confidentialité</a> et que mes coordonnées soient utilisées pour gérer mon rendez-vous. <strong>(obligatoire)</strong></span>
       </label>
 
       <label class="consent">
@@ -84,7 +94,7 @@
         <span>J'accepte de recevoir par email les offres et promotions du salon. (facultatif, désinscription à tout moment)</span>
       </label>
 
-      <button class="btn" id="submitBtn" type="submit">Envoyer ma demande</button>
+      <button class="btn" id="submitBtn" type="submit">Confirmer mon rendez-vous</button>
       <div class="msg" id="msg" role="alert"></div>
     </form>
   </div>
@@ -95,39 +105,100 @@
 <script>
 /* ============================================================
    CONFIGURATION DU SALON — à éditer une seule fois après le fork.
-   - api    : l'URL …/exec de VOTRE script Apps Script.
-   - salon  : le nom affiché en haut du formulaire.
-   - prestations : liste optionnelle (laisser [] pour masquer le menu).
-   On peut aussi passer ces valeurs en paramètres d'URL :
-     reservation.html?api=...&salon=Nom%20du%20salon
+   - api   : l'URL …/exec de VOTRE script Apps Script.
+   - salon : nom affiché (sinon récupéré automatiquement du script).
+   Les prestations et leurs durées sont chargées automatiquement
+   depuis votre catalogue (page Prestations). Rien d'autre à saisir ici.
+   On peut aussi passer ?api=...&salon=... en paramètres d'URL.
    ============================================================ */
-var CONFIG = {
-  api: "",                       // ex : "https://script.google.com/macros/s/AKf.../exec"
-  salon: "Mon salon",
-  prestations: []                // ex : ["Coupe femme","Coupe homme","Coloration","Brushing"]
-};
+var CONFIG = { api: "", salon: "Mon salon" };
+
+var CATALOGUE = [], GRAN = 15, HORIZON = 30, selectedSlot = '', loadingSlots = false;
 
 (function(){
   var qs = new URLSearchParams(location.search);
   if (qs.get('api'))   CONFIG.api   = qs.get('api');
   if (qs.get('salon')) CONFIG.salon = qs.get('salon');
-
-  document.getElementById('title').textContent = 'Prendre rendez-vous';
-  document.getElementById('subtitle').textContent = CONFIG.salon + ' vous confirmera votre créneau après réception.';
-  document.title = 'Rendez-vous · ' + CONFIG.salon;
   document.getElementById('foot').textContent = CONFIG.salon;
-  // empêche de réserver dans le passé
+  document.title = 'Rendez-vous · ' + CONFIG.salon;
   var today = new Date().toISOString().slice(0,10);
-  document.getElementById('date').min = today;
+  var dEl = document.getElementById('date');
+  dEl.min = today;
 
-  if (CONFIG.prestations && CONFIG.prestations.length){
-    var sel = document.getElementById('prestation');
-    sel.style.display = 'block';
-    document.getElementById('prestaLabel').style.display = 'block';
-    var o0 = document.createElement('option'); o0.value=''; o0.textContent='— choisir —'; sel.appendChild(o0);
-    CONFIG.prestations.forEach(function(p){ var o=document.createElement('option'); o.value=p; o.textContent=p; sel.appendChild(o); });
-  }
+  if (!CONFIG.api) { setSlotsState('Formulaire non configuré (URL du salon manquante).'); return; }
+  jsonp(CONFIG.api, { action:'catalogue' }, function(r){
+    if (r && r.ok) {
+      if (r.salon) { CONFIG.salon = r.salon; document.getElementById('foot').textContent = r.salon; document.title = 'Rendez-vous · ' + r.salon; }
+      HORIZON = r.horizonJours || 30; GRAN = r.granularite || 15;
+      var max = new Date(); max.setDate(max.getDate() + HORIZON);
+      dEl.max = max.toISOString().slice(0,10);
+      CATALOGUE = (r.prestations || []);
+      fillPrestations();
+    } else {
+      setSlotsState('Réservation en ligne momentanément indisponible.');
+    }
+  });
+
+  document.getElementById('prestation').addEventListener('change', onCriteriaChange);
+  dEl.addEventListener('change', onCriteriaChange);
 })();
+
+function fillPrestations(){
+  var sel = document.getElementById('prestation');
+  sel.innerHTML = '';
+  var o0 = document.createElement('option'); o0.value=''; o0.textContent='— choisir une prestation —'; sel.appendChild(o0);
+  if (!CATALOGUE.length) {
+    var o = document.createElement('option'); o.value='__autre__'; o.textContent='Rendez-vous'; sel.appendChild(o);
+    document.getElementById('prestaHint').textContent = '';
+    return;
+  }
+  CATALOGUE.forEach(function(p, i){
+    var o = document.createElement('option'); o.value = String(i);
+    var dur = p.duree ? ' · ' + p.duree + ' min' : '';
+    var prix = (p.prix !== '' && p.prix != null) ? ' · ' + p.prix + ' €' : '';
+    o.textContent = p.nom + dur + prix;
+    sel.appendChild(o);
+  });
+}
+
+function currentPresta(){
+  var v = document.getElementById('prestation').value;
+  if (v === '' ) return null;
+  if (v === '__autre__') return { nom:'Rendez-vous', duree:0 };
+  return CATALOGUE[+v] || null;
+}
+
+function onCriteriaChange(){
+  selectedSlot = '';
+  var p = currentPresta(), date = document.getElementById('date').value;
+  var hint = document.getElementById('prestaHint');
+  hint.textContent = (p && p.duree) ? ('Durée estimée : ' + p.duree + ' min') : '';
+  var box = document.getElementById('slots'); box.style.display='none'; box.innerHTML='';
+  if (!p || !date) { setSlotsState('Choisissez d\'abord une prestation et une date.'); return; }
+  loadSlots(p, date);
+}
+
+function loadSlots(p, date){
+  loadingSlots = true; setSlotsState('Recherche des créneaux…');
+  jsonp(CONFIG.api, { action:'availability', date:date, duree:(p.duree||'') }, function(r){
+    loadingSlots = false;
+    if (!r || !r.ok) { setSlotsState('Impossible de charger les créneaux. Réessayez.'); return; }
+    var slots = r.slots || [];
+    var box = document.getElementById('slots');
+    if (!slots.length) { box.style.display='none'; setSlotsState('Aucun créneau disponible ce jour-là. Essayez une autre date.'); return; }
+    setSlotsState(slots.length + ' créneau(x) disponible(s) :');
+    box.style.display='grid';
+    box.innerHTML = slots.map(function(t){ return '<button type="button" class="slot" onclick="pickSlot(this,\''+t+'\')">'+t+'</button>'; }).join('');
+  });
+}
+
+function pickSlot(el, t){
+  selectedSlot = t;
+  [].forEach.call(document.querySelectorAll('.slot'), function(b){ b.classList.remove('sel'); });
+  el.classList.add('sel');
+}
+
+function setSlotsState(txt){ document.getElementById('slotsState').textContent = txt; }
 
 function jsonp(base, params, cb){
   var name='cb_'+Date.now()+'_'+Math.floor(Math.random()*1e6);
@@ -147,7 +218,11 @@ function showMsg(cls, text){ var m=document.getElementById('msg'); m.className='
 document.getElementById('resaForm').addEventListener('submit', function(e){
   e.preventDefault();
   var btn=document.getElementById('submitBtn');
-  if(!CONFIG.api){ showMsg('err','Formulaire non configuré (URL du salon manquante).'); return; }
+  if(!CONFIG.api){ showMsg('err','Formulaire non configuré.'); return; }
+  var p = currentPresta();
+  if(!p){ showMsg('err','Choisissez une prestation.'); return; }
+  if(!document.getElementById('date').value){ showMsg('err','Choisissez une date.'); return; }
+  if(!selectedSlot){ showMsg('err','Choisissez un créneau disponible.'); return; }
   if(!document.getElementById('cgu').checked){ showMsg('err','Merci d\'accepter la politique de confidentialité.'); return; }
 
   var prenom=document.getElementById('prenom').value.trim();
@@ -160,28 +235,32 @@ document.getElementById('resaForm').addEventListener('submit', function(e){
     mail: document.getElementById('mail').value.trim(),
     dob: document.getElementById('dob').value,
     date: document.getElementById('date').value,
-    heure: document.getElementById('heure').value,
-    prestation: document.getElementById('prestation').value || '',
+    heure: selectedSlot,
+    duree: p.duree || '',
+    prestation: p.nom || '',
     notes: document.getElementById('notes').value.trim(),
     optin: document.getElementById('optin').checked ? 'oui' : 'non'
   };
-  if(!data.nom || !data.tel || !data.date){ showMsg('err','Merci de renseigner au moins votre nom, votre téléphone et la date.'); return; }
+  if(!data.nom || !data.tel){ showMsg('err','Merci de renseigner votre nom et votre téléphone.'); return; }
 
-  btn.disabled=true; btn.textContent='Envoi…'; showMsg('','');
+  btn.disabled=true; btn.textContent='Confirmation…'; showMsg('','');
   jsonp(CONFIG.api, data, function(r){
     if(r && r.ok){
       document.getElementById('formCard').innerHTML =
         '<div class="ok-box"><div class="big">✅</div>'+
-        '<h1>Demande envoyée&nbsp;!</h1>'+
-        '<p class="sub">Merci '+escapeHtml(prenom)+'. '+escapeHtml(CONFIG.salon)+
-        ' a bien reçu votre demande de rendez-vous et vous confirmera votre créneau.</p></div>';
+        '<h1>Rendez-vous confirmé&nbsp;!</h1>'+
+        '<p class="sub">Merci '+escapeHtml(prenom)+'. Votre rendez-vous du '+escapeHtml(frDate(data.date))+
+        ' à '+escapeHtml(data.heure)+' ('+escapeHtml(p.nom)+') est enregistré chez '+escapeHtml(CONFIG.salon)+'.</p></div>';
     } else {
-      btn.disabled=false; btn.textContent='Envoyer ma demande';
-      showMsg('err', 'Désolé, l\'envoi a échoué'+(r&&r.error?' ('+r.error+')':'')+'. Réessayez ou appelez le salon.');
+      btn.disabled=false; btn.textContent='Confirmer mon rendez-vous';
+      showMsg('err', (r&&r.error) ? r.error : 'L\'envoi a échoué. Réessayez ou appelez le salon.');
+      // Le créneau a pu être pris entre-temps : on rafraîchit la liste.
+      if (r && r.error && /créneau/i.test(r.error)) onCriteriaChange();
     }
   });
 });
 
+function frDate(s){ var m=String(s||'').match(/^(\d{4})-(\d{2})-(\d{2})/); return m? m[3]+'/'+m[2]+'/'+m[1] : s; }
 function escapeHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
 </body>

@@ -12,7 +12,7 @@ Outil open source pour salons de coiffure — CRM clients, programme de fidélit
 - **📊 Statistiques** — tableau de bord calculé à partir des passages : **chiffre d'affaires, panier moyen, nombre de passages et clients servis** (par mois en cours, mois précédent, 12 mois glissants ou tout l'historique), **évolution du CA sur 12 mois**, **prestations les plus rentables**, **meilleurs clients** et **clients en sommeil** (aucune nouvelle saisie : tout est dérivé des données existantes)
 - **💰 Caisse** — clôture journalière : comptage pièces/billets + paiements électroniques, réserve de monnaie, fond de caisse cible, calcul d'écart vs logiciel de caisse, historique 15 jours, report de la veille
 - **✉️ Campagnes** — envoi d'offres par email depuis votre propre Gmail, aux clients opt-in, avec **segmentation** des destinataires : tous, récompense disponible, à relancer, **clients fidèles** (nombre de passages), **clients VIP** (panier moyen) ou **ayant pris une prestation** donnée
-- **📅 Réservations en ligne** — formulaire public (`reservation.html`) à lier depuis votre fiche Google : vos clients **demandent un rendez-vous**, vous les **confirmez/refusez** depuis la page Réservations (write-only côté public, anti-robot, demandes à valider)
+- **📅 Réservations en ligne (agenda)** — formulaire public (`reservation.html`) à lier depuis votre fiche Google : le client choisit une **prestation**, une **date** et un **créneau réellement libre** (calculé selon vos horaires, la durée de la prestation et la capacité). Le créneau est **bloqué automatiquement** (anti-doublon sous verrou) ; horaires & capacité paramétrables depuis la page Réservations
 - **☁️ Synchro Drive** — sauvegarde automatique multi-appareils via votre propre Google Drive
 - **💾 Sauvegarde fichier** — export/import `.json` local
 
@@ -45,8 +45,8 @@ Voir [`docs/campagnes/`](docs/campagnes/) et [`apps-script/README.md`](apps-scri
 
 1. Déployer le script Apps Script et coller l'URL `…/exec` dans **Mon salon**.
 2. Dans **Mon salon**, cliquer **Générer** une **clé admin** puis **Enregistrer** (sécurise vos données).
-3. Éditer le bloc `CONFIG` en haut de [`reservation.html`](reservation.html) (URL `…/exec`, nom du salon, prestations) et de [`confidentialite.html`](confidentialite.html) (nom, email, adresse).
-4. Ajouter le lien `https://<votre-user>.github.io/ciseaux/reservation.html` comme bouton **« Prendre rendez-vous »** sur votre fiche Google Business Profile.
+3. Renseigner vos **prestations et leurs durées** (page **Prestations**) et vos **horaires/capacité** (page **Réservations → ⚙ Réglages agenda**).
+4. Page **Réservations → 🔗 Lien de réservation** : copier le lien (il contient déjà votre URL `…/exec`) et l'ajouter comme bouton **« Prendre rendez-vous »** sur votre fiche Google Business Profile, Instagram, etc. Éditer [`confidentialite.html`](confidentialite.html) (nom, email, adresse).
 
 > ⚠️ **Avant de publier le formulaire, définissez une clé admin.** Voir [`SECURITY.md`](SECURITY.md) et [`apps-script/README.md`](apps-script/README.md).
 

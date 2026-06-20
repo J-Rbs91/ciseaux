@@ -58,6 +58,27 @@ html[data-theme="dark"] .when{color:#9AA6AE}
 html[data-theme="dark"] .meta{color:#C7D0D4}
 html[data-theme="dark"] .tag{background:#262d31;color:#C7D0D4}
 html[data-theme="dark"] .empty{color:#9AA6AE}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-start;justify-content:center;z-index:50;padding:1.2rem;overflow:auto}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;max-width:560px;width:100%;padding:1.2rem 1.3rem 1.4rem;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.modal h2{font-size:1.05rem;margin:0 0 .2rem}
+.modal .mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem}
+.modal .xbtn{background:none;border:none;font-size:1.3rem;cursor:pointer;color:#5E6572;line-height:1}
+.fld{margin:.6rem 0}
+.fld label{display:block;font-weight:700;font-size:.82rem;margin-bottom:.25rem}
+.fld input,.fld select{width:100%;padding:.5rem .6rem;border:1.5px solid #c8d4da;border-radius:9px;font:inherit;background:#fff;color:#1C2321}
+.fld .hint{font-size:.74rem;color:#A9B4C2;margin-top:.25rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.days{margin-top:.5rem}
+.dayrow{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.4rem;font-size:.8rem}
+.dayrow .dn{display:flex;align-items:center;gap:.35rem;font-weight:700}
+.dayrow input[type=time]{width:100%;padding:.35rem .3rem;border:1.5px solid #c8d4da;border-radius:8px;font:inherit;font-size:.78rem;background:#fff;color:#1C2321}
+.dayhead{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;gap:.4rem;font-size:.68rem;color:#A9B4C2;font-weight:700;margin:.3rem 0}
+.share-url{width:100%;padding:.5rem .6rem;border:1.5px solid #c8d4da;border-radius:9px;font:inherit;background:#f5f8fa;color:#1C2321;word-break:break-all}
+html[data-theme="dark"] .modal{background:#1F2528;color:#E7ECEE}
+html[data-theme="dark"] .modal .xbtn{color:#9AA6AE}
+html[data-theme="dark"] .fld input,html[data-theme="dark"] .fld select,html[data-theme="dark"] .dayrow input[type=time]{background:#14181A;color:#E7ECEE;border-color:#313A3F}
+html[data-theme="dark"] .share-url{background:#14181A;color:#E7ECEE;border-color:#313A3F}
 </style>
 <script>(function(){try{if(localStorage.getItem("kut-theme")==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();</script>
 </head>
@@ -70,23 +91,63 @@ html[data-theme="dark"] .empty{color:#9AA6AE}
 
 <div class="bar">
   <button class="btn primary" onclick="reload()">↻ Actualiser</button>
+  <button class="btn" onclick="openAgenda()">⚙ Réglages agenda</button>
+  <button class="btn" onclick="openShare()">🔗 Lien de réservation</button>
   <span class="st" id="st"></span>
 </div>
 
 <div id="notice" class="notice" style="display:none"><div class="box"></div></div>
 
 <div class="tabs">
-  <button class="tab active" data-f="en_attente" onclick="setFilter('en_attente')">En attente</button>
-  <button class="tab" data-f="confirme" onclick="setFilter('confirme')">Confirmés</button>
-  <button class="tab" data-f="refuse" onclick="setFilter('refuse')">Refusés</button>
+  <button class="tab active" data-f="confirme" onclick="setFilter('confirme')">Confirmés</button>
+  <button class="tab" data-f="en_attente" onclick="setFilter('en_attente')">En attente</button>
+  <button class="tab" data-f="refuse" onclick="setFilter('refuse')">Annulés</button>
 </div>
 
 <div class="list" id="list"></div>
 
+<!-- Réglages agenda -->
+<div class="overlay" id="ovAgenda" onclick="bkAgenda(event)">
+  <div class="modal">
+    <div class="mh"><h2>Réglages de l'agenda</h2><button class="xbtn" onclick="closeAgenda()">&times;</button></div>
+    <div class="grid2">
+      <div class="fld"><label>Postes en parallèle</label><input id="agCap" type="number" min="1" step="1"><div class="hint">RDV simultanés</div></div>
+      <div class="fld"><label>Pas des créneaux</label><select id="agGran"><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="60">60 min</option></select></div>
+      <div class="fld"><label>Délai mini (min)</label><input id="agDelai" type="number" min="0" step="15"><div class="hint">Avant un RDV</div></div>
+      <div class="fld"><label>Horizon (jours)</label><input id="agHorizon" type="number" min="1" step="1"><div class="hint">Réservable à l'avance</div></div>
+    </div>
+    <div class="days">
+      <div class="dayhead"><span>Jour</span><span>Ouv.</span><span>Ferm.</span><span>Pause d... </span><span>...à</span></div>
+      <div id="daysBox"></div>
+      <div class="hint">Laissez la pause vide s'il n'y en a pas. Décochez un jour pour le fermer.</div>
+    </div>
+    <div class="row" style="display:flex;gap:.5rem;margin-top:1rem">
+      <button class="btn primary" onclick="saveAgenda()">Enregistrer</button>
+      <button class="btn" onclick="closeAgenda()">Annuler</button>
+      <span class="st" id="agSt"></span>
+    </div>
+  </div>
+</div>
+
+<!-- Partage du lien -->
+<div class="overlay" id="ovShare" onclick="bkShare(event)">
+  <div class="modal">
+    <div class="mh"><h2>Lien de réservation</h2><button class="xbtn" onclick="closeShare()">&times;</button></div>
+    <p class="hint" style="margin:.2rem 0 .6rem">Partagez ce lien à vos clients (fiche Google, Instagram, WhatsApp…). Ils choisissent leur prestation et un créneau libre.</p>
+    <div class="fld"><label>Votre lien public</label><div class="share-url" id="shareUrl">—</div></div>
+    <div class="row" style="display:flex;gap:.5rem;margin-top:.8rem">
+      <button class="btn primary" onclick="copyShare()">Copier le lien</button>
+      <a class="btn" id="shareOpen" href="#" target="_blank" rel="noopener">Ouvrir</a>
+      <span class="st" id="shareSt"></span>
+    </div>
+    <p class="hint" style="margin-top:.8rem">Les prestations et leurs durées proviennent de votre page <strong>Prestations</strong> ; les créneaux respectent vos <strong>réglages d'agenda</strong> ci-contre.</p>
+  </div>
+</div>
+
 <script src="app-sync.js"></script>
 <script>
 var LS_S='sync-url-v1', LS_K='admin-key-v1';
-var bookings=[], filter='en_attente';
+var bookings=[], filter='confirme';
 function su(){return(localStorage.getItem(LS_S)||'').trim();}
 function ak(){return(localStorage.getItem(LS_K)||'').trim();}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -133,26 +194,28 @@ function render(){
   if(!url){box.innerHTML='<div class="empty">Aucune synchro configurée.<br>Ouvrez <strong>Mon salon</strong> sur l\'accueil pour coller l\'URL de votre script et la clé admin.</div>';document.getElementById('count').textContent='';return;}
   var shown=bookings.filter(function(b){return (b.statut||'en_attente')===filter;});
   document.getElementById('count').textContent=bookings.length?bookings.length+' au total':'';
-  if(!shown.length){box.innerHTML='<div class="empty">Aucune réservation '+(filter==='en_attente'?'en attente':(filter==='confirme'?'confirmée':'refusée'))+'.</div>';return;}
+  if(!shown.length){box.innerHTML='<div class="empty">Aucune réservation '+(filter==='en_attente'?'en attente':(filter==='confirme'?'confirmée':'annulée'))+'.</div>';return;}
   box.innerHTML=shown.map(itemHtml).join('');
 }
 
 function itemHtml(b){
   var s=b.statut||'en_attente';
-  var badge=s==='confirme'?'<span class="badge b-ok">Confirmé</span>':s==='refuse'?'<span class="badge b-no">Refusé</span>':'<span class="badge b-att">En attente</span>';
+  var badge=s==='confirme'?'<span class="badge b-ok">Confirmé</span>':s==='refuse'?'<span class="badge b-no">Annulé</span>':'<span class="badge b-att">En attente</span>';
   var contact=[];
   if(b.tel)contact.push('<a href="tel:'+esc(b.tel)+'">'+esc(b.tel)+'</a>');
   if(b.mail)contact.push('<a href="mailto:'+esc(b.mail)+'">'+esc(b.mail)+'</a>');
   var tags=[];
   if(b.prestation)tags.push('<span class="tag">'+esc(b.prestation)+'</span>');
-  if(b.heure)tags.push('<span class="tag">🕐 '+esc(b.heure)+'</span>');
+  if(b.heure)tags.push('<span class="tag">🕐 '+esc(b.heure)+(b.duree?' ('+esc(b.duree)+' min)':'')+'</span>');
   if(b.optin&&String(b.optin).toLowerCase()==='oui')tags.push('<span class="tag">✉️ offres OK</span>');
   var acts;
   if(s==='en_attente'){
     acts='<button class="btn primary" onclick="setStatut(\''+esc(b.id)+'\',\'confirme\')">✓ Confirmer</button>'+
-         '<button class="btn" onclick="setStatut(\''+esc(b.id)+'\',\'refuse\')">Refuser</button>';
+         '<button class="btn" onclick="setStatut(\''+esc(b.id)+'\',\'refuse\')">Annuler</button>';
+  }else if(s==='confirme'){
+    acts='<button class="btn" onclick="setStatut(\''+esc(b.id)+'\',\'refuse\')">Annuler le RDV</button>';
   }else{
-    acts='<button class="btn" onclick="setStatut(\''+esc(b.id)+'\',\'en_attente\')">↩ En attente</button>';
+    acts='<button class="btn primary" onclick="setStatut(\''+esc(b.id)+'\',\'confirme\')">↩ Rétablir</button>';
   }
   acts+='<button class="btn" onclick="toClient(\''+esc(b.id)+'\')">+ Fichier clients</button>'+
         '<button class="btn btn-del" onclick="delResa(\''+esc(b.id)+'\')">Supprimer</button>';
@@ -199,6 +262,100 @@ function checkNotice(){
     n.querySelector('.box').innerHTML='⚠ <strong>Aucune clé admin configurée.</strong> Sans clé, l\'URL de votre script donne accès à toutes vos données si elle fuite. Définissez une clé admin dans <strong>Mon salon</strong> pour sécuriser le formulaire public.';
   }else n.style.display='none';
 }
+
+// ── Réglages agenda ──────────────────────────────────────────
+var DAYS=[['1','Lundi'],['2','Mardi'],['3','Mercredi'],['4','Jeudi'],['5','Vendredi'],['6','Samedi'],['0','Dimanche']];
+var AG_DEF={capacite:1,granularite:15,delaiMin:60,horizonJours:30,jours:{
+  '0':{open:false,start:'09:00',end:'19:00',pause:['','']},
+  '1':{open:true,start:'09:00',end:'19:00',pause:['','']},
+  '2':{open:true,start:'09:00',end:'19:00',pause:['','']},
+  '3':{open:true,start:'09:00',end:'19:00',pause:['','']},
+  '4':{open:true,start:'09:00',end:'19:00',pause:['','']},
+  '5':{open:true,start:'09:00',end:'19:00',pause:['','']},
+  '6':{open:true,start:'09:00',end:'18:00',pause:['','']}
+}};
+var agProfil=null;
+
+function openAgenda(){
+  var url=su();
+  if(!url){setSt('err','Configurez la synchro dans « Mon salon ».');return;}
+  document.getElementById('agSt').textContent='⏳ Chargement…';
+  document.getElementById('ovAgenda').classList.add('open');
+  jsonp(url,{action:'load'},function(r){
+    agProfil={};
+    if(r&&r.ok&&r.data){try{agProfil=JSON.parse(r.data)||{};}catch(e){agProfil={};}}
+    var ag=agProfil.agenda||AG_DEF;
+    document.getElementById('agCap').value=ag.capacite||1;
+    document.getElementById('agGran').value=String(ag.granularite||15);
+    document.getElementById('agDelai').value=(ag.delaiMin!=null?ag.delaiMin:60);
+    document.getElementById('agHorizon').value=ag.horizonJours||30;
+    renderDays(ag.jours||AG_DEF.jours);
+    document.getElementById('agSt').textContent='';
+  });
+}
+function renderDays(jours){
+  document.getElementById('daysBox').innerHTML=DAYS.map(function(d){
+    var j=jours[d[0]]||{open:false,start:'09:00',end:'19:00',pause:['','']};
+    var pa=Array.isArray(j.pause)?j.pause:['',''];
+    return '<div class="dayrow">'+
+      '<span class="dn"><input type="checkbox" id="d'+d[0]+'_o"'+(j.open?' checked':'')+'> '+d[1]+'</span>'+
+      '<input type="time" id="d'+d[0]+'_s" value="'+esc(j.start||'09:00')+'">'+
+      '<input type="time" id="d'+d[0]+'_e" value="'+esc(j.end||'19:00')+'">'+
+      '<input type="time" id="d'+d[0]+'_pa" value="'+esc(pa[0]||'')+'">'+
+      '<input type="time" id="d'+d[0]+'_pb" value="'+esc(pa[1]||'')+'">'+
+    '</div>';
+  }).join('');
+}
+function saveAgenda(){
+  var url=su();if(!url)return;
+  var jours={};
+  DAYS.forEach(function(d){
+    jours[d[0]]={
+      open:document.getElementById('d'+d[0]+'_o').checked,
+      start:document.getElementById('d'+d[0]+'_s').value||'09:00',
+      end:document.getElementById('d'+d[0]+'_e').value||'19:00',
+      pause:[document.getElementById('d'+d[0]+'_pa').value||'',document.getElementById('d'+d[0]+'_pb').value||'']
+    };
+  });
+  var ag={
+    capacite:Math.max(1,parseInt(document.getElementById('agCap').value,10)||1),
+    granularite:parseInt(document.getElementById('agGran').value,10)||15,
+    delaiMin:Math.max(0,parseInt(document.getElementById('agDelai').value,10)||0),
+    horizonJours:Math.max(1,parseInt(document.getElementById('agHorizon').value,10)||30),
+    jours:jours
+  };
+  if(!agProfil||typeof agProfil!=='object')agProfil={};
+  agProfil.agenda=ag;
+  document.getElementById('agSt').textContent='⏳ …';
+  jsonp(url,{action:'save',data:JSON.stringify(agProfil)},function(r){
+    if(r&&r.ok){document.getElementById('agSt').textContent='✓ Enregistré';setTimeout(closeAgenda,900);}
+    else document.getElementById('agSt').textContent='Échec : '+((r&&r.error)||'inconnue');
+  });
+}
+function closeAgenda(){document.getElementById('ovAgenda').classList.remove('open');}
+function bkAgenda(e){if(e.target===document.getElementById('ovAgenda'))closeAgenda();}
+
+// ── Partage du lien ──────────────────────────────────────────
+function shareLink(){
+  var base=location.href.replace(/[^/]*$/,'');
+  return base+'reservation.html?api='+encodeURIComponent(su());
+}
+function openShare(){
+  if(!su()){setSt('err','Configurez la synchro dans « Mon salon ».');return;}
+  var link=shareLink();
+  document.getElementById('shareUrl').textContent=link;
+  document.getElementById('shareOpen').href=link;
+  document.getElementById('shareSt').textContent='';
+  document.getElementById('ovShare').classList.add('open');
+}
+function copyShare(){
+  var link=shareLink();
+  function ok(){document.getElementById('shareSt').textContent='✓ Copié';}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(link).then(ok,function(){prompt('Copiez le lien :',link);});}
+  else prompt('Copiez le lien :',link);
+}
+function closeShare(){document.getElementById('ovShare').classList.remove('open');}
+function bkShare(e){if(e.target===document.getElementById('ovShare'))closeShare();}
 
 reload();
 </script>

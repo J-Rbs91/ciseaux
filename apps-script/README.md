@@ -47,7 +47,9 @@ L'URL `…/exec` reste la même, inutile de la recoller.
 | `sendBirthdays` | Envoie le mail d'anniversaire du jour (test/forçage manuel) |
 | `quota` | Renvoie le nombre d'emails encore envoyables aujourd'hui |
 | `unsub` | Page de désinscription (lien placé dans chaque email) |
-| `createBooking` | **Public** — dépose une demande de rendez-vous (formulaire en ligne) |
+| `createBooking` | **Public** — réserve un créneau (vérif. de disponibilité + blocage automatique) |
+| `availability` | **Public** — renvoie les créneaux libres d'une date pour une durée donnée |
+| `catalogue` | **Public** — renvoie les prestations (nom, prix, durée) et les bornes d'agenda |
 | `loadBookings` | Renvoie les demandes de rendez-vous (admin) |
 | `setBookingStatus` | Confirme / refuse / remet en attente une demande (admin) |
 | `deleteBooking` | Supprime une demande de rendez-vous (admin) |
@@ -110,24 +112,33 @@ dans le message : `{prenom}`, `{nom}`, `{offre}`, `{prestations}`.
 
 Le script s'arrête proprement quand le quota est atteint et indique combien d'emails ont été ignorés.
 
-## Réservations en ligne 📅
+## Réservations en ligne (agenda) 📅
 
-Le formulaire public `reservation.html` permet à vos clients de **demander un rendez-vous**
-depuis votre fiche Google, votre site ou vos réseaux. Les demandes arrivent dans la page
-**Réservations** de l'application, où vous les **confirmez ou refusez** (et pouvez ajouter
-le client à votre fichier).
+Le formulaire public `reservation.html` est un **vrai agenda** : le client choisit une
+**prestation**, une **date**, puis un **créneau réellement disponible**. Le créneau est
+**bloqué automatiquement** (réservation ferme). Vous gérez les RDV dans la page
+**Réservations** (confirmer, annuler, ajouter le client au fichier).
 
-- Les demandes sont stockées dans un onglet **`Réservations`** du classeur `base-clients` :
-  `id | createdAt | statut | date | heure | prestation | nom | tel | mail | dob | notes | optin`
-- L'action `createBooking` est **write-only** : elle ne fait que déposer une demande
-  « en attente » et **ne renvoie jamais** la liste des clients ni des autres réservations.
-- Protections intégrées : champ piège anti-robot, validation de la date (pas de date passée),
-  limite anti-flood (max 20 demandes/minute).
+- Stockage dans l'onglet **`Réservations`** du classeur `base-clients` :
+  `id | createdAt | statut | date | heure | duree | prestation | nom | tel | mail | dob | notes | optin`
+- Calcul des créneaux : à partir des **horaires d'ouverture**, de la **durée de la prestation**,
+  de la **capacité** (RDV simultanés) et des RDV déjà pris. L'action publique `availability`
+  ne renvoie **que des heures** (aucune donnée client).
+- Anti-doublon : `createBooking` re-vérifie la disponibilité **sous verrou** (`LockService`)
+  avant d'écrire — deux clients ne peuvent pas prendre le même dernier créneau.
+- Autres protections : piège anti-robot, refus des dates passées/hors horizon, anti-flood.
 
-Pour mettre le formulaire en ligne : ouvrez `reservation.html`, renseignez le bloc `CONFIG`
-en bas du fichier (votre URL `…/exec`, le nom du salon, vos prestations), puis publiez la page
-(GitHub Pages) et ajoutez son lien comme bouton **« Prendre rendez-vous »** sur votre fiche
-Google Business Profile.
+**Réglages (depuis l'app, page Réservations → ⚙ Réglages agenda)** : capacité (postes en
+parallèle), pas des créneaux, délai minimum avant RDV, horizon de réservation, et **horaires
+par jour** (avec pause). Ils sont enregistrés dans le profil (`profil.agenda`) et synchronisés.
+
+Les **prestations et leurs durées** proviennent de votre page **Prestations** (chargées
+automatiquement par le formulaire via `catalogue`). Pour mettre le formulaire en ligne :
+page **Réservations → 🔗 Lien de réservation**, copiez le lien et placez-le comme bouton
+**« Prendre rendez-vous »** sur votre fiche Google Business, Instagram, etc.
+
+> Migration : le nouveau code ajoute la colonne `duree`. Refaites **Déployer → Gérer les
+> déploiements → Modifier → Nouvelle version** ; la colonne est ajoutée automatiquement.
 
 ## Clé admin (sécurité) 🔐
 

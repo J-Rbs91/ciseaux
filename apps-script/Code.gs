@@ -16,14 +16,32 @@ var CLASSEUR = 'base-clients';
 var ONGLET   = 'Clients';
 var ENTETES  = ['id','nom','tel','mail','dob','points','visitsCount','offre','notes','optin','maj','visites','ledger'];
 var RESA       = 'Réservations';
-var ENTETES_RESA = ['id','createdAt','statut','date','heure','prestation','nom','tel','mail','dob','notes','optin'];
+var ENTETES_RESA = ['id','createdAt','statut','date','heure','duree','prestation','nom','tel','mail','dob','notes','optin'];
+
+// Réglages d'agenda par défaut (le salon les personnalise depuis l'app → profil.agenda).
+// jours : 0=dimanche … 6=samedi (Date.getDay).
+var AGENDA_DEFAUT = {
+  capacite: 1,        // nombre de rendez-vous simultanés (postes/collaborateurs)
+  granularite: 15,    // pas des créneaux proposés (minutes)
+  delaiMin: 60,       // délai minimum avant un rendez-vous (minutes)
+  horizonJours: 30,   // réservation possible jusqu'à N jours à l'avance
+  jours: {
+    '0': { open:false, start:'09:00', end:'19:00', pause:['',''] },
+    '1': { open:true,  start:'09:00', end:'19:00', pause:['',''] },
+    '2': { open:true,  start:'09:00', end:'19:00', pause:['',''] },
+    '3': { open:true,  start:'09:00', end:'19:00', pause:['',''] },
+    '4': { open:true,  start:'09:00', end:'19:00', pause:['',''] },
+    '5': { open:true,  start:'09:00', end:'19:00', pause:['',''] },
+    '6': { open:true,  start:'09:00', end:'18:00', pause:['',''] }
+  }
+};
 
 // ── Contrôle d'accès ──────────────────────────────────────────
 // Seule une poignée d'actions est PUBLIQUE (formulaire de réservation en ligne) ;
 // toutes les autres exigent la clé admin si une clé a été définie. Tant qu'aucune
 // clé n'est configurée, le script reste en mode « ouvert » (compatibilité des
 // déploiements existants) — d'où l'avertissement affiché dans l'application.
-var ACTIONS_PUBLIQUES = { createBooking:1, securite:1, unsub:1 };
+var ACTIONS_PUBLIQUES = { createBooking:1, availability:1, catalogue:1, securite:1, unsub:1 };
 
 function cleAdmin_() {
   return (PropertiesService.getScriptProperties().getProperty('ADMIN_KEY') || '').trim();
@@ -78,6 +96,8 @@ function doGet(e) {
       case 'quota':        res={ok:true,quota:MailApp.getRemainingDailyQuota()}; break;
       // Réservations en ligne
       case 'createBooking':    res=creerReservation_(p); break;                 // PUBLIC (formulaire)
+      case 'availability':     res={ok:true, slots:creneauxLibres_(String(p.date||''), p.duree)}; break;  // PUBLIC
+      case 'catalogue':        res=cataloguePublic_(); break;                   // PUBLIC
       case 'loadBookings':     res={ok:true,data:lireReservations_()}; break;
       case 'setBookingStatus': res={ok:true,updated:majStatutReservation_(p.id||'', p.statut||'')}; break;
       case 'deleteBooking':    res={ok:true,deleted:supprimerReservation_(p.id||'')}; break;
@@ -235,8 +255,106 @@ function feuilleResa_() {
   if (it.hasNext()) { ss = SpreadsheetApp.open(it.next()); }
   else { ss = SpreadsheetApp.create(CLASSEUR); DriveApp.getFileById(ss.getId()).moveTo(d); }
   var sh = ss.getSheetByName(RESA) || ss.insertSheet(RESA);
-  if (sh.getLastRow() === 0) sh.appendRow(ENTETES_RESA);
+  if (sh.getLastRow() === 0) { sh.appendRow(ENTETES_RESA); return sh; }
+  // Migration : ajoute en fin de ligne les colonnes manquantes (ex. « duree ») des anciens classeurs.
+  var head = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+  ENTETES_RESA.forEach(function(col) {
+    if (head.indexOf(col) < 0) { sh.getRange(1, sh.getLastColumn() + 1).setValue(col); head.push(col); }
+  });
   return sh;
+}
+
+// En-têtes réels de la feuille (gère l'ordre/les colonnes ajoutées par migration).
+function enTetesResa_(sh) {
+  return sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+}
+
+// ── Moteur d'agenda : calcul des créneaux libres ─────────────
+function agendaConfig_() {
+  var profil = {};
+  try { profil = JSON.parse(lireProfil_() || '{}') || {}; } catch (e) {}
+  var ag = profil.agenda || {};
+  var cfg = {
+    capacite: parseInt(ag.capacite, 10) > 0 ? parseInt(ag.capacite, 10) : AGENDA_DEFAUT.capacite,
+    granularite: parseInt(ag.granularite, 10) > 0 ? parseInt(ag.granularite, 10) : AGENDA_DEFAUT.granularite,
+    delaiMin: parseInt(ag.delaiMin, 10) >= 0 ? parseInt(ag.delaiMin, 10) : AGENDA_DEFAUT.delaiMin,
+    horizonJours: parseInt(ag.horizonJours, 10) > 0 ? parseInt(ag.horizonJours, 10) : AGENDA_DEFAUT.horizonJours,
+    jours: (ag.jours && typeof ag.jours === 'object') ? ag.jours : AGENDA_DEFAUT.jours
+  };
+  cfg.profil = profil;
+  return cfg;
+}
+
+function hm_(s) { var m = String(s || '').match(/^(\d{1,2}):(\d{2})/); return m ? (+m[1]) * 60 + (+m[2]) : null; }
+function mh_(n) { var h = Math.floor(n / 60), m = n % 60; return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m; }
+
+// Durée d'une prestation (minutes) d'après le catalogue du profil, par nom.
+function dureePresta_(profil, nom) {
+  var list = (profil && Array.isArray(profil.prestations)) ? profil.prestations : [];
+  for (var i = 0; i < list.length; i++) {
+    if (String(list[i].nom || '').trim() === String(nom || '').trim()) {
+      var d = parseInt(list[i].duree, 10); return d > 0 ? d : 0;
+    }
+  }
+  return 0;
+}
+
+// Réservations occupant une date donnée (statuts qui bloquent le créneau).
+function resaDuJour_(dateStr) {
+  var sh = feuilleResa_();
+  var data = sh.getDataRange().getValues();
+  var head = data.shift() || [];
+  var iDate = head.indexOf('date'), iH = head.indexOf('heure'), iDur = head.indexOf('duree'),
+      iSt = head.indexOf('statut'), iPre = head.indexOf('prestation');
+  var profil = null, out = [];
+  data.forEach(function(r) {
+    if (String(r[iDate]) !== dateStr) return;
+    var st = String(r[iSt] || '');
+    if (st === 'refuse') return;                 // un RDV refusé/annulé libère le créneau
+    var start = hm_(r[iH]); if (start == null) return;
+    var dur = parseInt(r[iDur], 10) || 0;
+    if (!dur) { if (!profil) profil = agendaConfig_().profil; dur = dureePresta_(profil, r[iPre]) || 0; }
+    out.push({ start: start, end: start + (dur || 0) });
+  });
+  return out;
+}
+
+// Liste des créneaux de début libres ("HH:MM") pour une date et une durée.
+function creneauxLibres_(dateStr, dureeMin) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return [];
+  var cfg = agendaConfig_();
+  var duree = parseInt(dureeMin, 10) > 0 ? parseInt(dureeMin, 10) : cfg.granularite;
+  var d = new Date(dateStr + 'T00:00:00');
+  if (isNaN(d)) return [];
+  var jour = cfg.jours[String(d.getDay())];
+  if (!jour || !jour.open) return [];
+
+  var openMin = hm_(jour.start), closeMin = hm_(jour.end);
+  if (openMin == null || closeMin == null || closeMin <= openMin) return [];
+  var pause = Array.isArray(jour.pause) ? jour.pause : ['', ''];
+  var pDeb = hm_(pause[0]), pFin = hm_(pause[1]);
+  var hasPause = (pDeb != null && pFin != null && pFin > pDeb);
+
+  // Horizon + non passé
+  var now = new Date();
+  var auj = new Date(); auj.setHours(0, 0, 0, 0);
+  if (d < auj) return [];
+  var limite = new Date(); limite.setDate(limite.getDate() + cfg.horizonJours);
+  if (d > limite) return [];
+  var estAujourdhui = (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate());
+  var minToday = estAujourdhui ? (now.getHours() * 60 + now.getMinutes() + cfg.delaiMin) : -1;
+
+  var occ = resaDuJour_(dateStr);
+  var libres = [];
+  for (var t = openMin; t + duree <= closeMin; t += cfg.granularite) {
+    var fin = t + duree;
+    if (hasPause && t < pFin && fin > pDeb) continue;        // chevauche la pause
+    if (estAujourdhui && t < minToday) continue;             // trop proche / passé
+    var n = 0;
+    for (var i = 0; i < occ.length; i++) { if (t < occ[i].end && fin > occ[i].start) n++; }
+    if (n < cfg.capacite) libres.push(mh_(t));
+  }
+  return libres;
 }
 
 function creerReservation_(p) {
@@ -247,17 +365,23 @@ function creerReservation_(p) {
   var tel  = String(p.tel  || '').trim();
   var mail = String(p.mail || '').trim();
   var date = String(p.date || '').trim();
+  var heure = String(p.heure || '').trim();
+  var prestation = String(p.prestation || '').trim();
 
   if (!nom) return { ok:false, error:'Nom requis' };
   if (!tel && !mail) return { ok:false, error:'Téléphone ou email requis' };
   if (mail && mail.indexOf('@') < 0) return { ok:false, error:'Email invalide' };
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { ok:false, error:'Date invalide' };
+  if (!/^\d{1,2}:\d{2}$/.test(heure)) return { ok:false, error:'Heure invalide' };
 
   var d = new Date(date + 'T00:00:00');
   var auj = new Date(); auj.setHours(0,0,0,0);
   if (isNaN(d) || d < auj) return { ok:false, error:'Date dans le passé' };
-  var max = new Date(); max.setMonth(max.getMonth() + 12);
-  if (d > max) return { ok:false, error:'Date trop lointaine' };
+
+  // Durée : fournie par le formulaire (selon la prestation) ou déduite du catalogue.
+  var cfg = agendaConfig_();
+  var duree = parseInt(p.duree, 10) > 0 ? parseInt(p.duree, 10) : dureePresta_(cfg.profil, prestation);
+  if (!duree) duree = cfg.granularite;
 
   // Garde-fou anti-flood (global, fenêtre d'une minute) : limite les abus du formulaire public.
   var cache = CacheService.getScriptCache();
@@ -265,20 +389,30 @@ function creerReservation_(p) {
   if (n >= 20) return { ok:false, error:'Trop de demandes, réessayez dans une minute.' };
   cache.put('resa_count', String(n + 1), 60);
 
-  var o = {
-    id: 'r_' + Date.now() + '_' + Math.floor(Math.random() * 9999),
-    createdAt: new Date().toISOString(),
-    statut: 'en_attente',
-    date: date,
-    heure: String(p.heure || '').trim(),
-    prestation: String(p.prestation || '').trim(),
-    nom: nom, tel: tel, mail: mail,
-    dob: String(p.dob || '').trim(),
-    notes: String(p.notes || '').trim(),
-    optin: estOptin_(p.optin) ? 'oui' : 'non'
-  };
-  feuilleResa_().appendRow(ENTETES_RESA.map(function(h) { return o[h] != null ? o[h] : ''; }));
-  return { ok:true };
+  // Réservation ferme : on sérialise pour éviter qu'un même créneau parte deux fois.
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(10000); } catch (e) { return { ok:false, error:'Service occupé, réessayez.' }; }
+  try {
+    if (creneauxLibres_(date, duree).indexOf(heure) < 0) {
+      return { ok:false, error:'Ce créneau vient d\'être pris. Choisissez-en un autre.' };
+    }
+    var o = {
+      id: 'r_' + Date.now() + '_' + Math.floor(Math.random() * 9999),
+      createdAt: new Date().toISOString(),
+      statut: 'confirme',                 // blocage automatique du créneau
+      date: date, heure: heure, duree: duree, prestation: prestation,
+      nom: nom, tel: tel, mail: mail,
+      dob: String(p.dob || '').trim(),
+      notes: String(p.notes || '').trim(),
+      optin: estOptin_(p.optin) ? 'oui' : 'non'
+    };
+    var sh = feuilleResa_();
+    var head = enTetesResa_(sh);
+    sh.appendRow(head.map(function(h) { return o[h] != null ? o[h] : ''; }));
+    return { ok:true };
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function lireReservations_() {
@@ -288,6 +422,22 @@ function lireReservations_() {
   return JSON.stringify(rows.map(function(r) {
     var o = {}; head.forEach(function(h, i) { o[h] = r[i]; }); return o;
   }));
+}
+
+// Catalogue public (nom, prix, durée) pour le formulaire de réservation, + bornes d'agenda.
+function cataloguePublic_() {
+  var cfg = agendaConfig_();
+  var profil = cfg.profil || {};
+  var prestations = (Array.isArray(profil.prestations) ? profil.prestations : []).map(function(x) {
+    return { nom: String(x.nom || ''), prix: (x.prix != null ? x.prix : ''), duree: parseInt(x.duree, 10) || 0 };
+  }).filter(function(x) { return x.nom; });
+  return {
+    ok: true,
+    salon: String(profil.nom || ''),
+    prestations: prestations,
+    horizonJours: cfg.horizonJours,
+    granularite: cfg.granularite
+  };
 }
 
 function majStatutReservation_(id, statut) {

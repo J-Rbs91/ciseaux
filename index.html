@@ -426,7 +426,18 @@ var LS_P='profil-magasin-v1', LS_S='sync-url-v1', LS_K='admin-key-v1';
 function lp(){try{return JSON.parse(localStorage.getItem(LS_P)||'{}');}catch(e){return{};}}
 function su(){return(localStorage.getItem(LS_S)||'').trim();}
 function ak(){return(localStorage.getItem(LS_K)||'').trim();}
-function genKey(){document.getElementById('fAdminKey').value=(Date.now().toString(36)+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)).replace(/[^a-z0-9]/g,'').slice(0,32);}
+function genKey(){
+  // Clé admin = seule protection des données : entropie cryptographique (CSPRNG), 128 bits.
+  var key;
+  if(window.crypto&&crypto.getRandomValues){
+    var a=new Uint8Array(16);crypto.getRandomValues(a);
+    key=Array.prototype.map.call(a,function(b){return ('0'+b.toString(16)).slice(-2);}).join('');
+  }else{
+    // Repli (navigateurs très anciens) : moins idéal mais reste sur 32 caractères.
+    key=(Date.now().toString(36)+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)).replace(/[^a-z0-9]/g,'').slice(0,32);
+  }
+  document.getElementById('fAdminKey').value=key;
+}
 function renderHeader(){var p=lp();document.getElementById('salonName').textContent=(p.nom||'').trim()||'Mon salon';}
 
 function jsonp(base,params,cb){
@@ -524,7 +535,8 @@ function doExport(){
   var blob=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sauvegarde-'+nom+'-'+date+'.json';a.click();
   setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
-  setSt('fileSt','ok','✓ Fichier téléchargé.');
+  // la sauvegarde contient l'URL de synchro et la clé admin → secret à protéger.
+  setSt('fileSt','ok','✓ Fichier téléchargé. ⚠ Il contient votre clé admin et l\'URL de votre script : conservez-le en lieu sûr, ne le partagez pas.');
 }
 
 function doImport(e){

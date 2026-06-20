@@ -1,0 +1,11 @@
+{
+  "name": "ciseaux-kut",
+  "version": "1.0.0",
+  "private": true,
+  "description": "KuT — outil salon (statique). package.json présent uniquement pour exécuter les garde-fous de sécurité (aucune dépendance runtime).",
+  "scripts": {
+    "test": "node --test \"tests/**/*.test.mjs\"",
+    "test:security": "node --test \"tests/**/*.test.mjs\""
+  },
+  "license": "MIT"
+}

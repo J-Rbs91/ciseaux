@@ -85,8 +85,8 @@ function doGet(e) {
   //      Sans clé posée : REFUS (« non configuré »), jamais d'accès ouvert par défaut.
   var cle = cleAdmin_();
   if (!ACTIONS_PUBLIQUES[action] && action !== 'claimKey') {
-    if (!cle)                        return sortie_({ ok:false, error:'non configuré' }, cb);
-    if (String(p.key || '') !== cle) return sortie_({ ok:false, error:'non autorisé' }, cb);
+    if (!cle)                          return sortie_({ ok:false, error:'non configuré' }, cb);
+    if (!egalConstant_(String(p.key || ''), cle)) return sortie_({ ok:false, error:'non autorisé' }, cb);
   }
 
   try {
@@ -123,11 +123,28 @@ function doGet(e) {
   return sortie_(res, cb);
 }
 
+// un nom de callback JSONP doit être un identifiant JS sûr.
+// Sinon on renvoie du JSON pur (pas de reflet arbitraire dans une réponse JS).
+function callbackValide_(cb) {
+  return typeof cb === 'string' && cb.length > 0 && cb.length <= 64 && /^[A-Za-z_$][A-Za-z0-9_$.]*$/.test(cb);
+}
 function sortie_(res, cb) {
   var json = JSON.stringify(res);
-  return cb
+  return callbackValide_(cb)
     ? ContentService.createTextOutput(cb+'('+json+')').setMimeType(ContentService.MimeType.JAVASCRIPT)
     : ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
+}
+
+// comparaison à temps constant de la clé admin (pas de court-circuit sur la longueur).
+function egalConstant_(a, b) {
+  a = String(a == null ? '' : a);
+  b = String(b == null ? '' : b);
+  var diff = a.length ^ b.length;
+  var n = Math.max(a.length, b.length);
+  for (var i = 0; i < n; i++) {
+    diff |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
+  }
+  return diff === 0;
 }
 
 // ── Profil (fichier JSON) ─────────────────────────────────────

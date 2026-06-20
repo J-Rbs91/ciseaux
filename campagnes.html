@@ -547,12 +547,14 @@ function send(){
   jsonp(url,params,function(r){
     btn.disabled=false;
     if(r&&r.ok){
-      var m='✓ '+r.envoyes+' email'+(r.envoyes>1?'s':'')+' envoyé'+(r.envoyes>1?'s':'');
-      if(r.ignores)m+=' · '+r.ignores+' ignoré(s) (quota atteint)';
-      if(r.erreurs)m+=' · '+r.erreurs+' erreur(s)';
-      m+='.<br>Quota Gmail restant : '+r.quotaRestant+'.';
+      // res() pose innerHTML → on borne les valeurs distantes (nombres) et on échappe le texte.
+      var nEnv=+r.envoyes||0,nIgn=+r.ignores||0,nErr=+r.erreurs||0,nQuota=+r.quotaRestant||0;
+      var m='✓ '+nEnv+' email'+(nEnv>1?'s':'')+' envoyé'+(nEnv>1?'s':'');
+      if(nIgn)m+=' · '+nIgn+' ignoré(s) (quota atteint)';
+      if(nErr)m+=' · '+nErr+' erreur(s)';
+      m+='.<br>Quota Gmail restant : '+nQuota+'.';
       res('ok',m);
-    }else res('err','Échec : '+(r?r.error:'inconnue'));
+    }else res('err','Échec : '+escH(r?r.error:'inconnue'));
   },180000);
 }
 

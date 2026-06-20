@@ -110,16 +110,24 @@ html[data-theme="dark"] .share-url{background:#14181A;color:#E7ECEE;border-color
 <div class="overlay" id="ovAgenda" onclick="bkAgenda(event)">
   <div class="modal">
     <div class="mh"><h2>Réglages de l'agenda</h2><button class="xbtn" onclick="closeAgenda()">&times;</button></div>
+    <div class="fld"><label>Organisation</label><select id="agMode" onchange="toggleMode()"><option value="capacite">Postes anonymes (capacité)</option><option value="collaborateurs">Collaborateurs nommés (plannings séparés)</option></select><div class="hint">« Collaborateurs » : le client peut choisir avec qui (ou « sans préférence »), chacun a ses horaires.</div></div>
     <div class="grid2">
-      <div class="fld"><label>Postes en parallèle</label><input id="agCap" type="number" min="1" step="1"><div class="hint">RDV simultanés</div></div>
+      <div class="fld" id="capField"><label>Postes en parallèle</label><input id="agCap" type="number" min="1" step="1"><div class="hint">RDV simultanés</div></div>
       <div class="fld"><label>Pas des créneaux</label><select id="agGran"><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="60">60 min</option></select></div>
       <div class="fld"><label>Délai mini (min)</label><input id="agDelai" type="number" min="0" step="15"><div class="hint">Avant un RDV</div></div>
       <div class="fld"><label>Horizon (jours)</label><input id="agHorizon" type="number" min="1" step="1"><div class="hint">Réservable à l'avance</div></div>
     </div>
-    <div class="days">
-      <div class="dayhead"><span>Jour</span><span>Ouv.</span><span>Ferm.</span><span>Pause d... </span><span>...à</span></div>
-      <div id="daysBox"></div>
-      <div class="hint">Laissez la pause vide s'il n'y en a pas. Décochez un jour pour le fermer.</div>
+    <div id="capSection">
+      <div class="days">
+        <div class="dayhead"><span>Jour</span><span>Ouv.</span><span>Ferm.</span><span>Pause d…</span><span>…à</span></div>
+        <div id="daysBox"></div>
+        <div class="hint">Horaires du salon. Laissez la pause vide s'il n'y en a pas ; décochez un jour pour le fermer.</div>
+      </div>
+    </div>
+    <div id="collabSection" style="display:none">
+      <div id="collabBox"></div>
+      <button class="btn" onclick="addCollab()">+ Ajouter un collaborateur</button>
+      <div class="hint" style="margin-top:.4rem">Chaque collaborateur a ses propres horaires (un seul RDV à la fois par personne). Évitez de renommer un collaborateur ayant des RDV à venir.</div>
     </div>
     <div class="row" style="display:flex;gap:.5rem;margin-top:1rem">
       <button class="btn primary" onclick="saveAgenda()">Enregistrer</button>
@@ -206,6 +214,7 @@ function itemHtml(b){
   if(b.mail)contact.push('<a href="mailto:'+esc(b.mail)+'">'+esc(b.mail)+'</a>');
   var tags=[];
   if(b.prestation)tags.push('<span class="tag">'+esc(b.prestation)+'</span>');
+  if(b.collab)tags.push('<span class="tag">👤 '+esc(b.collab)+'</span>');
   if(b.heure)tags.push('<span class="tag">🕐 '+esc(b.heure)+(b.duree?' ('+esc(b.duree)+' min)':'')+'</span>');
   if(b.optin&&String(b.optin).toLowerCase()==='oui')tags.push('<span class="tag">✉️ offres OK</span>');
   var acts;
@@ -274,7 +283,8 @@ var AG_DEF={capacite:1,granularite:15,delaiMin:60,horizonJours:30,jours:{
   '5':{open:true,start:'09:00',end:'19:00',pause:['','']},
   '6':{open:true,start:'09:00',end:'18:00',pause:['','']}
 }};
-var agProfil=null;
+var agProfil=null, collabState=[];
+function clone(x){return JSON.parse(JSON.stringify(x));}
 
 function openAgenda(){
   var url=su();
@@ -285,44 +295,98 @@ function openAgenda(){
     agProfil={};
     if(r&&r.ok&&r.data){try{agProfil=JSON.parse(r.data)||{};}catch(e){agProfil={};}}
     var ag=agProfil.agenda||AG_DEF;
+    document.getElementById('agMode').value=(ag.mode==='collaborateurs')?'collaborateurs':'capacite';
     document.getElementById('agCap').value=ag.capacite||1;
     document.getElementById('agGran').value=String(ag.granularite||15);
     document.getElementById('agDelai').value=(ag.delaiMin!=null?ag.delaiMin:60);
     document.getElementById('agHorizon').value=ag.horizonJours||30;
-    renderDays(ag.jours||AG_DEF.jours);
+    document.getElementById('daysBox').innerHTML=dayRows('g',ag.jours||AG_DEF.jours);
+    collabState=Array.isArray(ag.collaborateurs)?clone(ag.collaborateurs):[];
+    renderCollabs();
+    toggleMode();
     document.getElementById('agSt').textContent='';
   });
 }
-function renderDays(jours){
-  document.getElementById('daysBox').innerHTML=DAYS.map(function(d){
-    var j=jours[d[0]]||{open:false,start:'09:00',end:'19:00',pause:['','']};
-    var pa=Array.isArray(j.pause)?j.pause:['',''];
+
+function toggleMode(){
+  var collab=document.getElementById('agMode').value==='collaborateurs';
+  document.getElementById('capField').style.display=collab?'none':'';
+  document.getElementById('capSection').style.display=collab?'none':'';
+  document.getElementById('collabSection').style.display=collab?'':'none';
+}
+
+// Génère les 7 lignes d'horaires (ids préfixés) pour un planning.
+function dayRows(prefix,jours){
+  return '<div class="dayhead"><span>Jour</span><span>Ouv.</span><span>Ferm.</span><span>Pause d…</span><span>…à</span></div>'+
+  DAYS.map(function(d){
+    var j=(jours&&jours[d[0]])||{open:false,start:'09:00',end:'19:00',pause:['','']};
+    var pa=Array.isArray(j.pause)?j.pause:['',''];var id=prefix+d[0];
     return '<div class="dayrow">'+
-      '<span class="dn"><input type="checkbox" id="d'+d[0]+'_o"'+(j.open?' checked':'')+'> '+d[1]+'</span>'+
-      '<input type="time" id="d'+d[0]+'_s" value="'+esc(j.start||'09:00')+'">'+
-      '<input type="time" id="d'+d[0]+'_e" value="'+esc(j.end||'19:00')+'">'+
-      '<input type="time" id="d'+d[0]+'_pa" value="'+esc(pa[0]||'')+'">'+
-      '<input type="time" id="d'+d[0]+'_pb" value="'+esc(pa[1]||'')+'">'+
+      '<span class="dn"><input type="checkbox" id="'+id+'_o"'+(j.open?' checked':'')+'> '+d[1]+'</span>'+
+      '<input type="time" id="'+id+'_s" value="'+esc(j.start||'09:00')+'">'+
+      '<input type="time" id="'+id+'_e" value="'+esc(j.end||'19:00')+'">'+
+      '<input type="time" id="'+id+'_pa" value="'+esc(pa[0]||'')+'">'+
+      '<input type="time" id="'+id+'_pb" value="'+esc(pa[1]||'')+'">'+
     '</div>';
   }).join('');
 }
+function readDays(prefix){
+  var jours={};
+  DAYS.forEach(function(d){var id=prefix+d[0];
+    jours[d[0]]={open:document.getElementById(id+'_o').checked,
+      start:document.getElementById(id+'_s').value||'09:00',
+      end:document.getElementById(id+'_e').value||'19:00',
+      pause:[document.getElementById(id+'_pa').value||'',document.getElementById(id+'_pb').value||'']};
+  });
+  return jours;
+}
+
+function renderCollabs(){
+  // Mémorise les saisies en cours avant re-render
+  var box=document.getElementById('collabBox');
+  box.innerHTML=collabState.map(function(c,i){
+    return '<div style="border:1px solid var(--line,#e1e8e6);border-radius:10px;padding:.6rem;margin-bottom:.6rem">'+
+      '<div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.4rem">'+
+        '<input id="cn'+i+'" value="'+esc(c.nom||'')+'" placeholder="Nom du collaborateur" style="flex:1;padding:.45rem .6rem;border:1.5px solid #c8d4da;border-radius:9px;font:inherit">'+
+        '<button class="btn btn-del" onclick="removeCollab('+i+')">Suppr.</button>'+
+      '</div>'+ dayRows('c'+i+'_', c.jours||AG_DEF.jours)+
+    '</div>';
+  }).join('')||'<div class="hint">Aucun collaborateur. Ajoutez-en au moins un.</div>';
+}
+function syncCollabState(){
+  collabState=collabState.map(function(c,i){
+    var nEl=document.getElementById('cn'+i);
+    return { nom:(nEl?nEl.value:c.nom)||'', jours:readDays('c'+i+'_') };
+  });
+}
+function addCollab(){
+  syncCollabState();
+  var tmpl=document.getElementById('daysBox')?readDays('g'):clone(AG_DEF.jours);
+  collabState.push({nom:'',jours:tmpl});
+  renderCollabs();
+}
+function removeCollab(i){ syncCollabState(); collabState.splice(i,1); renderCollabs(); }
+
 function saveAgenda(){
   var url=su();if(!url)return;
-  var jours={};
-  DAYS.forEach(function(d){
-    jours[d[0]]={
-      open:document.getElementById('d'+d[0]+'_o').checked,
-      start:document.getElementById('d'+d[0]+'_s').value||'09:00',
-      end:document.getElementById('d'+d[0]+'_e').value||'19:00',
-      pause:[document.getElementById('d'+d[0]+'_pa').value||'',document.getElementById('d'+d[0]+'_pb').value||'']
-    };
-  });
+  var mode=document.getElementById('agMode').value==='collaborateurs'?'collaborateurs':'capacite';
+  syncCollabState();
+  var collaborateurs=collabState.filter(function(c){return String(c.nom||'').trim();})
+    .map(function(c){return {nom:String(c.nom).trim(),jours:c.jours};});
+  if(mode==='collaborateurs'){
+    if(!collaborateurs.length){document.getElementById('agSt').textContent='Ajoutez au moins un collaborateur.';return;}
+    var noms={},dup=false;
+    collaborateurs.forEach(function(c){var k=c.nom.toLowerCase();if(noms[k])dup=true;noms[k]=1;});
+    if(dup){document.getElementById('agSt').textContent='Deux collaborateurs portent le même nom.';return;}
+  }
   var ag={
+    mode:mode,
     capacite:Math.max(1,parseInt(document.getElementById('agCap').value,10)||1),
     granularite:parseInt(document.getElementById('agGran').value,10)||15,
     delaiMin:Math.max(0,parseInt(document.getElementById('agDelai').value,10)||0),
     horizonJours:Math.max(1,parseInt(document.getElementById('agHorizon').value,10)||30),
-    jours:jours
+    jours:readDays('g'),
+    collaborateurs:collaborateurs
   };
   if(!agProfil||typeof agProfil!=='object')agProfil={};
   agProfil.agenda=ag;

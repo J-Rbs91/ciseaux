@@ -58,6 +58,11 @@
       <select id="prestation" required></select>
       <div class="hint" id="prestaHint"></div>
 
+      <div id="collabWrap" style="display:none">
+        <label for="collab">Avec qui ?</label>
+        <select id="collab"></select>
+      </div>
+
       <label class="req" for="date">Date souhaitée</label>
       <input id="date" type="date" required>
 
@@ -114,6 +119,7 @@
 var CONFIG = { api: "", salon: "Mon salon" };
 
 var CATALOGUE = [], GRAN = 15, HORIZON = 30, selectedSlot = '', loadingSlots = false;
+var MODE = 'capacite', COLLABS = [];
 
 (function(){
   var qs = new URLSearchParams(location.search);
@@ -130,18 +136,33 @@ var CATALOGUE = [], GRAN = 15, HORIZON = 30, selectedSlot = '', loadingSlots = f
     if (r && r.ok) {
       if (r.salon) { CONFIG.salon = r.salon; document.getElementById('foot').textContent = r.salon; document.title = 'Rendez-vous · ' + r.salon; }
       HORIZON = r.horizonJours || 30; GRAN = r.granularite || 15;
+      MODE = r.mode || 'capacite'; COLLABS = r.collaborateurs || [];
       var max = new Date(); max.setDate(max.getDate() + HORIZON);
       dEl.max = max.toISOString().slice(0,10);
       CATALOGUE = (r.prestations || []);
       fillPrestations();
+      fillCollabs();
     } else {
       setSlotsState('Réservation en ligne momentanément indisponible.');
     }
   });
 
   document.getElementById('prestation').addEventListener('change', onCriteriaChange);
+  document.getElementById('collab').addEventListener('change', onCriteriaChange);
   dEl.addEventListener('change', onCriteriaChange);
 })();
+
+function fillCollabs(){
+  var wrap = document.getElementById('collabWrap'), sel = document.getElementById('collab');
+  if (MODE !== 'collaborateurs' || !COLLABS.length) { wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  sel.innerHTML='';
+  var o0 = document.createElement('option'); o0.value=''; o0.textContent='Sans préférence'; sel.appendChild(o0);
+  COLLABS.forEach(function(nom){ var o=document.createElement('option'); o.value=nom; o.textContent=nom; sel.appendChild(o); });
+}
+function currentCollab(){
+  return (MODE === 'collaborateurs') ? (document.getElementById('collab').value || '') : '';
+}
 
 function fillPrestations(){
   var sel = document.getElementById('prestation');
@@ -180,7 +201,7 @@ function onCriteriaChange(){
 
 function loadSlots(p, date){
   loadingSlots = true; setSlotsState('Recherche des créneaux…');
-  jsonp(CONFIG.api, { action:'availability', date:date, duree:(p.duree||'') }, function(r){
+  jsonp(CONFIG.api, { action:'availability', date:date, duree:(p.duree||''), collab:currentCollab() }, function(r){
     loadingSlots = false;
     if (!r || !r.ok) { setSlotsState('Impossible de charger les créneaux. Réessayez.'); return; }
     var slots = r.slots || [];
@@ -238,6 +259,7 @@ document.getElementById('resaForm').addEventListener('submit', function(e){
     heure: selectedSlot,
     duree: p.duree || '',
     prestation: p.nom || '',
+    collab: currentCollab(),
     notes: document.getElementById('notes').value.trim(),
     optin: document.getElementById('optin').checked ? 'oui' : 'non'
   };
@@ -246,11 +268,12 @@ document.getElementById('resaForm').addEventListener('submit', function(e){
   btn.disabled=true; btn.textContent='Confirmation…'; showMsg('','');
   jsonp(CONFIG.api, data, function(r){
     if(r && r.ok){
+      var avec = r.collab ? (' avec '+escapeHtml(r.collab)) : '';
       document.getElementById('formCard').innerHTML =
         '<div class="ok-box"><div class="big">✅</div>'+
         '<h1>Rendez-vous confirmé&nbsp;!</h1>'+
         '<p class="sub">Merci '+escapeHtml(prenom)+'. Votre rendez-vous du '+escapeHtml(frDate(data.date))+
-        ' à '+escapeHtml(data.heure)+' ('+escapeHtml(p.nom)+') est enregistré chez '+escapeHtml(CONFIG.salon)+'.</p></div>';
+        ' à '+escapeHtml(data.heure)+' ('+escapeHtml(p.nom)+')'+avec+' est enregistré chez '+escapeHtml(CONFIG.salon)+'.</p></div>';
     } else {
       btn.disabled=false; btn.textContent='Confirmer mon rendez-vous';
       showMsg('err', (r&&r.error) ? r.error : 'L\'envoi a échoué. Réessayez ou appelez le salon.');

@@ -16,7 +16,7 @@ var CLASSEUR = 'base-clients';
 var ONGLET   = 'Clients';
 var ENTETES  = ['id','nom','tel','mail','dob','points','visitsCount','offre','notes','optin','maj','visites','ledger'];
 var RESA       = 'Réservations';
-var ENTETES_RESA = ['id','createdAt','statut','date','heure','duree','prestation','nom','tel','mail','dob','notes','optin'];
+var ENTETES_RESA = ['id','createdAt','statut','date','heure','duree','prestation','collab','nom','tel','mail','dob','notes','optin'];
 
 // Réglages d'agenda par défaut (le salon les personnalise depuis l'app → profil.agenda).
 // jours : 0=dimanche … 6=samedi (Date.getDay).
@@ -96,7 +96,7 @@ function doGet(e) {
       case 'quota':        res={ok:true,quota:MailApp.getRemainingDailyQuota()}; break;
       // Réservations en ligne
       case 'createBooking':    res=creerReservation_(p); break;                 // PUBLIC (formulaire)
-      case 'availability':     res={ok:true, slots:creneauxLibres_(String(p.date||''), p.duree)}; break;  // PUBLIC
+      case 'availability':     res={ok:true, slots:creneauxLibres_(String(p.date||''), p.duree, p.collab)}; break;  // PUBLIC
       case 'catalogue':        res=cataloguePublic_(); break;                   // PUBLIC
       case 'loadBookings':     res={ok:true,data:lireReservations_()}; break;
       case 'setBookingStatus': res={ok:true,updated:majStatutReservation_(p.id||'', p.statut||'')}; break;
@@ -275,14 +275,49 @@ function agendaConfig_() {
   try { profil = JSON.parse(lireProfil_() || '{}') || {}; } catch (e) {}
   var ag = profil.agenda || {};
   var cfg = {
+    mode: (ag.mode === 'collaborateurs') ? 'collaborateurs' : 'capacite',
     capacite: parseInt(ag.capacite, 10) > 0 ? parseInt(ag.capacite, 10) : AGENDA_DEFAUT.capacite,
     granularite: parseInt(ag.granularite, 10) > 0 ? parseInt(ag.granularite, 10) : AGENDA_DEFAUT.granularite,
     delaiMin: parseInt(ag.delaiMin, 10) >= 0 ? parseInt(ag.delaiMin, 10) : AGENDA_DEFAUT.delaiMin,
     horizonJours: parseInt(ag.horizonJours, 10) > 0 ? parseInt(ag.horizonJours, 10) : AGENDA_DEFAUT.horizonJours,
-    jours: (ag.jours && typeof ag.jours === 'object') ? ag.jours : AGENDA_DEFAUT.jours
+    jours: (ag.jours && typeof ag.jours === 'object') ? ag.jours : AGENDA_DEFAUT.jours,
+    collaborateurs: (Array.isArray(ag.collaborateurs) ? ag.collaborateurs : []).filter(function(c) {
+      return c && String(c.nom || '').trim();
+    })
   };
   cfg.profil = profil;
   return cfg;
+}
+
+// Un collaborateur travaille-t-il sur [t, fin[ ce jour-là (horaires + hors pause) ?
+function collabTravaille_(collab, dow, t, fin) {
+  var j = (collab.jours && collab.jours[String(dow)]) ? collab.jours[String(dow)] : null;
+  if (!j || !j.open) return false;
+  var o = hm_(j.start), c = hm_(j.end);
+  if (o == null || c == null || t < o || fin > c) return false;
+  var pa = Array.isArray(j.pause) ? j.pause : ['', ''];
+  var pd = hm_(pa[0]), pf = hm_(pa[1]);
+  if (pd != null && pf != null && pf > pd && t < pf && fin > pd) return false;
+  return true;
+}
+
+// Renvoie le nom d'un collaborateur libre sur [t, fin[, ou '' si aucun.
+// collabVoulu : nom imposé par le client (sinon premier disponible).
+function collabLibre_(cfg, dow, t, fin, occ, collabVoulu) {
+  var liste = cfg.collaborateurs;
+  if (collabVoulu) liste = liste.filter(function(c) { return String(c.nom).trim() === String(collabVoulu).trim(); });
+  // Un RDV sans collaborateur (legacy/capacité) bloque tout le monde, par sécurité.
+  for (var k = 0; k < occ.length; k++) { if (!occ[k].collab && t < occ[k].end && fin > occ[k].start) return ''; }
+  for (var i = 0; i < liste.length; i++) {
+    var nom = String(liste[i].nom).trim();
+    if (!collabTravaille_(liste[i], dow, t, fin)) continue;
+    var pris = false;
+    for (var j = 0; j < occ.length; j++) {
+      if (String(occ[j].collab) === nom && t < occ[j].end && fin > occ[j].start) { pris = true; break; }
+    }
+    if (!pris) return nom;
+  }
+  return '';
 }
 
 function hm_(s) { var m = String(s || '').match(/^(\d{1,2}):(\d{2})/); return m ? (+m[1]) * 60 + (+m[2]) : null; }
@@ -305,7 +340,7 @@ function resaDuJour_(dateStr) {
   var data = sh.getDataRange().getValues();
   var head = data.shift() || [];
   var iDate = head.indexOf('date'), iH = head.indexOf('heure'), iDur = head.indexOf('duree'),
-      iSt = head.indexOf('statut'), iPre = head.indexOf('prestation');
+      iSt = head.indexOf('statut'), iPre = head.indexOf('prestation'), iCo = head.indexOf('collab');
   var profil = null, out = [];
   data.forEach(function(r) {
     if (String(r[iDate]) !== dateStr) return;
@@ -314,28 +349,21 @@ function resaDuJour_(dateStr) {
     var start = hm_(r[iH]); if (start == null) return;
     var dur = parseInt(r[iDur], 10) || 0;
     if (!dur) { if (!profil) profil = agendaConfig_().profil; dur = dureePresta_(profil, r[iPre]) || 0; }
-    out.push({ start: start, end: start + (dur || 0) });
+    out.push({ start: start, end: start + (dur || 0), collab: (iCo >= 0 ? String(r[iCo] || '') : '') });
   });
   return out;
 }
 
-// Liste des créneaux de début libres ("HH:MM") pour une date et une durée.
-function creneauxLibres_(dateStr, dureeMin) {
+// Liste des créneaux de début libres ("HH:MM") pour une date / durée / (collaborateur).
+function creneauxLibres_(dateStr, dureeMin, collabVoulu) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return [];
   var cfg = agendaConfig_();
   var duree = parseInt(dureeMin, 10) > 0 ? parseInt(dureeMin, 10) : cfg.granularite;
   var d = new Date(dateStr + 'T00:00:00');
   if (isNaN(d)) return [];
-  var jour = cfg.jours[String(d.getDay())];
-  if (!jour || !jour.open) return [];
+  var dow = d.getDay();
 
-  var openMin = hm_(jour.start), closeMin = hm_(jour.end);
-  if (openMin == null || closeMin == null || closeMin <= openMin) return [];
-  var pause = Array.isArray(jour.pause) ? jour.pause : ['', ''];
-  var pDeb = hm_(pause[0]), pFin = hm_(pause[1]);
-  var hasPause = (pDeb != null && pFin != null && pFin > pDeb);
-
-  // Horizon + non passé
+  // Horizon + non passé (commun aux deux modes)
   var now = new Date();
   var auj = new Date(); auj.setHours(0, 0, 0, 0);
   if (d < auj) return [];
@@ -343,13 +371,45 @@ function creneauxLibres_(dateStr, dureeMin) {
   if (d > limite) return [];
   var estAujourdhui = (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate());
   var minToday = estAujourdhui ? (now.getHours() * 60 + now.getMinutes() + cfg.delaiMin) : -1;
-
   var occ = resaDuJour_(dateStr);
-  var libres = [];
-  for (var t = openMin; t + duree <= closeMin; t += cfg.granularite) {
-    var fin = t + duree;
-    if (hasPause && t < pFin && fin > pDeb) continue;        // chevauche la pause
-    if (estAujourdhui && t < minToday) continue;             // trop proche / passé
+  var libres = [], t, fin;
+
+  if (cfg.mode === 'collaborateurs') {
+    collabVoulu = String(collabVoulu || '').trim();
+    var liste = cfg.collaborateurs;
+    if (collabVoulu) liste = liste.filter(function(c) { return String(c.nom).trim() === collabVoulu; });
+    if (!liste.length) return [];
+    // Fenêtre de balayage = union des plages d'ouverture des collaborateurs concernés ce jour-là.
+    var minOpen = null, maxClose = null;
+    liste.forEach(function(c) {
+      var j = c.jours && c.jours[String(dow)];
+      if (!j || !j.open) return;
+      var o = hm_(j.start), cl = hm_(j.end);
+      if (o == null || cl == null || cl <= o) return;
+      if (minOpen == null || o < minOpen) minOpen = o;
+      if (maxClose == null || cl > maxClose) maxClose = cl;
+    });
+    if (minOpen == null) return [];
+    for (t = minOpen; t + duree <= maxClose; t += cfg.granularite) {
+      fin = t + duree;
+      if (estAujourdhui && t < minToday) continue;
+      if (collabLibre_(cfg, dow, t, fin, occ, collabVoulu)) libres.push(mh_(t));
+    }
+    return libres;
+  }
+
+  // Mode capacité (postes anonymes en parallèle)
+  var jour = cfg.jours[String(dow)];
+  if (!jour || !jour.open) return [];
+  var openMin = hm_(jour.start), closeMin = hm_(jour.end);
+  if (openMin == null || closeMin == null || closeMin <= openMin) return [];
+  var pause = Array.isArray(jour.pause) ? jour.pause : ['', ''];
+  var pDeb = hm_(pause[0]), pFin = hm_(pause[1]);
+  var hasPause = (pDeb != null && pFin != null && pFin > pDeb);
+  for (t = openMin; t + duree <= closeMin; t += cfg.granularite) {
+    fin = t + duree;
+    if (hasPause && t < pFin && fin > pDeb) continue;
+    if (estAujourdhui && t < minToday) continue;
     var n = 0;
     for (var i = 0; i < occ.length; i++) { if (t < occ[i].end && fin > occ[i].start) n++; }
     if (n < cfg.capacite) libres.push(mh_(t));
@@ -389,18 +449,31 @@ function creerReservation_(p) {
   if (n >= 20) return { ok:false, error:'Trop de demandes, réessayez dans une minute.' };
   cache.put('resa_count', String(n + 1), 60);
 
+  var collabVoulu = String(p.collab || '').trim();
+
   // Réservation ferme : on sérialise pour éviter qu'un même créneau parte deux fois.
   var lock = LockService.getScriptLock();
   try { lock.waitLock(10000); } catch (e) { return { ok:false, error:'Service occupé, réessayez.' }; }
   try {
-    if (creneauxLibres_(date, duree).indexOf(heure) < 0) {
-      return { ok:false, error:'Ce créneau vient d\'être pris. Choisissez-en un autre.' };
+    var collabAssigne = '';
+    if (cfg.mode === 'collaborateurs') {
+      var d2 = new Date(date + 'T00:00:00'), fin = (hm_(heure) || 0) + duree;
+      collabAssigne = collabLibre_(cfg, d2.getDay(), hm_(heure), fin, resaDuJour_(date), collabVoulu);
+      if (!collabAssigne) {
+        return { ok:false, error: collabVoulu
+          ? collabVoulu + ' n\'est plus disponible sur ce créneau. Choisissez-en un autre.'
+          : 'Ce créneau vient d\'être pris. Choisissez-en un autre.' };
+      }
+    } else {
+      if (creneauxLibres_(date, duree).indexOf(heure) < 0) {
+        return { ok:false, error:'Ce créneau vient d\'être pris. Choisissez-en un autre.' };
+      }
     }
     var o = {
       id: 'r_' + Date.now() + '_' + Math.floor(Math.random() * 9999),
       createdAt: new Date().toISOString(),
       statut: 'confirme',                 // blocage automatique du créneau
-      date: date, heure: heure, duree: duree, prestation: prestation,
+      date: date, heure: heure, duree: duree, prestation: prestation, collab: collabAssigne,
       nom: nom, tel: tel, mail: mail,
       dob: String(p.dob || '').trim(),
       notes: String(p.notes || '').trim(),
@@ -409,7 +482,7 @@ function creerReservation_(p) {
     var sh = feuilleResa_();
     var head = enTetesResa_(sh);
     sh.appendRow(head.map(function(h) { return o[h] != null ? o[h] : ''; }));
-    return { ok:true };
+    return { ok:true, collab: collabAssigne };
   } finally {
     lock.releaseLock();
   }
@@ -435,6 +508,8 @@ function cataloguePublic_() {
     ok: true,
     salon: String(profil.nom || ''),
     prestations: prestations,
+    mode: cfg.mode,
+    collaborateurs: cfg.collaborateurs.map(function(c) { return String(c.nom || '').trim(); }),
     horizonJours: cfg.horizonJours,
     granularite: cfg.granularite
   };

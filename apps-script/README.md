@@ -120,7 +120,7 @@ Le formulaire public `reservation.html` est un **vrai agenda** : le client chois
 **Réservations** (confirmer, annuler, ajouter le client au fichier).
 
 - Stockage dans l'onglet **`Réservations`** du classeur `base-clients` :
-  `id | createdAt | statut | date | heure | duree | prestation | nom | tel | mail | dob | notes | optin`
+  `id | createdAt | statut | date | heure | duree | prestation | collab | nom | tel | mail | dob | notes | optin`
 - Calcul des créneaux : à partir des **horaires d'ouverture**, de la **durée de la prestation**,
   de la **capacité** (RDV simultanés) et des RDV déjà pris. L'action publique `availability`
   ne renvoie **que des heures** (aucune donnée client).
@@ -128,9 +128,14 @@ Le formulaire public `reservation.html` est un **vrai agenda** : le client chois
   avant d'écrire — deux clients ne peuvent pas prendre le même dernier créneau.
 - Autres protections : piège anti-robot, refus des dates passées/hors horizon, anti-flood.
 
-**Réglages (depuis l'app, page Réservations → ⚙ Réglages agenda)** : capacité (postes en
-parallèle), pas des créneaux, délai minimum avant RDV, horizon de réservation, et **horaires
-par jour** (avec pause). Ils sont enregistrés dans le profil (`profil.agenda`) et synchronisés.
+**Réglages (depuis l'app, page Réservations → ⚙ Réglages agenda)** : pas des créneaux, délai
+minimum avant RDV, horizon de réservation, et l'**organisation** au choix —
+- **Postes anonymes (capacité)** : N rendez-vous en parallèle, horaires communs du salon ;
+- **Collaborateurs nommés** : chaque collaborateur a ses propres horaires (un RDV à la fois).
+  Le client choisit **avec qui** (ou « sans préférence » → le script affecte automatiquement un
+  collaborateur libre, dont le nom est enregistré en colonne `collab`).
+
+Tout est enregistré dans le profil (`profil.agenda`) et synchronisé.
 
 Les **prestations et leurs durées** proviennent de votre page **Prestations** (chargées
 automatiquement par le formulaire via `catalogue`). Pour mettre le formulaire en ligne :

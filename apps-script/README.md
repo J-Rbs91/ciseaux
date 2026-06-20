@@ -120,7 +120,7 @@ Le formulaire public `reservation.html` est un **vrai agenda** : le client chois
 **Réservations** (confirmer, annuler, ajouter le client au fichier).
 
 - Stockage dans l'onglet **`Réservations`** du classeur `base-clients` :
-  `id | createdAt | statut | date | heure | duree | prestation | collab | nom | tel | mail | dob | notes | optin | rappel`
+  `id | createdAt | statut | date | heure | duree | prestation | collab | nom | tel | mail | dob | notes | optin | rappel | token`
 - Le client choisit **une ou plusieurs prestations** (durées cumulées). **Email obligatoire**
   (confirmation + rappel), **téléphone et date de naissance facultatifs**.
 - Calcul des créneaux : à partir des **horaires d'ouverture**, de la **durée de la prestation**,
@@ -158,7 +158,23 @@ Chaque envoi est **activable/désactivable** depuis **Réglages agenda** (cases 
   (colonne `rappel` = `oui` une fois envoyé, pour ne pas doublonner). Test manuel possible via
   la fonction `envoyerRappels_`.
 
-> Migration : le nouveau code ajoute les colonnes `duree`, `collab` et `rappel`. Refaites
+### Annulation / modification par le client
+
+Chaque RDV possède un **jeton secret** (colonne `token`). Les emails de confirmation et de
+rappel contiennent un lien **« Annuler ou modifier votre rendez-vous »** (`reservation.html?
+manage=<id>&token=<token>`) :
+- **Annuler** : libère le créneau (statut `refuse`) et envoie un email d'annulation.
+- **Modifier** : le client change ses prestations / son créneau. La **disponibilité est
+  recalculée** (en s'excluant lui-même). Si l'horaire initial reste possible, il est **reproposé
+  en priorité** ; sinon le client est invité, avec un message d'explication, à choisir un nouveau
+  créneau. Actions publiques **protégées par le jeton** (`getBooking`, `cancelBooking`,
+  `modifyBooking`) — aucune autre donnée n'est accessible.
+
+> Le lien des emails nécessite l'URL publique du formulaire : elle est **enregistrée
+> automatiquement** (`agenda.formUrl`) dès que le salon ouvre **Réglages agenda** puis
+> **Enregistre** depuis la page Réservations publiée.
+
+> Migration : le nouveau code ajoute les colonnes `duree`, `collab`, `rappel` et `token`. Refaites
 > **Déployer → Gérer les déploiements → Modifier → Nouvelle version** ; les colonnes sont
 > ajoutées automatiquement. Réautorisez (scope **Gmail** requis pour les emails de RDV).
 

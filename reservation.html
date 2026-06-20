@@ -57,6 +57,8 @@
     <h1 id="title">Prendre rendez-vous</h1>
     <p class="sub" id="subtitle">Choisissez votre prestation, puis un créneau disponible.</p>
 
+    <div id="manageBox" style="display:none"></div>
+
     <form id="resaForm" autocomplete="on" novalidate>
       <!-- piège anti-robot : doit rester vide -->
       <div class="hp" aria-hidden="true"><label>Ne pas remplir<input type="text" id="hp" name="website" tabindex="-1" autocomplete="off"></label></div>
@@ -77,35 +79,37 @@
       <div id="slots" class="slots" style="display:none"></div>
       <div class="slots-state" id="slotsState">Choisissez d'abord une prestation et une date.</div>
 
-      <div class="two">
-        <div><label class="req" for="prenom">Prénom</label><input id="prenom" type="text" autocomplete="given-name" required></div>
-        <div><label class="req" for="nom">Nom</label><input id="nom" type="text" autocomplete="family-name" required></div>
+      <div id="contactBlock">
+        <div class="two">
+          <div><label class="req" for="prenom">Prénom</label><input id="prenom" type="text" autocomplete="given-name"></div>
+          <div><label class="req" for="nom">Nom</label><input id="nom" type="text" autocomplete="family-name"></div>
+        </div>
+
+        <label class="req" for="mail">Email</label>
+        <input id="mail" type="email" autocomplete="email">
+        <div class="hint">Vous recevrez la confirmation et un rappel la veille de votre rendez-vous.</div>
+
+        <label for="tel">Téléphone</label>
+        <input id="tel" type="tel" inputmode="tel" autocomplete="tel">
+        <div class="hint">Facultatif.</div>
+
+        <label for="dob">Date de naissance</label>
+        <input id="dob" type="date">
+        <div class="hint">Facultatif — uniquement pour vous offrir un cadeau le jour de votre anniversaire.</div>
+
+        <label for="notes">Précisions (facultatif)</label>
+        <textarea id="notes" placeholder="Demande particulière…"></textarea>
+
+        <label class="consent">
+          <input type="checkbox" id="cgu">
+          <span>J'ai lu et j'accepte la <a href="confidentialite.html" target="_blank" rel="noopener">politique de confidentialité</a> et que mes coordonnées soient utilisées pour gérer mon rendez-vous. <strong>(obligatoire)</strong></span>
+        </label>
+
+        <label class="consent">
+          <input type="checkbox" id="optin">
+          <span>J'accepte de recevoir par email les offres et promotions du salon. (facultatif, désinscription à tout moment)</span>
+        </label>
       </div>
-
-      <label class="req" for="mail">Email</label>
-      <input id="mail" type="email" autocomplete="email" required>
-      <div class="hint">Vous recevrez la confirmation et un rappel la veille de votre rendez-vous.</div>
-
-      <label for="tel">Téléphone</label>
-      <input id="tel" type="tel" inputmode="tel" autocomplete="tel">
-      <div class="hint">Facultatif.</div>
-
-      <label for="dob">Date de naissance</label>
-      <input id="dob" type="date">
-      <div class="hint">Facultatif — uniquement pour vous offrir un cadeau le jour de votre anniversaire.</div>
-
-      <label for="notes">Précisions (facultatif)</label>
-      <textarea id="notes" placeholder="Demande particulière…"></textarea>
-
-      <label class="consent">
-        <input type="checkbox" id="cgu" required>
-        <span>J'ai lu et j'accepte la <a href="confidentialite.html" target="_blank" rel="noopener">politique de confidentialité</a> et que mes coordonnées soient utilisées pour gérer mon rendez-vous. <strong>(obligatoire)</strong></span>
-      </label>
-
-      <label class="consent">
-        <input type="checkbox" id="optin">
-        <span>J'accepte de recevoir par email les offres et promotions du salon. (facultatif, désinscription à tout moment)</span>
-      </label>
 
       <button class="btn" id="submitBtn" type="submit">Confirmer mon rendez-vous</button>
       <div class="msg" id="msg" role="alert"></div>
@@ -128,11 +132,13 @@ var CONFIG = { api: "", salon: "Mon salon" };
 
 var CATALOGUE = [], GRAN = 15, HORIZON = 30, selectedSlot = '', loadingSlots = false;
 var MODE = 'capacite', COLLABS = [];
+var IS_MANAGE = false, MANAGE_ID = '', MANAGE_TOKEN = '', MODIFYING = false, BOOKING = null;
 
 (function(){
   var qs = new URLSearchParams(location.search);
   if (qs.get('api'))   CONFIG.api   = qs.get('api');
   if (qs.get('salon')) CONFIG.salon = qs.get('salon');
+  if (qs.get('manage') && qs.get('token')) { IS_MANAGE = true; MANAGE_ID = qs.get('manage'); MANAGE_TOKEN = qs.get('token'); }
   document.getElementById('foot').textContent = CONFIG.salon;
   document.title = 'Rendez-vous · ' + CONFIG.salon;
   var today = new Date().toISOString().slice(0,10);
@@ -150,6 +156,7 @@ var MODE = 'capacite', COLLABS = [];
       CATALOGUE = (r.prestations || []);
       fillPrestations();
       refreshCollabs();
+      if (IS_MANAGE) enterManage();
     } else {
       setSlotsState('Réservation en ligne momentanément indisponible.');
     }
@@ -158,6 +165,68 @@ var MODE = 'capacite', COLLABS = [];
   document.getElementById('collab').addEventListener('change', onCriteriaChange);
   dEl.addEventListener('change', onCriteriaChange);
 })();
+
+// ── Mode gestion (annuler / modifier) ────────────────────────
+function enterManage(){
+  document.getElementById('resaForm').style.display = 'none';
+  document.getElementById('title').textContent = 'Votre rendez-vous';
+  document.getElementById('subtitle').textContent = '';
+  var box = document.getElementById('manageBox'); box.style.display = 'block';
+  box.innerHTML = '<p class="sub">Chargement…</p>';
+  jsonp(CONFIG.api, { action:'getBooking', id:MANAGE_ID, token:MANAGE_TOKEN }, function(r){
+    if (!r || !r.ok) { box.innerHTML = '<p class="msg err" style="display:block">'+escapeHtml((r&&r.error)||'Lien invalide.')+'</p>'; return; }
+    BOOKING = r.booking;
+    if (BOOKING.statut === 'refuse') {
+      box.innerHTML = '<div class="ok-box"><h1>Rendez-vous annulé</h1><p class="sub">Ce rendez-vous a déjà été annulé. Pour un nouveau rendez-vous, utilisez le lien habituel du salon.</p></div>';
+      return;
+    }
+    renderManage();
+  });
+}
+function renderManage(){
+  var b = BOOKING;
+  var avec = b.collab ? (' avec '+escapeHtml(b.collab)) : '';
+  document.getElementById('manageBox').innerHTML =
+    '<div style="border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px">'+
+      '<div style="font-weight:700;margin-bottom:4px">'+escapeHtml(frDateLong(b.date))+' à '+escapeHtml(b.heure)+'</div>'+
+      '<div class="sub" style="margin:0">'+escapeHtml(b.prestation||'Rendez-vous')+avec+'</div>'+
+    '</div>'+
+    '<button class="btn" type="button" onclick="startModify()">Modifier mon rendez-vous</button>'+
+    '<button class="btn" type="button" style="background:transparent;color:var(--rose-d);border:1px solid var(--line)" onclick="cancelRdv()">Annuler mon rendez-vous</button>'+
+    '<div class="msg" id="manageMsg" role="alert"></div>';
+}
+function cancelRdv(){
+  if(!confirm('Confirmer l\'annulation de votre rendez-vous ?')) return;
+  var m = document.getElementById('manageMsg'); m.className='msg'; m.textContent='';
+  jsonp(CONFIG.api, { action:'cancelBooking', id:MANAGE_ID, token:MANAGE_TOKEN }, function(r){
+    if (r && r.ok) {
+      document.getElementById('manageBox').innerHTML =
+        '<div class="ok-box"><div class="big">✓</div><h1>Rendez-vous annulé</h1>'+
+        '<p class="sub">Votre rendez-vous a bien été annulé. Au plaisir de vous revoir.</p></div>';
+    } else { m.className='msg err'; m.textContent=(r&&r.error)||'Échec de l\'annulation.'; }
+  });
+}
+function startModify(){
+  MODIFYING = true;
+  document.getElementById('manageBox').style.display = 'none';
+  document.getElementById('resaForm').style.display = '';
+  document.getElementById('contactBlock').style.display = 'none';   // coordonnées déjà connues
+  document.getElementById('title').textContent = 'Modifier votre rendez-vous';
+  document.getElementById('subtitle').textContent = 'Ajustez vos prestations ou votre créneau. Si la durée change, votre horaire pourra être adapté selon les disponibilités.';
+  document.getElementById('submitBtn').textContent = 'Confirmer la modification';
+  // Pré-remplissage : prestations cochées, collaborateur, date.
+  var noms = String(BOOKING.prestation||'').split(' + ').map(function(s){return s.trim();}).filter(Boolean);
+  [].forEach.call(document.querySelectorAll('#prestaList input[type=checkbox]'), function(cb){
+    var i = +cb.getAttribute('data-i');
+    var nom = (i<0) ? 'Rendez-vous' : (CATALOGUE[i] ? CATALOGUE[i].nom : '');
+    cb.checked = noms.indexOf(nom) >= 0;
+    cb.closest('.presta-opt').classList.toggle('on', cb.checked);
+  });
+  refreshCollabs();
+  if (MODE==='collaborateurs' && BOOKING.collab) { var cs=document.getElementById('collab'); if([].some.call(cs.options,function(o){return o.value===BOOKING.collab;})) cs.value=BOOKING.collab; }
+  document.getElementById('date').value = BOOKING.date;
+  onCriteriaChange();
+}
 
 // Reconstruit la liste « Avec qui ? » en ne gardant que les collaborateurs
 // capables de réaliser TOUTES les prestations sélectionnées.
@@ -227,16 +296,33 @@ function onCriteriaChange(){
 
 function loadSlots(sel, date){
   loadingSlots = true; setSlotsState('Recherche des créneaux…');
-  jsonp(CONFIG.api, { action:'availability', date:date, duree:(sel.duree||''), collab:currentCollab(), prestations:JSON.stringify(sel.noms) }, function(r){
+  var params = { action:'availability', date:date, duree:(sel.duree||''), collab:currentCollab(), prestations:JSON.stringify(sel.noms) };
+  if (MODIFYING) { params.exclure = MANAGE_ID; params.token = MANAGE_TOKEN; }   // ne pas se bloquer soi-même
+  jsonp(CONFIG.api, params, function(r){
     loadingSlots = false;
     if (!r || !r.ok) { setSlotsState('Impossible de charger les créneaux. Réessayez.'); return; }
     var slots = r.slots || [];
     var box = document.getElementById('slots');
     if (!slots.length) { box.style.display='none'; setSlotsState('Aucun créneau disponible ce jour-là. Essayez une autre date.'); return; }
-    setSlotsState(slots.length + ' créneau(x) disponible(s) :');
     box.style.display='grid';
     box.innerHTML = slots.map(function(t){ return '<button type="button" class="slot" onclick="pickSlot(this,\''+t+'\')">'+t+'</button>'; }).join('');
+    if (MODIFYING) { adjustModifySlots(slots); return; }
+    setSlotsState(slots.length + ' créneau(x) disponible(s) :');
   });
+}
+
+// En modification : reproposer en priorité le créneau initial, sinon accompagner le choix.
+function adjustModifySlots(slots){
+  var sameDay = (document.getElementById('date').value === BOOKING.date);
+  if (sameDay && slots.indexOf(BOOKING.heure) >= 0) {
+    [].forEach.call(document.querySelectorAll('.slot'), function(b){
+      if (b.textContent === BOOKING.heure) { b.classList.add('sel'); selectedSlot = BOOKING.heure; }
+    });
+    setSlotsState('Votre créneau initial (' + BOOKING.heure + ') est conservé. Vous pouvez en choisir un autre si vous le souhaitez.');
+  } else {
+    selectedSlot = '';
+    setSlotsState('En raison de la nouvelle durée, votre horaire initial (' + BOOKING.heure + ' le ' + frDate(BOOKING.date) + ') n\'est plus disponible. Pas d\'inquiétude : choisissez simplement un nouveau créneau ci-dessous parmi les disponibilités.');
+  }
 }
 
 function pickSlot(el, t){
@@ -270,8 +356,33 @@ document.getElementById('resaForm').addEventListener('submit', function(e){
   if(!sel.noms.length){ showMsg('err','Choisissez au moins une prestation.'); return; }
   if(!document.getElementById('date').value){ showMsg('err','Choisissez une date.'); return; }
   if(!selectedSlot){ showMsg('err','Choisissez un créneau disponible.'); return; }
-  if(!document.getElementById('cgu').checked){ showMsg('err','Merci d\'accepter la politique de confidentialité.'); return; }
 
+  // ── Modification d'un RDV existant ──
+  if (MODIFYING) {
+    var dataM = {
+      action:'modifyBooking', id:MANAGE_ID, token:MANAGE_TOKEN,
+      date: document.getElementById('date').value, heure: selectedSlot,
+      duree: sel.duree || '', prestations: JSON.stringify(sel.noms), prestation: sel.label,
+      collab: currentCollab()
+    };
+    btn.disabled=true; btn.textContent='Modification…'; showMsg('','');
+    jsonp(CONFIG.api, dataM, function(r){
+      if(r && r.ok){
+        var avecM = r.collab ? (' avec '+escapeHtml(r.collab)) : '';
+        document.getElementById('formCard').innerHTML =
+          '<div class="ok-box"><div class="big">✓</div><h1>Rendez-vous modifié&nbsp;!</h1>'+
+          '<p class="sub">Votre nouveau rendez-vous : '+escapeHtml(frDateLong(dataM.date))+' à '+escapeHtml(dataM.heure)+
+          ' ('+escapeHtml(sel.label)+')'+avecM+'. Un email de confirmation vous a été envoyé.</p></div>';
+      } else {
+        btn.disabled=false; btn.textContent='Confirmer la modification';
+        showMsg('err', (r&&r.error) ? r.error : 'La modification a échoué. Réessayez.');
+        if (r && r.error && /créneau|disponible/i.test(r.error)) onCriteriaChange();
+      }
+    });
+    return;
+  }
+
+  if(!document.getElementById('cgu').checked){ showMsg('err','Merci d\'accepter la politique de confidentialité.'); return; }
   var prenom=document.getElementById('prenom').value.trim();
   var nom=document.getElementById('nom').value.trim();
   var mail=document.getElementById('mail').value.trim();
@@ -315,6 +426,9 @@ document.getElementById('resaForm').addEventListener('submit', function(e){
 });
 
 function frDate(s){ var m=String(s||'').match(/^(\d{4})-(\d{2})-(\d{2})/); return m? m[3]+'/'+m[2]+'/'+m[1] : s; }
+var JOURS_FR=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+var MOIS_FR=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+function frDateLong(s){ var m=String(s||'').match(/^(\d{4})-(\d{2})-(\d{2})/); if(!m) return s; var d=new Date(s+'T00:00:00'); return JOURS_FR[d.getDay()]+' '+(+m[3])+' '+MOIS_FR[+m[2]-1]+' '+m[1]; }
 function escapeHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
 </body>

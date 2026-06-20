@@ -400,6 +400,7 @@ function saveAgenda(){
   }
   var ag={
     mode:mode,
+    formUrl:location.href.split('?')[0].replace(/[^/]*$/,'')+'reservation.html',  // base du formulaire (liens emails)
     mailConfirm:document.getElementById('agMailConfirm').checked,
     mailRappel:document.getElementById('agMailRappel').checked,
     capacite:Math.max(1,parseInt(document.getElementById('agCap').value,10)||1),

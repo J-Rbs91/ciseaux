@@ -363,10 +363,11 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
       <div class="label">Statistiques</div>
       <div class="desc">CA, panier moyen &amp; tendances</div>
     </a>
-    <a href="reservations.html" class="card">
+    <a href="reservations.html" class="card" style="position:relative">
+      <span id="resaBadge" aria-label="réservations aujourd'hui" style="display:none;position:absolute;top:10px;right:10px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#A22C29;color:#fff;font-size:.74rem;font-weight:800;line-height:22px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.25)"></span>
       <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="38" height="38" fill="#A22C29" style="display:block" aria-hidden="true"><path d="M12,19a1,1,0,1,0-1-1A1,1,0,0,0,12,19Zm5,0a1,1,0,1,0-1-1A1,1,0,0,0,17,19Zm0-4a1,1,0,1,0-1-1A1,1,0,0,0,17,15Zm-5,0a1,1,0,1,0-1-1A1,1,0,0,0,12,15ZM19,3H18V2a1,1,0,0,0-2,0V3H8V2A1,1,0,0,0,6,2V3H5A3,3,0,0,0,2,6V20a3,3,0,0,0,3,3H19a3,3,0,0,0,3-3V6A3,3,0,0,0,19,3Zm1,17a1,1,0,0,1-1,1H5a1,1,0,0,1-1-1V11H20ZM20,9H4V6A1,1,0,0,1,5,5H6V6A1,1,0,0,0,8,6V5h8V6a1,1,0,0,0,2,0V5h1a1,1,0,0,1,1,1ZM7,15a1,1,0,1,0-1-1A1,1,0,0,0,7,15Zm0,4a1,1,0,1,0-1-1A1,1,0,0,0,7,19Z"></path></svg></div>
       <div class="label">Réservations</div>
-      <div class="desc">Demandes de rendez-vous en ligne</div>
+      <div class="desc">Rendez-vous en ligne</div>
     </a>
   </div>
 </main>
@@ -551,6 +552,18 @@ if(su()){
     if(r&&r.ok&&r.data){
       try{var p=JSON.parse(r.data);localStorage.setItem(LS_P,JSON.stringify(p));renderHeader();sb.textContent='✓ Synchronisé';sb.className='sync-bar ok';}catch(e){sb.textContent='';}
     }else{sb.textContent='';}
+  });
+  majBadgeResa();
+}
+// Badge « réservations du jour » sur la carte Réservations.
+function majBadgeResa(){
+  var t=new Date(); t=t.getFullYear()+'-'+('0'+(t.getMonth()+1)).slice(-2)+'-'+('0'+t.getDate()).slice(-2);
+  jsonp(su(),{action:'loadBookings'},function(r){
+    if(!r||!r.ok)return;
+    var arr;try{arr=JSON.parse(r.data||'[]');}catch(e){return;}
+    var n=arr.filter(function(b){return String(b.date).slice(0,10)===t && String(b.statut||'')==='confirme';}).length;
+    var b=document.getElementById('resaBadge');
+    if(b&&n>0){b.textContent=n;b.style.display='block';b.title=n+' rendez-vous aujourd\'hui';}
   });
 }
 </script>

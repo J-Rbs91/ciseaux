@@ -16,7 +16,7 @@ var CLASSEUR = 'base-clients';
 var ONGLET   = 'Clients';
 var ENTETES  = ['id','nom','tel','mail','dob','points','visitsCount','offre','notes','optin','maj','visites','ledger'];
 var RESA       = 'Réservations';
-var ENTETES_RESA = ['id','createdAt','statut','date','heure','duree','prestation','collab','nom','tel','mail','dob','notes','optin','rappel'];
+var ENTETES_RESA = ['id','createdAt','statut','date','heure','duree','prestation','collab','nom','tel','mail','dob','notes','optin','rappel','token'];
 
 // Réglages d'agenda par défaut (le salon les personnalise depuis l'app → profil.agenda).
 // jours : 0=dimanche … 6=samedi (Date.getDay).
@@ -41,7 +41,7 @@ var AGENDA_DEFAUT = {
 // toutes les autres exigent la clé admin si une clé a été définie. Tant qu'aucune
 // clé n'est configurée, le script reste en mode « ouvert » (compatibilité des
 // déploiements existants) — d'où l'avertissement affiché dans l'application.
-var ACTIONS_PUBLIQUES = { createBooking:1, availability:1, catalogue:1, securite:1, unsub:1 };
+var ACTIONS_PUBLIQUES = { createBooking:1, availability:1, catalogue:1, getBooking:1, cancelBooking:1, modifyBooking:1, securite:1, unsub:1 };
 
 function cleAdmin_() {
   return (PropertiesService.getScriptProperties().getProperty('ADMIN_KEY') || '').trim();
@@ -96,8 +96,11 @@ function doGet(e) {
       case 'quota':        res={ok:true,quota:MailApp.getRemainingDailyQuota()}; break;
       // Réservations en ligne
       case 'createBooking':    res=creerReservation_(p); break;                 // PUBLIC (formulaire)
-      case 'availability':     res={ok:true, slots:creneauxLibres_(String(p.date||''), p.duree, p.collab, jsonArr_(p.prestations))}; break;  // PUBLIC
+      case 'availability':     res={ok:true, slots:creneauxLibres_(String(p.date||''), p.duree, p.collab, jsonArr_(p.prestations), exclureSiToken_(p))}; break;  // PUBLIC
       case 'catalogue':        res=cataloguePublic_(); break;                   // PUBLIC
+      case 'getBooking':       res=getBookingPublic_(p.id||'', p.token||''); break;   // PUBLIC (jeton)
+      case 'cancelBooking':    res=cancelBooking_(p); break;                     // PUBLIC (jeton)
+      case 'modifyBooking':    res=modifyBooking_(p); break;                     // PUBLIC (jeton)
       case 'loadBookings':     res={ok:true,data:lireReservations_()}; break;
       case 'setBookingStatus': res={ok:true,updated:majStatutReservation_(p.id||'', p.statut||'')}; break;
       case 'deleteBooking':    res={ok:true,deleted:supprimerReservation_(p.id||'')}; break;
@@ -364,14 +367,16 @@ function dureePresta_(profil, nom) {
 }
 
 // Réservations occupant une date donnée (statuts qui bloquent le créneau).
-function resaDuJour_(dateStr) {
+// exclureId : ignore ce RDV (utile lors d'une modification, pour ne pas se bloquer soi-même).
+function resaDuJour_(dateStr, exclureId) {
   var sh = feuilleResa_();
   var data = sh.getDataRange().getValues();
   var head = data.shift() || [];
-  var iDate = head.indexOf('date'), iH = head.indexOf('heure'), iDur = head.indexOf('duree'),
+  var iId = head.indexOf('id'), iDate = head.indexOf('date'), iH = head.indexOf('heure'), iDur = head.indexOf('duree'),
       iSt = head.indexOf('statut'), iPre = head.indexOf('prestation'), iCo = head.indexOf('collab');
   var profil = null, out = [];
   data.forEach(function(r) {
+    if (exclureId && String(r[iId]) === String(exclureId)) return;
     if (asDate_(r[iDate]) !== dateStr) return;
     var st = String(r[iSt] || '');
     if (st === 'refuse') return;                 // un RDV refusé/annulé libère le créneau
@@ -384,7 +389,8 @@ function resaDuJour_(dateStr) {
 }
 
 // Liste des créneaux de début libres ("HH:MM") pour une date / durée / (collaborateur) / prestations.
-function creneauxLibres_(dateStr, dureeMin, collabVoulu, prestaNoms) {
+// exclureId : RDV à ignorer dans l'occupation (modification d'un RDV existant).
+function creneauxLibres_(dateStr, dureeMin, collabVoulu, prestaNoms, exclureId) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return [];
   var cfg = agendaConfig_();
   var duree = parseInt(dureeMin, 10) > 0 ? parseInt(dureeMin, 10) : cfg.granularite;
@@ -400,7 +406,7 @@ function creneauxLibres_(dateStr, dureeMin, collabVoulu, prestaNoms) {
   if (d > limite) return [];
   var estAujourdhui = (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate());
   var minToday = estAujourdhui ? (now.getHours() * 60 + now.getMinutes() + cfg.delaiMin) : -1;
-  var occ = resaDuJour_(dateStr);
+  var occ = resaDuJour_(dateStr, exclureId);
   var libres = [], t, fin;
 
   if (cfg.mode === 'collaborateurs') {
@@ -511,7 +517,8 @@ function creerReservation_(p) {
       nom: nom, tel: tel, mail: mail,
       dob: String(p.dob || '').trim(),
       notes: String(p.notes || '').trim(),
-      optin: estOptin_(p.optin) ? 'oui' : 'non'
+      optin: estOptin_(p.optin) ? 'oui' : 'non',
+      token: Utilities.getUuid().replace(/-/g, '')   // jeton secret : lien d'annulation/modification
     };
     var sh = feuilleResa_();
     var head = enTetesResa_(sh);
@@ -531,6 +538,15 @@ function frDateLong_(s) {
   var d = new Date(s + 'T00:00:00');
   return JOURS_FR[d.getDay()] + ' ' + (+m[3]) + ' ' + MOIS_FR[+m[2] - 1] + ' ' + m[1];
 }
+// Lien public d'annulation/modification (nécessite profil.agenda.formUrl + jeton du RDV).
+function lienGestion_(profil, o) {
+  var base = (profil && profil.agenda && profil.agenda.formUrl) ? String(profil.agenda.formUrl).trim() : '';
+  if (!base || !o.token) return '';
+  var exec = ScriptApp.getService().getUrl() || '';
+  return base + (base.indexOf('?') >= 0 ? '&' : '?') + 'api=' + encodeURIComponent(exec)
+    + '&manage=' + encodeURIComponent(o.id) + '&token=' + encodeURIComponent(o.token);
+}
+
 function envoiMailRdv_(type, o, profil) {
   var mail = String(o.mail || '').trim();
   if (!mail || mail.indexOf('@') < 0) return;
@@ -543,15 +559,25 @@ function envoiMailRdv_(type, o, profil) {
   if (profil && profil.adresse) coords.push(profil.adresse);
   if (profil && profil.tel) coords.push('Tél. ' + profil.tel);
   var pied = '\n\n' + salon + (coords.length ? '\n' + coords.join('\n') : '');
+  var lien = lienGestion_(profil, o);
+  var blocLien = lien ? ('\n\nBesoin de changer ? Annulez ou modifiez votre rendez-vous : ' + lien) : '';
   var sujet, corps;
   if (type === 'rappel') {
     sujet = 'Rappel : votre rendez-vous demain chez ' + salon;
     corps = 'Bonjour ' + prenom + ',\n\nNous vous rappelons votre rendez-vous de demain, ' + quand + presta + avec + '.'
-      + '\n\nEn cas d\'empêchement, merci de nous prévenir au plus tôt.\n\nÀ très bientôt.' + pied;
+      + '\n\nEn cas d\'empêchement, merci de nous prévenir au plus tôt.' + blocLien + '\n\nÀ très bientôt.' + pied;
+  } else if (type === 'annul') {
+    sujet = 'Annulation de votre rendez-vous chez ' + salon;
+    corps = 'Bonjour ' + prenom + ',\n\nVotre rendez-vous du ' + quand + presta + avec + ' a bien été annulé.'
+      + '\n\nAu plaisir de vous revoir prochainement.' + pied;
+  } else if (type === 'modif') {
+    sujet = 'Modification de votre rendez-vous chez ' + salon;
+    corps = 'Bonjour ' + prenom + ',\n\nVotre rendez-vous a été modifié : ' + quand + presta + avec + '.'
+      + blocLien + '\n\nAu plaisir de vous accueillir.' + pied;
   } else {
     sujet = 'Confirmation de votre rendez-vous chez ' + salon;
     corps = 'Bonjour ' + prenom + ',\n\nVotre rendez-vous est confirmé : ' + quand + presta + avec + '.'
-      + '\n\nEn cas d\'empêchement, merci de nous prévenir.\n\nAu plaisir de vous accueillir.' + pied;
+      + '\n\nEn cas d\'empêchement, merci de nous prévenir.' + blocLien + '\n\nAu plaisir de vous accueillir.' + pied;
   }
   MailApp.sendEmail({ to: mail, subject: sujet, body: corps, name: salon });
 }
@@ -563,7 +589,7 @@ function envoyerRappels_() {
   var head = data.shift() || [];
   var iSt = head.indexOf('statut'), iDate = head.indexOf('date'), iH = head.indexOf('heure'),
       iPre = head.indexOf('prestation'), iCo = head.indexOf('collab'), iNom = head.indexOf('nom'),
-      iMail = head.indexOf('mail'), iRap = head.indexOf('rappel');
+      iMail = head.indexOf('mail'), iRap = head.indexOf('rappel'), iId = head.indexOf('id'), iTok = head.indexOf('token');
   if (iRap < 0) return { ok:false, error:'colonne rappel manquante' };
   var cfg = agendaConfig_();
   if (!cfg.mailRappel) return { ok:true, envoyes:0, desactive:true };   // rappel désactivé par le salon
@@ -580,7 +606,8 @@ function envoyerRappels_() {
     if (!mail || mail.indexOf('@') < 0) continue;
     if (envoyes >= quota) break;
     var o = { date: asDate_(row[iDate]), heure: asTime_(row[iH]), prestation: row[iPre],
-              collab: (iCo >= 0 ? row[iCo] : ''), nom: row[iNom], mail: mail };
+              collab: (iCo >= 0 ? row[iCo] : ''), nom: row[iNom], mail: mail,
+              id: (iId >= 0 ? row[iId] : ''), token: (iTok >= 0 ? row[iTok] : '') };
     try { envoiMailRdv_('rappel', o, profil); envoyes++; sh.getRange(r + 2, iRap + 1).setValue('oui'); } catch (e) {}
   }
   return { ok:true, envoyes:envoyes };
@@ -592,6 +619,96 @@ function creerDeclencheurRappels() {
   if (existe) return 'Déclencheur déjà en place.';
   ScriptApp.newTrigger('envoyerRappels_').timeBased().atHour(7).everyDays(1).create();
   return 'Déclencheur de rappels créé (tous les jours vers 7h).';
+}
+
+// ── Gestion client d'un RDV (annulation / modification) via jeton ─────
+function trouverResa_(id) {
+  if (!id) return null;
+  var sh = feuilleResa_();
+  var data = sh.getDataRange().getValues();
+  var head = data[0] || [];
+  var iId = head.indexOf('id');
+  for (var r = 1; r < data.length; r++) {
+    if (String(data[r][iId]) === String(id)) {
+      var o = {}; head.forEach(function(h, i) { o[h] = data[r][i]; });
+      return { sh: sh, row: r + 1, head: head, o: o };
+    }
+  }
+  return null;
+}
+function authResa_(id, token) {
+  var t = trouverResa_(id);
+  if (!t || !token || String(t.o.token) !== String(token)) return null;
+  return t;
+}
+function exclureSiToken_(p) {
+  if (!p.exclure) return '';
+  return authResa_(p.exclure, p.token) ? String(p.exclure) : '';
+}
+
+// Renvoie les infos publiques d'un RDV (pour la page de gestion), si le jeton correspond.
+function getBookingPublic_(id, token) {
+  var t = authResa_(id, token);
+  if (!t) return { ok:false, error:'Lien invalide ou expiré.' };
+  var o = t.o;
+  return { ok:true, booking: {
+    id: o.id, statut: String(o.statut || ''), date: asDate_(o.date), heure: asTime_(o.heure),
+    duree: parseInt(o.duree, 10) || 0, prestation: String(o.prestation || ''),
+    collab: String(o.collab || ''), nom: String(o.nom || '')
+  }};
+}
+
+function cancelBooking_(p) {
+  var t = authResa_(p.id, p.token);
+  if (!t) return { ok:false, error:'Lien invalide ou expiré.' };
+  if (String(t.o.statut) === 'refuse') return { ok:true, already:true };
+  var iSt = t.head.indexOf('statut');
+  t.sh.getRange(t.row, iSt + 1).setValue('refuse');
+  var cfg = agendaConfig_();
+  if (cfg.mailConfirm) { try { envoiMailRdv_('annul', t.o, cfg.profil); } catch (e) {} }
+  return { ok:true };
+}
+
+function modifyBooking_(p) {
+  var t = authResa_(p.id, p.token);
+  if (!t) return { ok:false, error:'Lien invalide ou expiré.' };
+  var date = String(p.date || '').trim(), heure = String(p.heure || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { ok:false, error:'Date invalide' };
+  if (!/^\d{1,2}:\d{2}$/.test(heure)) return { ok:false, error:'Heure invalide' };
+  var d = new Date(date + 'T00:00:00'), auj = new Date(); auj.setHours(0,0,0,0);
+  if (isNaN(d) || d < auj) return { ok:false, error:'Date dans le passé' };
+
+  var cfg = agendaConfig_();
+  var noms = jsonArr_(p.prestations).map(function(x){ return String(x||'').trim(); }).filter(Boolean);
+  if (!noms.length && t.o.prestation) noms = String(t.o.prestation).split(' + ');
+  var prestation = noms.join(' + ');
+  var duree = 0; noms.forEach(function(nm){ duree += dureePresta_(cfg.profil, nm); });
+  if (!duree) duree = parseInt(p.duree, 10) > 0 ? parseInt(p.duree, 10) : cfg.granularite;
+  var collabVoulu = String(p.collab || '').trim();
+
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(10000); } catch (e) { return { ok:false, error:'Service occupé, réessayez.' }; }
+  try {
+    var collabAssigne = '';
+    if (cfg.mode === 'collaborateurs') {
+      var fin = (hm_(heure) || 0) + duree;
+      var eligibles = collabsEligibles_(cfg, collabVoulu, noms);
+      collabAssigne = collabLibre_(eligibles, d.getDay(), hm_(heure), fin, resaDuJour_(date, p.id));
+      if (!collabAssigne) return { ok:false, error:'Ce créneau n\'est plus disponible. Choisissez-en un autre.' };
+    } else {
+      if (creneauxLibres_(date, duree, '', [], p.id).indexOf(heure) < 0) {
+        return { ok:false, error:'Ce créneau n\'est plus disponible. Choisissez-en un autre.' };
+      }
+    }
+    var o = t.o;
+    o.date = date; o.heure = heure; o.duree = duree; o.prestation = prestation;
+    o.collab = collabAssigne; o.statut = 'confirme'; o.rappel = '';   // re-déclenche le rappel
+    t.sh.getRange(t.row, 1, 1, t.head.length).setValues([t.head.map(function(h){ return o[h] != null ? o[h] : ''; })]);
+    if (cfg.mailConfirm) { try { envoiMailRdv_('modif', o, cfg.profil); } catch (e) {} }
+    return { ok:true, collab: collabAssigne };
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function lireReservations_() {

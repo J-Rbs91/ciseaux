@@ -3,29 +3,32 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Politique de confidentialité</title>
+<meta name="theme-color" content="#1C2321">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Politique de confidentialité — KuT</title>
 <style>
-  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#fdf3ef;color:#3d2b27;line-height:1.6}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#EEF1EF;color:#1C2321;line-height:1.6}
   .wrap{max-width:760px;margin:0 auto;padding:32px 20px 64px}
-  .card{background:#fff;border:1px solid #f0dbd5;border-radius:16px;padding:28px 30px;box-shadow:0 2px 16px rgba(0,0,0,.05)}
+  .card{background:#fff;border:1px solid #dde4e8;border-radius:16px;padding:28px 30px;box-shadow:0 2px 16px rgba(0,0,0,.05)}
   h1{font-size:1.5rem;margin:0 0 .4rem}
-  h2{font-size:1.05rem;margin:1.6rem 0 .4rem;color:#9c5f50}
-  .muted{color:#9a8077;font-size:.85rem}
-  a{color:#9c5f50}
+  h2{font-size:1.05rem;margin:1.6rem 0 .4rem;color:#A22C29}
+  .muted{color:#5E6572;font-size:.85rem}
+  a{color:#A22C29}
   table{border-collapse:collapse;width:100%;margin:.5rem 0;font-size:.9rem}
-  td,th{border:1px solid #f0dbd5;padding:.5rem .6rem;text-align:left;vertical-align:top}
-  th{background:#fdf3ef}
-  .note{background:#fdf3ef;border:1px dashed #e0c4ba;border-radius:10px;padding:.7rem .9rem;font-size:.82rem;color:#9a8077;margin:1rem 0}
+  td,th{border:1px solid #dde4e8;padding:.5rem .6rem;text-align:left;vertical-align:top}
+  th{background:#f5f8fa}
+  .note{background:#f5f8fa;border:1px dashed #c8d4da;border-radius:10px;padding:.7rem .9rem;font-size:.82rem;color:#5E6572;margin:1rem 0}
   ul{margin:.3rem 0 .3rem 1.1rem;padding:0}
   @media (prefers-color-scheme: dark){
-    body{background:#17120f;color:#ece3df}
-    .card{background:#221b18;border-color:#3a2e29;box-shadow:0 2px 16px rgba(0,0,0,.4)}
-    h2{color:#d9a596}
-    .muted{color:#a8978d}
-    a{color:#d9a596}
-    td,th{border-color:#3a2e29}
-    th{background:#1d1714}
-    .note{background:#1d1714;border-color:#4a3a33;color:#a8978d}
+    body{background:#14181A;color:#E7ECEE}
+    .card{background:#1F2528;border-color:#313A3F;box-shadow:0 2px 16px rgba(0,0,0,.4)}
+    h2{color:#E0635D}
+    .muted{color:#9AA6AE}
+    a{color:#E0635D}
+    td,th{border-color:#313A3F}
+    th{background:#171C1F}
+    .note{background:#171C1F;border-color:#313A3F;color:#9AA6AE}
   }
 </style>
 </head>
@@ -100,7 +103,7 @@ var CONFIG = {
   document.getElementById('maj').textContent = new Date().toLocaleDateString('fr-FR');
   document.getElementById('salon').textContent = CONFIG.salon;
   document.getElementById('adresse').textContent = CONFIG.adresse;
-  document.title = 'Confidentialité · ' + CONFIG.salon;
+  document.title = 'Confidentialité · ' + CONFIG.salon + ' — KuT';
   ['email','email2'].forEach(function(id){ document.getElementById(id).textContent = CONFIG.email; });
   ['mailto','mailto2'].forEach(function(id){ document.getElementById(id).href = 'mailto:'+CONFIG.email; });
 })();

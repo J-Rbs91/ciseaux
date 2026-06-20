@@ -268,36 +268,74 @@
     document.documentElement.classList.add("kt-touring");
     document.addEventListener("focusin", guardFocus, true);
     lockFields();
+    watchFields();
     blurActive();
   }
 
   // Verrouille tous les champs en lecture seule AVANT que les formulaires
   // présentés ne tentent de se focus : un champ readonly n'ouvre jamais le
   // clavier mobile. Restauré à la fin du tour.
+  //
+  // Additif et idempotent : peut être rappelé à chaque étape (les formulaires
+  // ouverts par `before()` injectent souvent leurs champs après le 1er verrou).
   var lockedFields = [];
+  function lockField(n) {
+    var t = (n.type || "").toLowerCase();
+    if (t === "checkbox" || t === "radio" || t === "file" || t === "hidden")
+      return;
+    if (n.getAttribute("data-kt-locked") === "1") return; // déjà verrouillé par nous
+    // Mémorise l'état d'origine pour le restaurer fidèlement à la fin.
+    n.setAttribute("data-kt-locked", "1");
+    n.setAttribute("data-kt-ro", n.readOnly ? "1" : "0");
+    n.readOnly = true;
+    if (!n.getAttribute("inputmode"))
+      n.setAttribute("data-kt-im", "1"); // inputmode ajouté par nous
+    n.setAttribute("inputmode", "none");
+    lockedFields.push(n);
+  }
   function lockFields() {
-    lockedFields = [];
     var nodes = document.querySelectorAll("input, textarea");
-    for (var i = 0; i < nodes.length; i++) {
-      var n = nodes[i];
-      var t = (n.type || "").toLowerCase();
-      if (t === "checkbox" || t === "radio" || t === "file" || t === "hidden")
-        continue;
-      if (n.readOnly) continue; // déjà readonly : on n'y touche pas
-      n.readOnly = true;
-      n.setAttribute("data-kt-locked", "1");
-      n.setAttribute("inputmode", "none");
-      lockedFields.push(n);
-    }
+    for (var i = 0; i < nodes.length; i++) lockField(nodes[i]);
   }
   function unlockFields() {
     for (var i = 0; i < lockedFields.length; i++) {
       var n = lockedFields[i];
-      n.readOnly = false;
+      if (n.getAttribute("data-kt-ro") !== "1") n.readOnly = false;
+      if (n.getAttribute("data-kt-im") === "1") n.removeAttribute("inputmode");
       n.removeAttribute("data-kt-locked");
-      n.removeAttribute("inputmode");
+      n.removeAttribute("data-kt-ro");
+      n.removeAttribute("data-kt-im");
     }
     lockedFields = [];
+  }
+
+  // Surveille le DOM : tout champ ajouté/affiché pendant le tour (formulaires
+  // ouverts par les étapes) est verrouillé immédiatement, avant qu'il ne
+  // puisse déclencher le clavier mobile.
+  var fieldObserver = null;
+  function watchFields() {
+    if (fieldObserver || typeof MutationObserver !== "function") return;
+    fieldObserver = new MutationObserver(function (muts) {
+      for (var i = 0; i < muts.length; i++) {
+        var added = muts[i].addedNodes;
+        for (var j = 0; j < added.length; j++) {
+          var node = added[j];
+          if (node.nodeType !== 1) continue;
+          if (node.matches && node.matches("input, textarea")) lockField(node);
+          if (node.querySelectorAll) {
+            var sub = node.querySelectorAll("input, textarea");
+            for (var k = 0; k < sub.length; k++) lockField(sub[k]);
+          }
+        }
+      }
+    });
+    fieldObserver.observe(document.body, { childList: true, subtree: true });
+  }
+  function unwatchFields() {
+    if (fieldObserver) {
+      fieldObserver.disconnect();
+      fieldObserver = null;
+    }
   }
 
   // Empêche tout champ de garder le focus pendant le tour.
@@ -336,6 +374,7 @@
     window.removeEventListener("scroll", reposition, { capture: true });
     document.removeEventListener("keydown", onKey, true);
     document.removeEventListener("focusin", guardFocus, true);
+    unwatchFields();
     unlockFields();
     document.documentElement.classList.remove("kt-touring");
     if (ov && ov.parentNode) ov.parentNode.removeChild(ov);
@@ -355,6 +394,10 @@
       try {
         s.before();
       } catch (e) {}
+      // Le formulaire vient de s'ouvrir : verrouille ses champs tout de suite
+      // (et blure tout focus auto) pour ne pas réveiller le clavier mobile.
+      lockFields();
+      blurActive();
     }
 
     if (s.welcome) {

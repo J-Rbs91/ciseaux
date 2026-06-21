@@ -452,10 +452,19 @@
     var area = rect.width * rect.height;
     var vp = window.innerWidth * window.innerHeight;
     var f = area / vp;
-    if (f < 0.025) return 1.32;
-    if (f < 0.07) return 1.18;
-    if (f < 0.2) return 1.08;
+    if (f < 0.02) return 1.22;
+    if (f < 0.06) return 1.12;
+    if (f < 0.16) return 1.06;
     return 1.0;
+  }
+
+  // L'élément à mettre en avant et son cadre : on présente le champ entier
+  // (étiquette + saisie + aide) plutôt que le seul <input>, pour un cadrage
+  // propre. Repli sur l'élément lui-même hors formulaire.
+  function frameOf(el) {
+    if (!el) return el;
+    var f = el.closest && el.closest(".field, .anniv-check, .check");
+    return f || el;
   }
 
   function clearZoom() {
@@ -472,12 +481,17 @@
   function focusTarget(el, zoom) {
     clearZoom();
     curEl = el;
+    var vw = window.innerWidth, vh = window.innerHeight;
     var r = el.getBoundingClientRect(); // non transformé
     var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     if (zoom == null) zoom = defaultZoom(r);
+    // On borne le zoom pour que la zone nette ne déborde jamais de l'écran.
+    var pad = 14;
+    zoom = Math.min(zoom, (vw - 2 * pad - 16) / r.width, (vh - 2 * pad - 16) / r.height);
+    zoom = Math.max(1, zoom);
     curZoom = zoom;
 
-    if (zoom !== 1) {
+    if (zoom > 1.001) {
       el.__ktTr = el.style.transform || "";
       el.__ktTo = el.style.transformOrigin || "";
       el.style.transformOrigin = "center center";
@@ -488,7 +502,6 @@
       zoomedEl = el;
     }
 
-    var pad = 12;
     var sw = r.width * zoom, sh = r.height * zoom;
     var hx = cx - sw / 2 - pad, hy = cy - sh / 2 - pad;
     var hw = sw + pad * 2, hh = sh + pad * 2;
@@ -502,7 +515,7 @@
     if (slide && slide.welcome) { centerPop(); return; }
     if (curEl && document.body.contains(curEl)) {
       var r = curEl.getBoundingClientRect(); // déjà transformé si zoomé
-      var pad = 12;
+      var pad = 14;
       var hx = r.left - pad, hy = r.top - pad, hw = r.width + pad * 2, hh = r.height + pad * 2;
       applyHole(hx, hy, hw, hh);
       placePop({ left: Math.max(6, hx), top: Math.max(6, hy), width: hw, height: hh });
@@ -514,13 +527,20 @@
     var out = [];
     if (slide.welcome) return out; // diapo centrée, pas de plan
     if (slide.overviewSel)
-      out.push({ sel: slide.overviewSel, text: slide.body, zoom: 1.0, hold: 2300, overview: true });
+      out.push({ sel: slide.overviewSel, text: slide.body, zoom: 1.0, overview: true });
     if (slide.shots && slide.shots.length) {
       for (var i = 0; i < slide.shots.length; i++) out.push(slide.shots[i]);
     } else if (slide.sel) {
       out.push({ sel: slide.sel, text: slide.body });
     }
     return out;
+  }
+
+  // Temps de lecture confortable pour un premier utilisateur.
+  function readingTime(text) {
+    var words = (text || "").trim().split(/\s+/).filter(Boolean).length;
+    var ms = 2000 + words * 460; // ~130 mots/min + temps d'observation
+    return Math.max(3600, Math.min(ms, 8500));
   }
 
   function showSlide(i) {
@@ -549,8 +569,9 @@
     }
 
     renderPop(slide);
-    // Laisse le temps à un formulaire ouvert de s'afficher avant de mesurer.
-    var delay = slide.before ? 120 : 0;
+    // Laisse le temps à un formulaire ouvert de finir son animation d'ouverture
+    // avant de mesurer la 1re zone (sinon cadrage faussé).
+    var delay = slide.before ? 320 : 60;
     setTimeout(function () { playShot(0); }, delay);
   }
 
@@ -566,17 +587,23 @@
       nextShot();
       return;
     }
-    try { el.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (e) {}
-    setTimeout(function () {
-      if (curShot !== j) return; // un autre plan a pris la main entre-temps
-      focusTarget(el, shot.zoom);
-      setText(shot.text);
-      updateShotUI(j);
-      var hold = shot.hold || 2200;
-      shotStart = Date.now(); shotHold = hold;
-      startBar(hold);
-      shotTimer = setTimeout(nextShot, hold);
-    }, 240);
+    var frame = frameOf(el);
+    // Affiche le texte tout de suite : l'utilisateur peut commencer à lire.
+    setText(shot.text);
+    updateShotUI(j);
+    // Défilement instantané (fond flouté, invisible) PUIS cadrage : le trou
+    // glisse en un seul mouvement propre vers la zone, sans à-coups.
+    try { frame.scrollIntoView({ block: "center", behavior: "auto" }); } catch (e) {}
+    requestAnimationFrame(function () {
+      if (curShot !== j) return;
+      focusTarget(frame, shot.zoom);
+    });
+    // Recadre une fois le zoom stabilisé (sécurité).
+    setTimeout(function () { if (curShot === j) reposition(); }, 640);
+    var hold = shot.hold || readingTime(shot.text);
+    shotStart = Date.now(); shotHold = hold;
+    startBar(hold);
+    shotTimer = setTimeout(nextShot, hold);
   }
 
   function nextShot() {

@@ -187,6 +187,10 @@
       // Écrans figés pendant le tour : pas de curseur clignotant ni de sélection.
       "html.kt-touring input,html.kt-touring textarea{caret-color:transparent}" +
       "html.kt-touring ::selection{background:transparent}" +
+      // Les champs sont désactivés (anti-clavier) mais doivent rester lisibles,
+      // comme à l'écran réel — on neutralise le grisage du mode disabled.
+      "html.kt-touring [data-kt-locked]{opacity:1!important;cursor:default!important;" +
+      "-webkit-text-fill-color:currentColor;color:inherit;-webkit-opacity:1}" +
       ".kt-ov{position:fixed;inset:0;z-index:2147483000;pointer-events:auto;opacity:0;transition:opacity .25s ease}" +
       ".kt-ov.kt-in{opacity:1}" +
       ".kt-spot{position:fixed;top:0;left:0;width:0;height:0;border-radius:16px;pointer-events:none;" +
@@ -272,39 +276,35 @@
     blurActive();
   }
 
-  // Verrouille tous les champs en lecture seule AVANT que les formulaires
-  // présentés ne tentent de se focus : un champ readonly n'ouvre jamais le
-  // clavier mobile. Restauré à la fin du tour.
+  // Verrouille tous les champs AVANT que les formulaires présentés ne tentent
+  // de se focus. On les passe en `disabled` : c'est la seule méthode fiable sur
+  // mobile (Android/iOS PWA) pour qu'un `.focus()` programmatique n'ouvre
+  // jamais le clavier — `readonly`/`inputmode=none` ne suffisent pas partout.
+  // L'état d'origine est restauré fidèlement à la fin du tour.
   //
   // Additif et idempotent : peut être rappelé à chaque étape (les formulaires
   // ouverts par `before()` injectent souvent leurs champs après le 1er verrou).
   var lockedFields = [];
+  var FIELD_SEL = "input, textarea, select";
   function lockField(n) {
     var t = (n.type || "").toLowerCase();
-    if (t === "checkbox" || t === "radio" || t === "file" || t === "hidden")
-      return;
+    if (t === "hidden") return;
     if (n.getAttribute("data-kt-locked") === "1") return; // déjà verrouillé par nous
-    // Mémorise l'état d'origine pour le restaurer fidèlement à la fin.
     n.setAttribute("data-kt-locked", "1");
-    n.setAttribute("data-kt-ro", n.readOnly ? "1" : "0");
-    n.readOnly = true;
-    if (!n.getAttribute("inputmode"))
-      n.setAttribute("data-kt-im", "1"); // inputmode ajouté par nous
-    n.setAttribute("inputmode", "none");
+    n.setAttribute("data-kt-dis", n.disabled ? "1" : "0"); // mémorise l'état d'origine
+    n.disabled = true;
     lockedFields.push(n);
   }
   function lockFields() {
-    var nodes = document.querySelectorAll("input, textarea");
+    var nodes = document.querySelectorAll(FIELD_SEL);
     for (var i = 0; i < nodes.length; i++) lockField(nodes[i]);
   }
   function unlockFields() {
     for (var i = 0; i < lockedFields.length; i++) {
       var n = lockedFields[i];
-      if (n.getAttribute("data-kt-ro") !== "1") n.readOnly = false;
-      if (n.getAttribute("data-kt-im") === "1") n.removeAttribute("inputmode");
+      if (n.getAttribute("data-kt-dis") !== "1") n.disabled = false;
       n.removeAttribute("data-kt-locked");
-      n.removeAttribute("data-kt-ro");
-      n.removeAttribute("data-kt-im");
+      n.removeAttribute("data-kt-dis");
     }
     lockedFields = [];
   }
@@ -321,9 +321,9 @@
         for (var j = 0; j < added.length; j++) {
           var node = added[j];
           if (node.nodeType !== 1) continue;
-          if (node.matches && node.matches("input, textarea")) lockField(node);
+          if (node.matches && node.matches(FIELD_SEL)) lockField(node);
           if (node.querySelectorAll) {
-            var sub = node.querySelectorAll("input, textarea");
+            var sub = node.querySelectorAll(FIELD_SEL);
             for (var k = 0; k < sub.length; k++) lockField(sub[k]);
           }
         }

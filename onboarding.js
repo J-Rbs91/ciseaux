@@ -83,7 +83,7 @@
       body: "Voici la fiche : on renseigne les infos du client, puis on enregistre.",
       overviewSel: "#ov .modal",
       shots: [
-        { sel: "#fN", text: "Le nom du client — champ obligatoire." },
+        { sel: "#fN", text: "Le nom et prénom du client — champ obligatoire." },
         { sel: "#fT", text: "Son numéro de téléphone." },
         { sel: "#fE", text: "Son email — obligatoire lui aussi (offres, campagnes, rappels)." },
         { sel: "#fDob", text: "Sa date de naissance, pour l'offre d'anniversaire." },

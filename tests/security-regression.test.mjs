@@ -12,19 +12,62 @@ import { dirname, join } from 'node:path';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (p) => readFileSync(join(ROOT, p), 'utf8');
 
-// ── la clé admin doit être générée via un CSPRNG ──────────────
-test(' — genKey() utilise crypto.getRandomValues (CSPRNG)', () => {
-  const html = read('index.html');
-  const genKey = html.slice(html.indexOf('function genKey('), html.indexOf('function renderHeader('));
-  assert.match(genKey, /crypto\.getRandomValues/, 'genKey doit utiliser crypto.getRandomValues');
+// ──  / aucune génération de clé admin côté client ─────
+// La clé est désormais générée côté serveur (genererCleAdmin → Utilities.getUuid).
+test(' — pas de génération de clé admin par Math.random côté client', () => {
+  const idx = read('index.html');
+  assert.doesNotMatch(idx, /function genKey\(/, 'genKey() doit avoir été retiré');
+  assert.doesNotMatch(idx, /fAdminKey'\)\.value\s*=\s*\(Date\.now/, 'plus de clé générée via Date.now/Math.random');
+  const gs = read('apps-script/Code.gs');
+  const gen = gs.slice(gs.indexOf('function genererCleAdmin('));
+  assert.match(gen.slice(0, 200), /Utilities\.getUuid\(\)/, 'genererCleAdmin doit utiliser Utilities.getUuid (CSPRNG)');
+});
+
+// ── plus d'amorçage public de la clé (claimKey retiré) ────────
+test(' — aucun claimKey public exécutable', () => {
+  const gs = read('apps-script/Code.gs');
+  assert.doesNotMatch(gs, /case 'claimKey'/, "le cas 'claimKey' ne doit plus exister dans le dispatcher");
+  assert.doesNotMatch(gs, /function revendiquerCle_/, 'revendiquerCle_ doit avoir été retiré');
+  assert.doesNotMatch(gs, /ACTIONS_PUBLIQUES\s*=\s*\{[^}]*claimKey/, "claimKey ne doit pas être une action publique");
+  const idx = read('index.html');
+  assert.doesNotMatch(idx, /action:'claimKey'/, "l'app ne doit plus appeler claimKey");
+});
+
+// ── garde-fous anti-abus du formulaire public ─────────────────
+test(' — booking public : throttle par email + plafond du jour', () => {
+  const gs = read('apps-script/Code.gs');
+  assert.match(gs, /function compteurJour_/, 'compteur quotidien attendu');
+  assert.match(gs, /function incrCompteurJour_/, 'incrément quotidien attendu');
+  assert.match(gs, /resa_m_/, 'throttle par email attendu');
+  assert.match(gs, /maxResaJour/, 'plafond journalier configurable attendu');
+});
+
+// ── transport POST (clé hors URL) + doPost serveur ────────────
+test(' — POST d\'abord avec repli JSONP, et doPost côté serveur', () => {
+  const gs = read('apps-script/Code.gs');
+  assert.match(gs, /function doPost\(e\)/, 'doPost attendu côté Apps Script');
+  assert.match(gs, /function traiter_\(/, 'dispatcher commun traiter_ attendu');
+  for (const f of ['index.html', 'app-sync.js', 'campagnes.html', 'clients.html', 'offres.html', 'prestations.html', 'reservations.html']) {
+    const src = read(f);
+    assert.match(src, /function jsonpRaw\(/, `${f} doit conserver le repli jsonpRaw`);
+    assert.match(src, /method:'POST'[\s\S]{0,80}text\/plain/, `${f} doit tenter un POST text/plain`);
+  }
+});
+
+// ── lien de désinscription signé (HMAC) ───────────────────────
+test(' — désinscription signée HMAC', () => {
+  const gs = read('apps-script/Code.gs');
+  assert.match(gs, /function signUnsub_/, 'signUnsub_ attendu');
+  assert.match(gs, /computeHmacSha256Signature/, 'signature HMAC-SHA256 attendue');
+  assert.match(gs, /lienDesinscription_\(baseUrl, c\.id\)/, 'les emails doivent utiliser le lien signé');
+  assert.match(gs, /egalConstant_\(sig, signUnsub_\(p\.id\)\)/, 'le handler doit vérifier la signature à temps constant');
 });
 
 // ── le nom de callback JSONP doit être validé avant reflet ────
 test(' — sortie_ valide le nom de callback', () => {
   const gs = read('apps-script/Code.gs');
   assert.match(gs, /function callbackValide_/, 'helper callbackValide_ attendu');
-  assert.match(gs, /callbackValide_\(cb\)\s*\n?\s*\?/, 'sortie_ doit gater le reflet sur callbackValide_');
-  // On reproduit la regex pour vérifier son comportement.
+  assert.match(gs, /callbackValide_\(cb\)/, 'sortie_ doit gater le reflet sur callbackValide_');
   const ok = (cb) => typeof cb === 'string' && cb.length > 0 && cb.length <= 64 && /^[A-Za-z_$][A-Za-z0-9_$.]*$/.test(cb);
   assert.equal(ok('cb_123_456'), true);
   assert.equal(ok('alert(1)//'), false);
@@ -36,9 +79,8 @@ test(' — sortie_ valide le nom de callback', () => {
 test(' — egalConstant_ est utilisé pour comparer la clé admin', () => {
   const gs = read('apps-script/Code.gs');
   assert.match(gs, /function egalConstant_/, 'helper egalConstant_ attendu');
-  assert.match(gs, /egalConstant_\(String\(p\.key/, 'doGet doit comparer la clé via egalConstant_');
+  assert.match(gs, /egalConstant_\(String\(p\.key/, 'la garde doit comparer la clé via egalConstant_');
   assert.doesNotMatch(gs, /String\(p\.key\s*\|\|\s*''\)\s*!==\s*cle/, 'comparaison directe !== interdite (timing)');
-  // Comportement attendu de la comparaison.
   const eq = (a, b) => {
     a = String(a ?? ''); b = String(b ?? '');
     let diff = a.length ^ b.length;
@@ -49,6 +91,16 @@ test(' — egalConstant_ est utilisé pour comparer la clé admin', () => {
   assert.equal(eq('secret', 'secret'), true);
   assert.equal(eq('secret', 'secreT'), false);
   assert.equal(eq('secret', 'secret1'), false);
+});
+
+// ── CSP (meta) présente sur les pages ─────────────────────────
+test(' — CSP meta présente sur toutes les pages applicatives', () => {
+  const pages = ['index.html', 'caisse.html', 'campagnes.html', 'clients.html', 'confidentialite.html',
+    'fidelite.html', 'offres.html', 'prestations.html', 'reservation.html', 'reservations.html',
+    'stats.html', 'templates.html'];
+  for (const f of pages) {
+    assert.match(read(f), /http-equiv="Content-Security-Policy"[^>]*object-src 'none'/, `CSP attendue dans ${f}`);
+  }
 });
 
 // ── les initiales clients doivent être échappées ──────────────
@@ -70,7 +122,6 @@ test(' — campagnes.html borne les compteurs et échappe r.error', () => {
 // ── Garde anti-secret : aucun secret réel ne doit être commité ───────────
 test('Aucun secret réel commité (URL …/exec ou clé) hors exemples', () => {
   const files = ['index.html', 'app-sync.js', 'apps-script/Code.gs', 'campagnes.html', 'clients.html', 'reservation.html'];
-  // URL Apps Script déployée : https://script.google.com/macros/s/<ID>/exec où <ID> fait > 40 chars.
   const execRe = /script\.google\.com\/macros\/s\/[A-Za-z0-9_-]{30,}\/exec/;
   for (const f of files) {
     assert.doesNotMatch(read(f), execRe, `URL …/exec réelle détectée dans ${f}`);

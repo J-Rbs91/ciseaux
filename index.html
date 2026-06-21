@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'">
 <title>KuT</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <meta name="theme-color" content="#1C2321">
@@ -399,10 +400,9 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
     <div class="field">
       <label>Clé admin (sécurité)</label>
       <div style="display:flex;gap:.5rem">
-        <input id="fAdminKey" type="text" placeholder="Clé secrète protégeant vos données" style="flex:1">
-        <button class="btn btn-outline" type="button" onclick="genKey()" style="white-space:nowrap;width:auto">Générer</button>
+        <input id="fAdminKey" type="text" placeholder="Collez ici la clé générée dans l'éditeur Apps Script" style="flex:1">
       </div>
-      <div class="hint">Protège votre base : sans elle, l'URL ci-dessus donne accès à tout si elle fuite. Indispensable pour ouvrir un <a href="reservation.html" target="_blank" rel="noopener">formulaire de réservation public</a> sans risque. Utilisez la <strong>même</strong> clé sur chaque appareil : elle est incluse dans la <strong>sauvegarde fichier</strong> ci-dessous — exportez ici, restaurez sur l'autre appareil, et la clé (avec l'URL) y est rétablie.</div>
+      <div class="hint">Protège votre base : sans elle, l'URL ci-dessus donne accès à tout si elle fuite. <strong>Générez la clé une seule fois côté serveur</strong> : dans l'éditeur Apps Script, exécutez la fonction <code>genererCleAdmin()</code>, copiez la clé affichée dans les journaux et collez-la ici (puis sur chaque appareil). Indispensable pour ouvrir un <a href="reservation.html" target="_blank" rel="noopener">formulaire de réservation public</a> sans risque. La clé est incluse dans la <strong>sauvegarde fichier</strong> ci-dessous, pour la restaurer d'un appareil à l'autre.</div>
       <div class="status" id="keySt"></div>
     </div>
 
@@ -426,21 +426,26 @@ var LS_P='profil-magasin-v1', LS_S='sync-url-v1', LS_K='admin-key-v1';
 function lp(){try{return JSON.parse(localStorage.getItem(LS_P)||'{}');}catch(e){return{};}}
 function su(){return(localStorage.getItem(LS_S)||'').trim();}
 function ak(){return(localStorage.getItem(LS_K)||'').trim();}
-function genKey(){
-  // Clé admin = seule protection des données : entropie cryptographique (CSPRNG), 128 bits.
-  var key;
-  if(window.crypto&&crypto.getRandomValues){
-    var a=new Uint8Array(16);crypto.getRandomValues(a);
-    key=Array.prototype.map.call(a,function(b){return ('0'+b.toString(16)).slice(-2);}).join('');
-  }else{
-    // Repli (navigateurs très anciens) : moins idéal mais reste sur 32 caractères.
-    key=(Date.now().toString(36)+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)).replace(/[^a-z0-9]/g,'').slice(0,32);
-  }
-  document.getElementById('fAdminKey').value=key;
-}
+// plus de génération de clé côté client. La clé admin est
+// générée côté serveur par genererCleAdmin() (Utilities.getUuid, CSPRNG) dans
+// l'éditeur Apps Script, puis collée dans le champ « Clé admin ».
 function renderHeader(){var p=lp();document.getElementById('salonName').textContent=(p.nom||'').trim()||'Mon salon';}
 
+// POST d'abord (clé dans le corps, hors URL/journaux) ; repli JSONP si échec.
 function jsonp(base,params,cb){
+  if(!('key' in params)){var ak='';try{ak=(localStorage.getItem('admin-key-v1')||'').trim();}catch(e){}if(ak)params.key=ak;}
+  if(typeof fetch==='function'&&!{sendCampaign:1,sendBirthdays:1}[params.action]){
+    var fini=false;
+    var secours=setTimeout(function(){if(!fini){fini=true;jsonpRaw(base,params,cb);}},12000);
+    fetch(base,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(params),redirect:'follow'})
+      .then(function(r){return r.text();})
+      .then(function(txt){if(fini)return;var data;try{data=JSON.parse(txt);}catch(e){fini=true;clearTimeout(secours);jsonpRaw(base,params,cb);return;}fini=true;clearTimeout(secours);cb(data);})
+      .catch(function(){if(!fini){fini=true;clearTimeout(secours);jsonpRaw(base,params,cb);}});
+    return;
+  }
+  jsonpRaw(base,params,cb);
+}
+function jsonpRaw(base,params,cb){
   if(!('key' in params)){var ak='';try{ak=(localStorage.getItem('admin-key-v1')||'').trim();}catch(e){}if(ak)params.key=ak;}
   var name='cb_'+Date.now()+'_'+Math.floor(Math.random()*1e6);
   var s=document.createElement('script'),done=false;
@@ -489,16 +494,18 @@ function saveProfil(){
   if(url)localStorage.setItem(LS_S,url);
   if(key)localStorage.setItem(LS_K,key);else localStorage.removeItem(LS_K);
   renderHeader();
-  // Le script est fermé par défaut : on pose d'abord la clé (claimKey), PUIS on pousse
-  // le profil — sinon le serveur refuserait l'écriture (« non configuré »).
+  // la clé n'est plus « activée » depuis le réseau (plus d'amorçage public).
+  // Elle se génère dans l'éditeur Apps Script (genererCleAdmin) puis se colle ici. On la
+  // stocke localement et on pousse le profil ; le serveur accepte si la clé correspond.
   if(url&&key){
-    setSt('keySt','','⏳ Activation de la clé…');
-    jsonp(url,{action:'claimKey',key:key},function(r){
-      if(r&&r.ok)setSt('keySt','ok','✓ Clé activée sur le script. Sécurité en place.');
-      else if(r&&r.error==='clé déjà définie')setSt('keySt','ok','✓ Clé enregistrée sur cet appareil.');
-      else setSt('keySt','err','Clé enregistrée localement (activation script : '+((r&&r.error)||'échec')+').');
+    setSt('keySt','','⏳ Vérification de la clé…');
+    jsonp(url,{action:'load'},function(r){
+      if(r&&r.ok)setSt('keySt','ok','✓ Clé valide — sécurité en place.');
+      else if(r&&r.error==='non configuré')setSt('keySt','err','Aucune clé posée sur le script. Exécutez genererCleAdmin() dans l\'éditeur Apps Script, puis collez la clé obtenue.');
+      else if(r&&r.error==='non autorisé')setSt('keySt','err','Clé incorrecte : elle ne correspond pas à celle du script (genererCleAdmin).');
+      else setSt('keySt','err','Vérification impossible : '+((r&&r.error)||'réseau')+'.');
       syncPush(p);
-      setTimeout(closeModal,1200);
+      setTimeout(closeModal,1400);
     });
   } else { syncPush(p); closeModal(); }
 }

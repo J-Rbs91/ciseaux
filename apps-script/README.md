@@ -53,8 +53,13 @@ L'URL `…/exec` reste la même, inutile de la recoller.
 | `loadBookings` | Renvoie les demandes de rendez-vous (admin) |
 | `setBookingStatus` | Confirme / refuse / remet en attente une demande (admin) |
 | `deleteBooking` | Supprime une demande de rendez-vous (admin) |
-| `claimKey` | Définit la clé admin si aucune n'est encore enregistrée |
 | `securite` | Indique si une clé admin protège le script |
+
+> Le script répond aux requêtes **`GET` (JSONP)** et **`POST`** (corps `text/plain`,
+> JSON). L'app privilégie le **POST** pour les actions sensibles afin que la **clé admin
+> voyage dans le corps** et n'apparaisse pas dans l'URL ni les journaux (), avec
+> repli automatique sur JSONP. La clé admin se pose **uniquement** via `genererCleAdmin`
+> (éditeur) : il n'y a plus d'action réseau d'amorçage de clé ().
 
 Le script crée automatiquement un dossier **`Hub_Facilities`** dans votre Drive
 avec un fichier `profil-magasin.json` et un classeur `base-clients`.
@@ -186,19 +191,24 @@ clients, suppression, campagnes…) : seules `createBooking` et `securite` reste
 
 **Mise en place (une fois) :**
 
-1. Dans l'app, ouvrir **Mon salon**, cliquer **Générer** à côté de « Clé admin », puis
-   **Enregistrer**. L'app enregistre la clé sur le script (action `claimKey`, qui n'aboutit
-   que si aucune clé n'existe encore).
-2. Coller la **même clé** dans **Mon salon** sur chaque appareil utilisé par le salon
+1. Dans l'**éditeur Apps Script**, exécuter la fonction `genererCleAdmin` (menu
+   **Exécuter**). La clé s'affiche dans **Affichage → Journaux**. La clé est ainsi
+   générée **côté serveur** (UUID, aléa cryptographique) et **ne transite jamais en clair
+   par le réseau** lors de sa création.
+2. Copier cette clé et la coller dans l'app : **Mon salon → Clé admin → Enregistrer**.
+3. Coller la **même clé** dans **Mon salon** sur chaque appareil utilisé par le salon
    — ou plus simple : **exporter la sauvegarde fichier** depuis le 1ᵉʳ appareil et la
    **restaurer** sur les autres (l'URL `…/exec` et la clé admin y sont incluses).
-3. (Alternative experte) Exécuter `genererCleAdmin` depuis l'éditeur Apps Script : la clé
-   s'affiche dans les **journaux**, à recopier dans l'app.
+
+> 🔒 **Sécurité ()** : il n'existe **aucun amorçage de clé par le réseau**. La clé
+> ne peut être posée que depuis l'éditeur (`genererCleAdmin`). Cela empêche qu'un tiers
+> connaissant l'URL `…/exec` (publique via le formulaire) ne « revendique » la clé avant
+> vous et ne prenne le contrôle de vos données.
 
 > Le script est **fermé par défaut** : tant qu'aucune clé n'est posée, les actions sensibles
 > (lecture/écriture des clients et réservations, campagnes…) sont **refusées** (`non configuré`).
-> Seules les actions publiques du formulaire et `claimKey` (amorçage de la première clé)
-> répondent. L'app affiche un avertissement tant que la sécurité n'est pas activée.
+> Seules les actions publiques du formulaire répondent. L'app affiche un avertissement tant
+> que la sécurité n'est pas activée.
 >
 > **Migration depuis un ancien déploiement « ouvert » :** après mise à jour du code,
 > définissez une clé (étapes ci-dessus) pour retrouver l'accès à vos données — elles

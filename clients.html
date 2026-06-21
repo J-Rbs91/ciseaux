@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'">
 <title>Clients — KuT</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <meta name="theme-color" content="#1C2321">
@@ -468,7 +469,20 @@ function renderHistory(c){
   document.getElementById('histTl').innerHTML=tl;
 }
 
+// POST d'abord (clé admin dans le corps, hors URL/journaux) ; repli JSONP si échec.
 function jsonp(base,params,cb){
+  if(!('key' in params)){var ak='';try{ak=(localStorage.getItem('admin-key-v1')||'').trim();}catch(e){}if(ak)params.key=ak;}
+  if(typeof fetch==='function'&&!{sendCampaign:1,sendBirthdays:1}[params.action]){
+    var fini=false,secours=setTimeout(function(){if(!fini){fini=true;jsonpRaw(base,params,cb);}},12000);
+    fetch(base,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(params),redirect:'follow'})
+      .then(function(r){return r.text();})
+      .then(function(txt){if(fini)return;var data;try{data=JSON.parse(txt);}catch(e){fini=true;clearTimeout(secours);jsonpRaw(base,params,cb);return;}fini=true;clearTimeout(secours);cb(data);})
+      .catch(function(){if(!fini){fini=true;clearTimeout(secours);jsonpRaw(base,params,cb);}});
+    return;
+  }
+  jsonpRaw(base,params,cb);
+}
+function jsonpRaw(base,params,cb){
   if(!('key' in params)){var ak='';try{ak=(localStorage.getItem('admin-key-v1')||'').trim();}catch(e){}if(ak)params.key=ak;}
   var name='cb_'+Date.now()+'_'+Math.floor(Math.random()*1e6);
   var s=document.createElement('script'),done=false;

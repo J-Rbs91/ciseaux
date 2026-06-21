@@ -21,7 +21,7 @@ Outil open source pour salons de coiffure — CRM clients, programme de fidélit
 - Site 100 % statique — HTML/CSS/JS inline, **aucun backend**, **aucune dépendance JS** (police Manrope via Google Fonts, avec repli système)
 - Données stockées dans `localStorage` du navigateur
 - Synchro et envoi d'emails via un script Google Apps Script déployé **sur le compte de chaque utilisateur**
-- Communication par **JSONP** (jamais `fetch`) — compatible avec les web apps Apps Script
+- Communication avec le script Apps Script en **POST** (`fetch`, clé admin dans le corps, hors URL/journaux) avec **repli automatique sur JSONP** — compatible avec les web apps Apps Script
 - Aucune donnée ne quitte le navigateur sauf action explicite de l'utilisateur
 - **Clé admin** optionnelle : protège les actions sensibles du script ; seules les actions du formulaire public de réservation restent ouvertes
 
@@ -44,7 +44,7 @@ Voir [`docs/campagnes/`](docs/campagnes/) et [`apps-script/README.md`](apps-scri
 ## Réservations en ligne & confidentialité
 
 1. Déployer le script Apps Script et coller l'URL `…/exec` dans **Mon salon**.
-2. Dans **Mon salon**, cliquer **Générer** une **clé admin** puis **Enregistrer** (sécurise vos données).
+2. Générer une **clé admin** **côté serveur** : exécuter la fonction `genererCleAdmin` dans l'éditeur Apps Script, copier la clé affichée dans les journaux, puis la coller dans **Mon salon → Clé admin → Enregistrer** (sécurise vos données).
 3. Renseigner vos **prestations et leurs durées** (page **Prestations**) et vos **horaires/capacité** (page **Réservations → ⚙ Réglages agenda**).
 4. Page **Réservations → 🔗 Lien de réservation** : copier le lien (il contient déjà votre URL `…/exec`) et l'ajouter comme bouton **« Prendre rendez-vous »** sur votre fiche Google Business Profile, Instagram, etc. Éditer [`confidentialite.html`](confidentialite.html) (nom, email, adresse).
 

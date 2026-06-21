@@ -76,8 +76,26 @@
   var statusCb = null;
   function status(msg, cls){ if (statusCb) try { statusCb(msg, cls || ''); } catch (e) {} }
 
+  // on tente d'abord un POST (la clé admin voyage dans le CORPS, hors URL,
+  // donc hors journaux/historique). Content-Type text/plain = « requête simple » sans
+  // préflight CORS. En cas d'échec (CORS/réseau), repli automatique sur JSONP → aucune régression.
   function jsonp(base, params, cb){
     if (!('key' in params)) { var ak = ''; try { ak = (localStorage.getItem('admin-key-v1')||'').trim(); } catch (e) {} if (ak) params.key = ak; }
+    // POST seulement pour les actions idempotentes : une « requête simple » atteint le
+    // serveur même si CORS bloque la lecture, donc le repli JSONP rejouerait une action
+    // non idempotente (double envoi). app-sync ne fait que de l'upsert/delete/lecture.
+    if (typeof fetch === 'function' && !{ sendCampaign:1, sendBirthdays:1 }[params.action]) {
+      var fini = false;
+      var secours = setTimeout(function(){ if (!fini) { fini = true; jsonpRaw(base, params, cb); } }, 12000);
+      fetch(base, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(params), redirect:'follow' })
+        .then(function(r){ return r.text(); })
+        .then(function(txt){ if (fini) return; var data; try { data = JSON.parse(txt); } catch (e) { fini = true; clearTimeout(secours); jsonpRaw(base, params, cb); return; } fini = true; clearTimeout(secours); cb(data); })
+        .catch(function(){ if (!fini) { fini = true; clearTimeout(secours); jsonpRaw(base, params, cb); } });
+      return;
+    }
+    jsonpRaw(base, params, cb);
+  }
+  function jsonpRaw(base, params, cb){
     var name = 'cb_' + Date.now() + '_' + Math.floor(Math.random()*1e6);
     var s = document.createElement('script'), done = false;
     var t = setTimeout(function () { if (!done) fin({ ok:false, error:'délai dépassé' }); }, 20000);

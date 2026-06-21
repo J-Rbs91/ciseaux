@@ -41,8 +41,8 @@ var AGENDA_DEFAUT = {
 // toutes les autres sont SENSIBLES et exigent la clé admin. Tant qu'AUCUNE clé n'est
 // posée sur le script, les actions sensibles sont REFUSÉES (« non configuré ») et non
 // ouvertes : la base clients/réservations n'est jamais exposée par simple oubli de
-// configuration. La protection doit être activée explicitement depuis l'application
-// (Mon salon → Clé admin), ce qui déclenche « claimKey » et pose la clé côté script.
+// configuration. La clé se pose UNIQUEMENT côté éditeur Apps Script via
+// genererCleAdmin(), puis se colle dans l'app.
 var ACTIONS_PUBLIQUES = { createBooking:1, availability:1, catalogue:1, getBooking:1, cancelBooking:1, modifyBooking:1, securite:1, unsub:1 };
 
 function cleAdmin_() {
@@ -59,75 +59,106 @@ function genererCleAdmin() {
   return k;
 }
 
-// Revendication de la clé depuis l'app : n'aboutit QUE si aucune clé n'est encore définie
-// (premier appareil qui configure). La rotation ultérieure se fait via genererCleAdmin().
-function revendiquerCle_(k) {
-  k = String(k || '').trim();
-  if (!k) return { ok:false, error:'clé vide' };
-  var props = PropertiesService.getScriptProperties();
-  if ((props.getProperty('ADMIN_KEY') || '').trim()) return { ok:false, error:'clé déjà définie' };
-  props.setProperty('ADMIN_KEY', k);
-  return { ok:true };
-}
+// l'amorçage public de la clé (« claimKey ») a été RETIRÉ. La clé ne
+// peut plus être posée depuis le réseau (sinon le premier à connaître l'URL …/exec
+// pouvait revendiquer la clé et prendre le contrôle). Elle se génère désormais
+// UNIQUEMENT depuis l'éditeur Apps Script via genererCleAdmin(), puis se colle
+// dans l'application (Mon salon → Clé admin).
 
 function doGet(e) {
-  var p = e.parameter || {}, cb = p.callback, res;
+  var p = (e && e.parameter) || {}, cb = p.callback;
+  // Lien de désinscription cliqué depuis un email : navigation directe (page HTML)
+  if ((p.action || 'load') === 'unsub') return pageDesinscription_(p);
+  return sortie_(traiter_(p), cb);
+}
+
+// transport POST. La clé admin voyage dans le CORPS de la requête
+// (Content-Type text/plain → « requête simple », pas de préflight CORS), donc
+// elle n'apparaît plus dans l'URL, l'historique du navigateur ni les journaux.
+// Le front bascule en POST quand c'est possible et retombe sur JSONP sinon.
+function doPost(e) {
+  var p = {};
+  try { if (e && e.parameter) { for (var k in e.parameter) if (e.parameter.hasOwnProperty(k)) p[k] = e.parameter[k]; } } catch (e0) {}
+  try {
+    if (e && e.postData && e.postData.contents) {
+      var body = null;
+      try { body = JSON.parse(e.postData.contents); } catch (e1) {}
+      if (body && typeof body === 'object') { for (var b in body) if (body.hasOwnProperty(b)) p[b] = body[b]; }
+    }
+  } catch (e2) {}
+  return sortie_(traiter_(p), p.callback);
+}
+
+// Dispatcher commun GET/POST. Renvoie un objet (jamais un ContentService).
+function traiter_(p) {
   var action = p.action || 'load';
 
-  // Lien de désinscription cliqué depuis un email : navigation directe (page HTML)
-  if (action === 'unsub') return pageDesinscription_(p);
-
-  // Garde d'accès (fermé par défaut). Trois niveaux :
-  //   1. Action publique (formulaire de réservation, état sécurité, désinscription) → ouverte.
-  //   2. claimKey → amorçage de la première clé : laissé passer (revendiquerCle_ refuse
-  //      de lui-même si une clé existe déjà), sinon impossible d'activer la sécurité.
-  //   3. Toute autre action est SENSIBLE → exige une clé admin posée ET correspondante.
-  //      Sans clé posée : REFUS (« non configuré »), jamais d'accès ouvert par défaut.
+  // Garde d'accès (fermé par défaut) :
+  //   1. Action publique (formulaire de réservation, état sécurité…) → ouverte.
+  //   2. Toute autre action est SENSIBLE → exige une clé admin posée ET correspondante.
+  //      Sans clé posée : REFUS (« non configuré »). il n'existe plus
+  //      d'amorçage public de clé ; la clé se pose UNIQUEMENT côté éditeur Apps
+  //      Script via genererCleAdmin() (pas de prise de contrôle « premier arrivé »).
   var cle = cleAdmin_();
-  if (!ACTIONS_PUBLIQUES[action] && action !== 'claimKey') {
-    if (!cle)                        return sortie_({ ok:false, error:'non configuré' }, cb);
-    if (String(p.key || '') !== cle) return sortie_({ ok:false, error:'non autorisé' }, cb);
+  if (!ACTIONS_PUBLIQUES[action]) {
+    if (!cle)                                     return { ok:false, error:'non configuré' };
+    if (!egalConstant_(String(p.key || ''), cle)) return { ok:false, error:'non autorisé' };
   }
 
   try {
     switch (action) {
-      case 'save':         JSON.parse(p.data||'{}'); ecrireProfil_(p.data||'{}'); res={ok:true}; break;
-      case 'load':         res={ok:true,data:lireProfil_()}; break;
-      case 'saveClients':  ecrireClients_(JSON.parse(p.data||'[]')); res={ok:true}; break;
-      case 'loadClients':  res={ok:true,data:lireClients_()}; break;
-      case 'saveOffres':   JSON.parse(p.data||'[]'); ecrireOffres_(p.data||'[]'); res={ok:true}; break;
-      case 'loadOffres':   res={ok:true,data:lireOffres_()}; break;
-      case 'upsertClient': upsertClient_(JSON.parse(p.client||'{}')); res={ok:true}; break;
-      case 'deleteClient': res={ok:true,deleted:deleteClient_(p.id||'')}; break;
-      case 'sendCampaign': res=envoyerCampagne_(p); break;
-      case 'sendBirthdays':res=envoyerAnniversaires_(); break;
-      case 'quota':        res={ok:true,quota:MailApp.getRemainingDailyQuota()}; break;
+      case 'save':         JSON.parse(p.data||'{}'); ecrireProfil_(p.data||'{}'); return {ok:true};
+      case 'load':         return {ok:true,data:lireProfil_()};
+      case 'saveClients':  ecrireClients_(JSON.parse(p.data||'[]')); return {ok:true};
+      case 'loadClients':  return {ok:true,data:lireClients_()};
+      case 'saveOffres':   JSON.parse(p.data||'[]'); ecrireOffres_(p.data||'[]'); return {ok:true};
+      case 'loadOffres':   return {ok:true,data:lireOffres_()};
+      case 'upsertClient': upsertClient_(JSON.parse(p.client||'{}')); return {ok:true};
+      case 'deleteClient': return {ok:true,deleted:deleteClient_(p.id||'')};
+      case 'sendCampaign': return envoyerCampagne_(p);
+      case 'sendBirthdays':return envoyerAnniversaires_();
+      case 'quota':        return {ok:true,quota:MailApp.getRemainingDailyQuota()};
       // Réservations en ligne
-      case 'createBooking':    res=creerReservation_(p); break;                 // PUBLIC (formulaire)
-      case 'availability':     res={ok:true, slots:creneauxLibres_(String(p.date||''), p.duree, p.collab, jsonArr_(p.prestations), exclureSiToken_(p))}; break;  // PUBLIC
-      case 'catalogue':        res=cataloguePublic_(); break;                   // PUBLIC
-      case 'getBooking':       res=getBookingPublic_(p.id||'', p.token||''); break;   // PUBLIC (jeton)
-      case 'cancelBooking':    res=cancelBooking_(p); break;                     // PUBLIC (jeton)
-      case 'modifyBooking':    res=modifyBooking_(p); break;                     // PUBLIC (jeton)
-      case 'loadBookings':     res={ok:true,data:lireReservations_()}; break;
-      case 'setBookingStatus': res={ok:true,updated:majStatutReservation_(p.id||'', p.statut||'')}; break;
-      case 'deleteBooking':    res={ok:true,deleted:supprimerReservation_(p.id||'')}; break;
+      case 'createBooking':    return creerReservation_(p);                       // PUBLIC (formulaire)
+      case 'availability':     return {ok:true, slots:creneauxLibres_(String(p.date||''), p.duree, p.collab, jsonArr_(p.prestations), exclureSiToken_(p))};  // PUBLIC
+      case 'catalogue':        return cataloguePublic_();                         // PUBLIC
+      case 'getBooking':       return getBookingPublic_(p.id||'', p.token||'');   // PUBLIC (jeton)
+      case 'cancelBooking':    return cancelBooking_(p);                          // PUBLIC (jeton)
+      case 'modifyBooking':    return modifyBooking_(p);                          // PUBLIC (jeton)
+      case 'loadBookings':     return {ok:true,data:lireReservations_()};
+      case 'setBookingStatus': return {ok:true,updated:majStatutReservation_(p.id||'', p.statut||'')};
+      case 'deleteBooking':    return {ok:true,deleted:supprimerReservation_(p.id||'')};
       // Sécurité / clé admin
-      case 'claimKey':         res=revendiquerCle_(p.key||''); break;
-      case 'securite':         res={ok:true, locked: !!cle}; break;             // PUBLIC (état)
-      default:                 res={ok:true,data:lireProfil_()};
+      case 'securite':         return {ok:true, locked: !!cle};                   // PUBLIC (état)
+      default:                 return {ok:true,data:lireProfil_()};
     }
   } catch(err) {
-    res={ok:false,error:String(err)};
+    return {ok:false,error:String(err)};
   }
-  return sortie_(res, cb);
 }
 
+// un nom de callback JSONP doit être un identifiant JS sûr.
+// Sinon on renvoie du JSON pur (pas de reflet arbitraire dans une réponse JS).
+function callbackValide_(cb) {
+  return typeof cb === 'string' && cb.length > 0 && cb.length <= 64 && /^[A-Za-z_$][A-Za-z0-9_$.]*$/.test(cb);
+}
 function sortie_(res, cb) {
   var json = JSON.stringify(res);
-  return cb
+  return callbackValide_(cb)
     ? ContentService.createTextOutput(cb+'('+json+')').setMimeType(ContentService.MimeType.JAVASCRIPT)
     : ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
+}
+
+// comparaison à temps constant de la clé admin (pas de court-circuit sur la longueur).
+function egalConstant_(a, b) {
+  a = String(a == null ? '' : a);
+  b = String(b == null ? '' : b);
+  var diff = a.length ^ b.length;
+  var n = Math.max(a.length, b.length);
+  for (var i = 0; i < n; i++) {
+    diff |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
+  }
+  return diff === 0;
 }
 
 // ── Profil (fichier JSON) ─────────────────────────────────────
@@ -458,6 +489,20 @@ function creneauxLibres_(dateStr, dureeMin, collabVoulu, prestaNoms, exclureId) 
   return libres;
 }
 
+// compteur quotidien de réservations enregistrées (plafond anti-abus).
+// Stocké en propriété de script « yyyy-MM-dd|count », remis à zéro au changement de jour.
+function compteurJour_() {
+  var jourKey = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  var parts = String(PropertiesService.getScriptProperties().getProperty('resa_jour') || '').split('|');
+  return (parts[0] === jourKey) ? (parseInt(parts[1], 10) || 0) : 0;
+}
+function incrCompteurJour_(jourKey) {
+  var props = PropertiesService.getScriptProperties();
+  var parts = String(props.getProperty('resa_jour') || '').split('|');
+  var cnt = (parts[0] === jourKey) ? (parseInt(parts[1], 10) || 0) : 0;
+  props.setProperty('resa_jour', jourKey + '|' + (cnt + 1));
+}
+
 function creerReservation_(p) {
   // Piège anti-robot : un champ caché rempli = bot. On répond ok mais on n'enregistre rien.
   if (String(p.hp || '') !== '') return { ok:true };
@@ -490,11 +535,27 @@ function creerReservation_(p) {
   noms.forEach(function(nm){ duree += dureePresta_(cfg.profil, nm); });
   if (!duree) duree = parseInt(p.duree, 10) > 0 ? parseInt(p.duree, 10) : cfg.granularite;
 
-  // Garde-fou anti-flood (global, fenêtre d'une minute) : limite les abus du formulaire public.
+  // Garde-fous anti-abus du formulaire PUBLIC :
+  //   (a) flood global   : 20 demandes / minute max ;
+  //   (b) par adresse    : 5 demandes / heure max (évite de spammer une même boîte) ;
+  //   (c) plafond du jour : borne le nb de réservations (et d'emails de confirmation
+  //       émis par le Gmail du salon) et la saturation de l'agenda. Réglable via
+  //       profil.agenda.maxResaJour (défaut 100). Incrémenté seulement à l'enregistrement.
   var cache = CacheService.getScriptCache();
   var n = parseInt(cache.get('resa_count') || '0', 10);
   if (n >= 20) return { ok:false, error:'Trop de demandes, réessayez dans une minute.' };
   cache.put('resa_count', String(n + 1), 60);
+
+  var mailKey = 'resa_m_' + Utilities.base64EncodeWebSafe(
+    Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, mail.toLowerCase()));
+  var nm = parseInt(cache.get(mailKey) || '0', 10);
+  if (nm >= 5) return { ok:false, error:'Trop de demandes pour cette adresse, réessayez plus tard.' };
+  cache.put(mailKey, String(nm + 1), 3600);
+
+  var maxJour = parseInt(cfg.profil && cfg.profil.agenda && cfg.profil.agenda.maxResaJour, 10);
+  if (!(maxJour > 0)) maxJour = 100;
+  var jourKey = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  if (compteurJour_() >= maxJour) return { ok:false, error:'Réservations en ligne indisponibles pour aujourd\'hui, réessayez demain.' };
 
   var collabVoulu = String(p.collab || '').trim();
 
@@ -531,6 +592,7 @@ function creerReservation_(p) {
     var sh = feuilleResa_();
     var head = enTetesResa_(sh);
     sh.appendRow(head.map(function(h) { return o[h] != null ? o[h] : ''; }));
+    incrCompteurJour_(jourKey);   // compte la réservation réellement enregistrée (plafond du jour)
     if (cfg.mailConfirm) { try { envoiMailRdv_('confirm', o, cfg.profil); } catch (e) {} }   // n'échoue jamais la résa
     return { ok:true, collab: collabAssigne };
   } finally {
@@ -981,7 +1043,7 @@ function personnaliser_(txt, c, prenom) {
 function construireEmail_(corps, c, profil, baseUrl, logoUrl) {
   var prenom = String(c.nom || '').split(' ')[0] || '';
   var htmlCorps = escapeHtml_(personnaliser_(corps, c, prenom)).replace(/\n/g, '<br>');
-  var unsub = baseUrl + '?action=unsub&id=' + encodeURIComponent(c.id);
+  var unsub = lienDesinscription_(baseUrl, c.id);
   var nom = escapeHtml_(profil.nom || 'Mon salon');
   var coords = [];
   if (profil.adresse) coords.push(escapeHtml_(profil.adresse));
@@ -1009,16 +1071,42 @@ function construireEmail_(corps, c, profil, baseUrl, logoUrl) {
 
 function construireTexte_(corps, c, profil, baseUrl) {
   var prenom = String(c.nom || '').split(' ')[0] || '';
-  var unsub = baseUrl + '?action=unsub&id=' + encodeURIComponent(c.id);
+  var unsub = lienDesinscription_(baseUrl, c.id);
   return personnaliser_(corps, c, prenom)
     + '\n\n---\n' + (profil.nom || 'Mon salon')
     + '\nSe désinscrire des offres : ' + unsub;
 }
 
 // Bascule l'opt-in d'un client à « non » dans la Sheet, puis affiche une page de confirmation.
+// lien de désinscription SIGNÉ (HMAC-SHA256) pour empêcher la
+// désinscription d'un client tiers par simple devinette de son id. Le secret est
+// propre au script (créé à la volée) ; il ne quitte jamais le serveur.
+function unsubSecret_() {
+  var props = PropertiesService.getScriptProperties();
+  var s = props.getProperty('UNSUB_SECRET');
+  if (!s) { s = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, ''); props.setProperty('UNSUB_SECRET', s); }
+  return s;
+}
+function signUnsub_(id) {
+  var raw = Utilities.computeHmacSha256Signature(String(id), unsubSecret_());
+  return raw.map(function(b){ return ('0' + (b & 0xff).toString(16)).slice(-2); }).join('').slice(0, 32);
+}
+function lienDesinscription_(baseUrl, id) {
+  return baseUrl + '?action=unsub&id=' + encodeURIComponent(id) + '&sig=' + encodeURIComponent(signUnsub_(id));
+}
+
 function pageDesinscription_(p) {
   var ok = false;
-  try { if (p.id) ok = majOptin_(p.id, false); } catch(e) {}
+  try {
+    if (p.id) {
+      // Si une signature est fournie, elle DOIT être valide (anti-falsification).
+      // Les anciens liens sans signature restent acceptés pendant une transition
+      // (résiduel documenté ) ; retirer cette tolérance une fois les anciens
+      // emails périmés pour fermer entièrement l'.
+      var sig = String(p.sig || '');
+      if (!sig || egalConstant_(sig, signUnsub_(p.id))) ok = majOptin_(p.id, false);
+    }
+  } catch(e) {}
   var msg = ok
     ? 'Vous êtes bien désinscrit(e) des offres. À bientôt !'
     : 'Lien invalide ou désinscription déjà prise en compte.';

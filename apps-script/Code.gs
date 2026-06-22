@@ -331,6 +331,7 @@ function agendaConfig_() {
     collaborateurs: (Array.isArray(ag.collaborateurs) ? ag.collaborateurs : []).filter(function(c) {
       return c && String(c.nom || '').trim();
     }),
+    fermetures: normPlages_(ag.fermetures),   // fermetures exceptionnelles du salon (jours fériés, congés annuels…)
     mailConfirm: ag.mailConfirm !== false,   // défaut : activé
     mailRappel: ag.mailRappel !== false      // défaut : activé
   };
@@ -358,6 +359,44 @@ function collabsEligibles_(cfg, collabVoulu, prestaNoms) {
 }
 
 function jsonArr_(s) { try { var a = JSON.parse(s || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+
+// Normalise une liste de plages de dates [{debut,fin}] : ne garde que celles avec un
+// début valide (YYYY-MM-DD), borne fin par défaut sur le début (= une seule journée).
+function normPlages_(plages) {
+  if (!Array.isArray(plages)) return [];
+  var out = [];
+  for (var i = 0; i < plages.length; i++) {
+    var p = plages[i] || {};
+    var d = String(p.debut || p.start || '').slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) continue;
+    var f = String(p.fin || p.end || '').slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(f) || f < d) f = d;
+    out.push({ debut: d, fin: f });
+  }
+  return out;
+}
+// Une date (YYYY-MM-DD) tombe-t-elle dans l'une des plages [debut, fin] (inclusives) ?
+// La comparaison lexicographique des chaînes ISO suffit.
+function dateDansPlages_(dateStr, plages) {
+  if (!Array.isArray(plages)) return false;
+  for (var i = 0; i < plages.length; i++) {
+    var p = plages[i]; if (!p || !p.debut) continue;
+    if (dateStr >= p.debut && dateStr <= (p.fin || p.debut)) return true;
+  }
+  return false;
+}
+// Le salon est-il ouvert sur [t, fin[ ce jour-là (horaires du mag + hors pause) ?
+// Sert de borne globale, y compris en mode « collaborateurs ».
+function salonOuvert_(cfg, dow, t, fin) {
+  var j = cfg.jours && cfg.jours[String(dow)];
+  if (!j || !j.open) return false;
+  var o = hm_(j.start), c = hm_(j.end);
+  if (o == null || c == null || t < o || fin > c) return false;
+  var pa = Array.isArray(j.pause) ? j.pause : ['', ''];
+  var pd = hm_(pa[0]), pf = hm_(pa[1]);
+  if (pd != null && pf != null && pf > pd && t < pf && fin > pd) return false;
+  return true;
+}
 
 // Un collaborateur travaille-t-il sur [t, fin[ ce jour-là (horaires + hors pause) ?
 function collabTravaille_(collab, dow, t, fin) {
@@ -445,11 +484,16 @@ function creneauxLibres_(dateStr, dureeMin, collabVoulu, prestaNoms, exclureId) 
   if (d > limite) return [];
   var estAujourdhui = (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate());
   var minToday = estAujourdhui ? (now.getHours() * 60 + now.getMinutes() + cfg.delaiMin) : -1;
+  // Fermeture exceptionnelle du salon (jour férié, congé annuel…) : aucun créneau, quel que soit le mode.
+  if (dateDansPlages_(dateStr, cfg.fermetures)) return [];
   var occ = resaDuJour_(dateStr, exclureId);
   var libres = [], t, fin;
 
   if (cfg.mode === 'collaborateurs') {
-    var liste = collabsEligibles_(cfg, collabVoulu, prestaNoms);
+    // On écarte d'emblée les collaborateurs absents ce jour-là (congés ponctuels).
+    var liste = collabsEligibles_(cfg, collabVoulu, prestaNoms).filter(function(c) {
+      return !dateDansPlages_(dateStr, c.absences);
+    });
     if (!liste.length) return [];
     // Fenêtre de balayage = union des plages d'ouverture des collaborateurs concernés ce jour-là.
     var minOpen = null, maxClose = null;
@@ -465,6 +509,7 @@ function creneauxLibres_(dateStr, dureeMin, collabVoulu, prestaNoms, exclureId) 
     for (t = minOpen; t + duree <= maxClose; t += cfg.granularite) {
       fin = t + duree;
       if (estAujourdhui && t < minToday) continue;
+      if (!salonOuvert_(cfg, dow, t, fin)) continue;   // borne globale : horaires d'ouverture du mag
       if (collabLibre_(liste, dow, t, fin, occ)) libres.push(mh_(t));
     }
     return libres;
@@ -565,8 +610,10 @@ function creerReservation_(p) {
   try {
     var collabAssigne = '';
     if (cfg.mode === 'collaborateurs') {
+      if (dateDansPlages_(date, cfg.fermetures)) return { ok:false, error:'Le salon est fermé ce jour-là.' };
       var d2 = new Date(date + 'T00:00:00'), fin = (hm_(heure) || 0) + duree;
-      var eligibles = collabsEligibles_(cfg, collabVoulu, noms);
+      if (!salonOuvert_(cfg, d2.getDay(), hm_(heure), fin)) return { ok:false, error:'Ce créneau est en dehors des horaires du salon.' };
+      var eligibles = collabsEligibles_(cfg, collabVoulu, noms).filter(function(c) { return !dateDansPlages_(date, c.absences); });
       collabAssigne = collabLibre_(eligibles, d2.getDay(), hm_(heure), fin, resaDuJour_(date));
       if (!collabAssigne) {
         return { ok:false, error: collabVoulu
@@ -761,8 +808,10 @@ function modifyBooking_(p) {
   try {
     var collabAssigne = '';
     if (cfg.mode === 'collaborateurs') {
+      if (dateDansPlages_(date, cfg.fermetures)) return { ok:false, error:'Le salon est fermé ce jour-là.' };
       var fin = (hm_(heure) || 0) + duree;
-      var eligibles = collabsEligibles_(cfg, collabVoulu, noms);
+      if (!salonOuvert_(cfg, d.getDay(), hm_(heure), fin)) return { ok:false, error:'Ce créneau est en dehors des horaires du salon.' };
+      var eligibles = collabsEligibles_(cfg, collabVoulu, noms).filter(function(c) { return !dateDansPlages_(date, c.absences); });
       collabAssigne = collabLibre_(eligibles, d.getDay(), hm_(heure), fin, resaDuJour_(date, p.id));
       if (!collabAssigne) return { ok:false, error:'Ce créneau n\'est plus disponible. Choisissez-en un autre.' };
     } else {

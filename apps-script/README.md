@@ -144,6 +144,17 @@ minimum avant RDV, horizon de réservation, et l'**organisation** au choix —
   demandées**, dont le nom est enregistré en colonne `collab`). Une liste de prestations vide pour
   un collaborateur = **polyvalent** (fait tout).
 
+Dans **les deux modes**, les **horaires d'ouverture du salon** (`agenda.jours`) bornent les
+créneaux proposés : en mode collaborateurs ils s'appliquent **en plus** des plannings individuels
+(aucun RDV hors des heures d'ouverture du mag). On peut aussi déclarer des **fermetures
+exceptionnelles** du salon (`agenda.fermetures`, ex. jours fériés / congés annuels) et, par
+collaborateur, des **absences/congés ponctuels** (`collaborateur.absences`) : sur ces dates, aucune
+réservation n'est proposée (ni acceptée côté serveur). Chaque plage est un couple
+`{debut, fin}` au format `YYYY-MM-DD` (fin incluse ; égale au début pour une seule journée).
+
+Ces réglages sont accessibles depuis le **hub d'accueil** (carte **« Planning équipe »**) comme
+depuis la page **Réservations → ⚙ Réglages agenda**.
+
 Tout est enregistré dans le profil (`profil.agenda`) et synchronisé.
 
 Les **prestations et leurs durées** proviennent de votre page **Prestations** (chargées

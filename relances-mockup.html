@@ -3,220 +3,231 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Relances — KuT (MOCKUP)</title>
+<title>Relances — KuT (maquette)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:"Manrope",-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#EEF1EF;color:#1C2321;min-height:100vh;padding-bottom:3rem}
+body{font-family:"Manrope",-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#EEF1EF;color:#1C2321;min-height:100vh;padding-bottom:4rem}
 header{background:#1C2321;color:#fff;padding:1rem 1.2rem;display:flex;align-items:center;gap:.8rem;position:sticky;top:0;z-index:20}
-.back{color:#fff;text-decoration:none;font-size:1.3rem;opacity:.85;line-height:1;padding:.2rem}
-h1{font-size:1.08rem;font-weight:800;flex:1}
-main{max-width:640px;margin:0 auto;padding:1rem 1.1rem 0}
-.demo-banner div{background:#fff3cd;border:1.5px solid #e8d48a;color:#7a5d00;border-radius:11px;padding:.6rem .8rem;font-size:.78rem;font-weight:700;text-align:center;margin-bottom:1.1rem}
-.section-title{font-size:.95rem;font-weight:800;color:#1C2321;margin:.4rem 0 .7rem;display:flex;align-items:center;gap:.45rem}
-.panel{background:#fff;border-radius:16px;padding:1rem 1.05rem 1.1rem;box-shadow:0 2px 10px rgba(28,35,33,.1);margin-bottom:1rem}
-/* Cartes de segment */
-.seg{border:1.5px solid #e3e9e7;border-radius:13px;padding:.85rem .9rem;margin-bottom:.7rem;transition:opacity .15s}
-.seg.off{opacity:.5}
-.seg-head{display:flex;align-items:center;gap:.55rem;margin-bottom:.55rem}
-.seg-badge{font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:.2rem .5rem;border-radius:6px;color:#fff}
-.b-hab{background:#A22C29}.b-prem{background:#3E7C4F}.b-vip{background:#8A5A1E}
-.seg-name{font-weight:800;font-size:.95rem;flex:1}
-.seg-cond{font-size:.74rem;color:#A9B4C2;font-weight:600}
-.seg-row{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .8rem;font-size:.8rem;font-weight:600;color:#5E6572}
-.seg-row label{display:flex;align-items:center;gap:.35rem}
-input[type=number]{width:62px;font-family:inherit;font-weight:700;font-size:.82rem;padding:.28rem .4rem;border:1.5px solid #c8d4da;border-radius:8px;color:#1C2321}
-select{font-family:inherit;font-weight:700;font-size:.78rem;padding:.28rem .4rem;border:1.5px solid #c8d4da;border-radius:8px;color:#1C2321;background:#fff;max-width:170px}
-.mode-pill{display:inline-flex;border:1.5px solid #c8d4da;border-radius:9px;overflow:hidden}
-.mode-pill button{font-family:inherit;font-weight:700;font-size:.74rem;padding:.3rem .6rem;border:0;background:#fff;color:#5E6572;cursor:pointer}
-.mode-pill button.on{background:#1C2321;color:#fff}
-.sw{position:relative;width:40px;height:23px;flex-shrink:0}
-.sw input{opacity:0;width:0;height:0}
-.sw span{position:absolute;inset:0;background:#c8d4da;border-radius:20px;transition:.2s;cursor:pointer}
-.sw span:before{content:"";position:absolute;height:17px;width:17px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
-.sw input:checked+span{background:#3E7C4F}
-.sw input:checked+span:before{transform:translateX(17px)}
-/* File d'attente */
-.q-summary{display:flex;align-items:baseline;gap:.5rem;margin-bottom:.2rem}
-.q-num{font-size:1.9rem;font-weight:800;color:#A22C29}
-.q-lbl{font-size:.85rem;font-weight:700;color:#5E6572}
-.q-ctrl{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin:.6rem 0 .3rem}
-.q-all{font-size:.78rem;font-weight:700;color:#5E6572;background:none;border:0;cursor:pointer;font-family:inherit;text-decoration:underline}
-.btn-send{background:#A22C29;color:#fff;border:0;border-radius:11px;padding:.62rem 1rem;font-size:.85rem;font-weight:800;font-family:inherit;cursor:pointer}
-.btn-send:disabled{background:#c8d4da;cursor:not-allowed}
-.qi{display:flex;align-items:center;gap:.7rem;padding:.6rem 0;border-bottom:1px solid #f0f3f2}
-.qi:last-child{border-bottom:none}
-.qi input[type=checkbox]{width:19px;height:19px;flex-shrink:0;accent-color:#A22C29}
-.qi-main{flex:1;min-width:0}
-.qi-name{font-weight:700;font-size:.92rem}
-.qi-meta{font-size:.74rem;color:#A9B4C2;font-weight:600;margin-top:.1rem}
-.tag{font-size:.62rem;font-weight:800;text-transform:uppercase;padding:.12rem .4rem;border-radius:5px;color:#fff;vertical-align:.08em}
-.qi-auto{font-size:.66rem;font-weight:800;color:#3E7C4F;background:#e7f1ea;padding:.2rem .45rem;border-radius:6px;white-space:nowrap}
-.qi-tpl{font-size:.7rem;color:#5E6572;font-weight:600}
-.muted{font-size:.86rem;color:#A9B4C2;text-align:center;padding:1.2rem .5rem}
-.note{font-size:.74rem;color:#A9B4C2;font-weight:600;margin-top:.6rem;line-height:1.5}
+.back{color:#fff;text-decoration:none;opacity:.85;display:flex}
+.back:hover{opacity:1}
+h1{font-size:1.08rem;font-weight:800;flex:1;display:flex;align-items:center;gap:.5rem}
+main{padding:1.1rem;max-width:620px;margin:0 auto}
+.demo{background:#fff3cd;border:1.5px solid #e8d48a;color:#7a5d00;border-radius:12px;padding:.55rem .8rem;font-size:.76rem;font-weight:700;text-align:center;margin-bottom:1rem}
+.info-banner{background:#f0f7f4;border:1.5px solid #5E6572;border-radius:14px;padding:.85rem 1.1rem;font-size:.84rem;color:#1C2321;margin-bottom:1.2rem;line-height:1.5}
+.section-title{font-size:.78rem;font-weight:800;color:#5E6572;text-transform:uppercase;letter-spacing:.06em;margin:.2rem 0 .8rem}
+
+/* En-tête de la liste du jour */
+.today{background:#fff;border-radius:18px;padding:1.2rem 1.3rem;box-shadow:0 2px 14px rgba(28,35,33,.1);border:1px solid #dde4e8;margin-bottom:.9rem}
+.today-num{font-size:2.1rem;font-weight:800;color:#1C2321;line-height:1}
+.today-lbl{font-size:.92rem;font-weight:700;color:#5E6572;margin:.25rem 0 1rem}
+.today-lbl b{color:#1C2321}
+.btn-p{width:100%;background:#A22C29;color:#fff;border:none;border-radius:11px;padding:.85rem;font-size:.98rem;font-weight:800;font-family:inherit;cursor:pointer;transition:background .15s}
+.btn-p:hover{background:#8a2422}
+.btn-p:disabled{background:#c8d4da;cursor:not-allowed}
+.today-auto{font-size:.78rem;color:#A9B4C2;text-align:center;margin-top:.6rem}
+
+/* Carte client (calquée sur .offre-card) */
+.cli-card{background:#fff;border-radius:16px;padding:1rem 1.1rem;box-shadow:0 2px 12px rgba(28,35,33,.1);border:1px solid #dde4e8;margin-bottom:.7rem;display:flex;align-items:flex-start;gap:.85rem}
+.cli-check{width:22px;height:22px;flex-shrink:0;margin-top:.15rem;accent-color:#A22C29}
+.cli-body{flex:1;min-width:0}
+.cli-name{font-weight:800;font-size:.98rem;margin-bottom:.2rem}
+.cli-why{font-size:.82rem;color:#5E6572;line-height:1.45}
+.cli-mail{font-size:.76rem;color:#A9B4C2;margin-top:.4rem;display:flex;align-items:center;gap:.3rem}
+.badge{font-size:.68rem;font-weight:800;border-radius:7px;padding:.18rem .5rem;white-space:nowrap;display:inline-block;margin-bottom:.35rem}
+.b-hab{background:#fdf3ef;color:#A22C29;border:1px solid #f0dbd5}
+.b-new{background:#eef5f0;color:#3E7C4F;border:1px solid #d6e7dc}
+.b-vip{background:#f6efe1;color:#8A5A1E;border:1px solid #ecdcc0}
+.auto-tag{font-size:.7rem;font-weight:800;color:#3E7C4F;background:#eef5f0;border:1px solid #d6e7dc;border-radius:7px;padding:.3rem .5rem;white-space:nowrap;flex-shrink:0;margin-top:.15rem}
+
+/* Réglages : cartes par groupe (calquées sur .offre-card + .toggle) */
+.rule{background:#fff;border-radius:16px;padding:1.05rem 1.15rem;box-shadow:0 2px 12px rgba(28,35,33,.1);border:1px solid #dde4e8;margin-bottom:.8rem;transition:opacity .15s}
+.rule.off{opacity:.55}
+.rule-head{display:flex;align-items:flex-start;gap:.7rem;margin-bottom:.7rem}
+.rule-ttl{flex:1}
+.rule-name{font-weight:800;font-size:.98rem;margin-bottom:.15rem}
+.rule-desc{font-size:.8rem;color:#A9B4C2;line-height:1.4}
+.toggle{width:42px;height:24px;border-radius:12px;border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;margin-top:.1rem}
+.toggle.on{background:#1C2321}.toggle.off{background:#c8d4da}
+.toggle::after{content:'';position:absolute;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .2s}
+.toggle.on::after{left:21px}.toggle.off::after{left:3px}
+.rule-body{border-top:1px solid #f0f3f2;padding-top:.75rem}
+.lbl{display:block;font-size:.72rem;font-weight:700;color:#5E6572;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem}
+.row{display:flex;flex-wrap:wrap;gap:.7rem 1rem;align-items:flex-end}
+.row > div{min-width:0}
+select,input[type=number]{font-family:inherit;font-weight:600;font-size:.9rem;padding:.5rem .7rem;border:1.5px solid #c8d4da;border-radius:10px;color:#1C2321;background:#fff;outline:none}
+select:focus,input[type=number]:focus{border-color:#5E6572;box-shadow:0 0 0 3px rgba(94,101,114,.18)}
+input[type=number]{width:80px}
+.rule-hint{font-size:.74rem;color:#A9B4C2;line-height:1.45;margin-top:.55rem}
+/* Mode d'envoi : petit segmenté */
+.mode{display:inline-flex;border:1.5px solid #c8d4da;border-radius:10px;overflow:hidden}
+.mode button{font-family:inherit;font-weight:700;font-size:.8rem;padding:.42rem .75rem;border:0;background:#fff;color:#5E6572;cursor:pointer}
+.mode button.on{background:#1C2321;color:#fff}
+.muted{font-size:.88rem;color:#A9B4C2;text-align:center;padding:1.4rem .5rem;line-height:1.5}
 </style>
 </head>
 <body>
 <header>
-  <a href="#" class="back">‹</a>
-  <h1>🔔 Relances</h1>
+  <a href="#" class="back" aria-label="Retour"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" style="display:block"><path d="M13.41,12l3.3-3.29a1,1,0,1,0-1.42-1.42l-4,4a1,1,0,0,0,0,1.42l4,4a1,1,0,0,0,1.42,0,1,1,0,0,0,0-1.42ZM8,7A1,1,0,0,0,7,8v8a1,1,0,0,0,2,0V8A1,1,0,0,0,8,7Z"/></svg></a>
+  <h1><svg viewBox="0 0 24 24" width="20" height="20" fill="#A22C29" style="vertical-align:-.18em"><path d="M12,22a2.78,2.78,0,0,0,2.74-2.35,1,1,0,0,0-2-.3.78.78,0,0,1-1.5,0,1,1,0,0,0-2,.3A2.78,2.78,0,0,0,12,22ZM21,16.42a4.79,4.79,0,0,1-2-3.86V10a7,7,0,0,0-14,0v2.56a4.79,4.79,0,0,1-2,3.86,1,1,0,0,0,.55,1.83h16.9A1,1,0,0,0,21,16.42ZM5.32,16,6,15.42A6.79,6.79,0,0,0,7,12.56V10a5,5,0,0,1,10,0v2.56a6.79,6.79,0,0,0,1,2.86l.65.58Z"/></svg> Relances</h1>
 </header>
+
 <main>
-  <div class="demo-banner"><div>⚠️ MOCKUP — écran de proposition (Campagnes › Relances). Données fictives, « aujourd'hui » = 22 juin 2026. Réglages et file d'attente sont interactifs.</div></div>
+  <div class="demo">Maquette — données fictives. Aperçu de l'écran « Campagnes › Relances ».</div>
+  <div class="info-banner">Le salon repère tout seul les clients qu'il faudrait recontacter. Vérifiez la liste, cochez qui vous voulez, et envoyez le bon email en un clic. 💌</div>
 
-  <div class="section-title">⚙️ Règles de relance par segment</div>
-  <div class="panel" id="segPanel"></div>
+  <div class="section-title">À relancer aujourd'hui</div>
+  <div id="today"></div>
+  <div id="list"></div>
 
-  <div class="section-title">📬 File d'attente — à valider</div>
-  <div class="panel" id="queuePanel"></div>
-
-  <div class="note">💡 « Proposé » = la relance attend votre validation dans cette file. « Auto » = elle partirait toute seule au franchissement du seuil (nécessite l'activation côté serveur). Un client déjà relancé n'est pas re-proposé avant sa prochaine visite.</div>
+  <div class="section-title" style="margin-top:1.6rem">Qui relancer, et quand ?</div>
+  <div id="rules"></div>
 </main>
 
 <script>
 var NOW=new Date(2026,5,22);
 var TEMPLATES=['Promo du moment','Programme fidélité','Bienvenue','Relance 1ʳᵉ visite','Fermeture / Congés'];
 
-/* ── Config par segment (modifiable dans l'écran) ── */
-var CONFIG=[
-  {id:'habitues',nom:'Habitués',badge:'b-hab',cond:'≥ 2 visites',type:'facteur',factor:2.5,tpl:'Promo du moment',mode:'propose',actif:true},
-  {id:'premiere',nom:'Première visite',badge:'b-prem',cond:'1 seule visite',type:'fixe',delaiJ:60,tpl:'Relance 1ʳᵉ visite',mode:'propose',actif:true},
-  {id:'vip',nom:'VIP',badge:'b-vip',cond:'panier moyen ≥',type:'facteur',factor:2,minBasket:50,tpl:'Programme fidélité',mode:'auto',actif:false}
+/* Groupes en langage clair. Les réglages numériques restent là mais sont habillés. */
+var RULES=[
+  {id:'hab', actif:true, mode:'propose', badge:'b-hab',
+   name:'Habitués qu\'on ne voit plus', desc:'Des clients réguliers qui ont disparu de la routine.',
+   patience:2.5, tpl:'Promo du moment'},
+  {id:'new', actif:true, mode:'propose', badge:'b-new',
+   name:'Nouveaux clients à fidéliser', desc:'Venus une seule fois, jamais revenus.',
+   delaiJ:60, tpl:'Relance 1ʳᵉ visite'},
+  {id:'vip', actif:false, mode:'auto', badge:'b-vip',
+   name:'Très bons clients', desc:'Gros paniers : un petit mot premium pour les choyer.',
+   minBasket:50, patience:2, tpl:'Programme fidélité'}
 ];
+function R(id){return RULES.filter(function(x){return x.id===id;})[0];}
 
-/* ── Données fictives (même salon que le mockup Statistiques) ── */
+/* ── Petit jeu de clients fictif (salon de coiffure) ── */
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 var rng=mulberry32(20260622);function pick(a){return a[Math.floor(rng()*a.length)];}
-var PF=['Sophie','Camille','Léa','Emma','Chloé','Manon','Inès','Sarah','Julie','Alice','Clara','Marine','Pauline','Laura','Charlotte','Amélie','Nathalie','Caroline','Aurélie','Céline','Sandrine','Valérie','Lucie','Margaux'];
-var PH=['Julien','Thomas','Nicolas','Antoine','Lucas','Hugo','Maxime','Paul','Romain','Adrien','Mathieu','Benjamin','Pierre','Alexandre','Sébastien','David','Vincent','Olivier','Cédric','Raphaël'];
-var NOMS=['Martin','Bernard','Dubois','Moreau','Petit','Laurent','Garcia','Roux','Fournier','Girard','Mercier','Bonnet','Lambert','Fontaine','Rousseau','Vincent','Henry','Faure','Blanc','Robin','Morel','Simon','Gauthier','Perrin','Roy','Noël','André','Renard','Aubert','Leroy','Picard','Vidal','Marchand','Lefebvre','Guérin','Boyer','Garnier','Chevalier'];
-var PRESTATIONS=[{nom:'Coupe femme',prix:35},{nom:'Coupe homme',prix:22},{nom:'Coloration',prix:48},{nom:'Balayage / Mèches',prix:75},{nom:'Brushing',prix:25},{nom:'Coupe + Barbe',prix:30}];
-var PAN_F=[[0],[0],[0,4],[2,4],[3,4],[0,2]];var PAN_H=[[1],[1],[5],[1]];
-function names(n){var s={},o=[],g=0;while(o.length<n&&g++<4000){var f=rng()<0.62;var nm=(f?pick(PF):pick(PH))+' '+pick(NOMS);if(s[nm])continue;s[nm]=1;o.push({nom:nm,f:f});}return o;}
-var POOL=names(140);
-function vis(combo){var items=combo.map(function(x){return {nom:PRESTATIONS[x].nom,prix:PRESTATIONS[x].prix};});return {items:items,montant:items.reduce(function(s,it){return s+it.prix;},0)};}
-function build(){
-  var cl=[];
-  for(var i=0;i<POOL.length;i++){
-    var c={id:'c'+i,nom:POOL[i].nom,email:true,optin:true,visites:[]};
-    var freq=28+Math.floor(rng()*45);
-    var dormant=rng()<0.22;
-    var lastOffset=dormant?(Math.round(freq*2.5)+Math.floor(rng()*60)):Math.floor(rng()*freq);
-    var single=rng()<0.12;
-    if(single){var d=new Date(NOW);d.setDate(d.getDate()-(20+Math.floor(rng()*90)));var v=vis(pick(POOL[i].f?PAN_F:PAN_H));c.visites.push({date:d.toISOString(),montant:v.montant,items:v.items});}
-    else{for(var db=lastOffset;db<380;db+=freq+Math.floor(rng()*14-7)){var d2=new Date(NOW);d2.setDate(d2.getDate()-db);var v2=vis(pick(POOL[i].f?PAN_F:PAN_H));c.visites.push({date:d2.toISOString(),montant:v2.montant,items:v2.items});}}
-    if(c.visites.length)cl.push(c);
-  }
-  return cl;
-}
+var PF=['Sophie','Camille','Léa','Emma','Chloé','Manon','Inès','Sarah','Julie','Alice','Clara','Marine','Pauline','Charlotte','Amélie','Nathalie','Sandrine','Lucie'];
+var PH=['Julien','Thomas','Nicolas','Antoine','Lucas','Hugo','Maxime','Paul','Romain','Adrien','Mathieu','Pierre','Vincent','Cédric'];
+var NOMS=['Martin','Bernard','Dubois','Moreau','Petit','Laurent','Roux','Fournier','Girard','Mercier','Bonnet','Lambert','Fontaine','Rousseau','Henry','Faure','Blanc','Morel','Simon','Perrin','Leroy','Picard'];
+var PR=[{nom:'Coupe femme',prix:35},{nom:'Coupe homme',prix:22},{nom:'Coloration',prix:48},{nom:'Balayage / Mèches',prix:75},{nom:'Brushing',prix:25},{nom:'Coupe + Barbe',prix:30}];
+var PAN_F=[[0],[0],[0,4],[2,4],[3,4]],PAN_H=[[1],[1],[5],[1]];
+function names(n){var s={},o=[],g=0;while(o.length<n&&g++<3000){var f=rng()<0.62;var nm=(f?pick(PF):pick(PH))+' '+pick(NOMS);if(s[nm])continue;s[nm]=1;o.push({nom:nm,f:f});}return o;}
+var POOL=names(90);
+function vis(c){var it=c.map(function(x){return {nom:PR[x].nom,prix:PR[x].prix};});return {items:it,montant:it.reduce(function(s,i){return s+i.prix;},0)};}
+function build(){var cl=[];for(var i=0;i<POOL.length;i++){var c={id:'c'+i,nom:POOL[i].nom,visites:[]};var freq=28+Math.floor(rng()*45);var dormant=rng()<0.22;var lo=dormant?(Math.round(freq*2.5)+Math.floor(rng()*55)):Math.floor(rng()*freq);var single=rng()<0.13;if(single){var d=new Date(NOW);d.setDate(d.getDate()-(20+Math.floor(rng()*95)));var v=vis(pick(POOL[i].f?PAN_F:PAN_H));c.visites.push({date:d.toISOString(),montant:v.montant,items:v.items});}else{for(var db=lo;db<360;db+=freq+Math.floor(rng()*14-7)){var d2=new Date(NOW);d2.setDate(d2.getDate()-db);var v2=vis(pick(POOL[i].f?PAN_F:PAN_H));c.visites.push({date:d2.toISOString(),montant:v2.montant,items:v2.items});}}if(c.visites.length)cl.push(c);}return cl;}
 var CLIENTS=build();
-function visAgo(arr,combo){return arr.map(function(db){var d=new Date(NOW);d.setDate(d.getDate()-db);var v=vis(combo);return {date:d.toISOString(),montant:v.montant,items:v.items};});}
-CLIENTS.push({id:'d_michel',nom:'Michel Durand',email:true,optin:true,visites:visAgo([130,175,220,265,310,355],[5])});
-CLIENTS.push({id:'d_brigitte',nom:'Brigitte Leclerc',email:true,optin:true,visites:visAgo([100,220,340],[3,4])});
-CLIENTS.push({id:'d_kevin',nom:'Kevin Nouveau',email:true,optin:true,visites:visAgo([75],[1])});
-CLIENTS.push({id:'d_lea',nom:'Léa Première',email:true,optin:true,visites:visAgo([30],[0])});
+function visAgo(arr,c){return arr.map(function(db){var d=new Date(NOW);d.setDate(d.getDate()-db);var v=vis(c);return {date:d.toISOString(),montant:v.montant,items:v.items};});}
+CLIENTS.push({id:'d_michel',nom:'Michel Durand',visites:visAgo([130,175,220,265,310,355],[5])});
+CLIENTS.push({id:'d_brigitte',nom:'Brigitte Leclerc',visites:visAgo([100,220,340],[3,4])});
+CLIENTS.push({id:'d_kevin',nom:'Kevin Lefèvre',visites:visAgo([78],[1])});
+CLIENTS.push({id:'d_lea',nom:'Léa Garnier',visites:visAgo([28],[0])});
 
-/* ── Logique de seuil (identique à stats.html) ── */
-function delaiMoyen(vs){var ts=vs.map(function(v){return new Date(v.date).getTime();}).sort(function(a,b){return a-b;});if(ts.length<2)return null;var t=0;for(var i=1;i<ts.length;i++)t+=ts[i]-ts[i-1];return t/(ts.length-1);}
-function lastVisit(vs){var m=0;vs.forEach(function(v){var t=new Date(v.date).getTime();if(t>m)m=t;});return m;}
-function panierMoyen(vs){if(!vs.length)return 0;return vs.reduce(function(s,v){return s+(+v.montant||0);},0)/vs.length;}
+/* ── Logique (identique à l'app) ── */
+function moy(vs){var ts=vs.map(function(v){return new Date(v.date).getTime();}).sort(function(a,b){return a-b;});if(ts.length<2)return null;var t=0;for(var i=1;i<ts.length;i++)t+=ts[i]-ts[i-1];return t/(ts.length-1);}
+function last(vs){var m=0;vs.forEach(function(v){var t=new Date(v.date).getTime();if(t>m)m=t;});return m;}
+function panier(vs){return vs.length?vs.reduce(function(s,v){return s+(+v.montant||0);},0)/vs.length:0;}
 
-function segActif(id){return CONFIG.filter(function(s){return s.id===id;})[0];}
+/* Durée en langage humain. */
+function hum(j){j=Math.round(j);if(j<14)return j+' jour'+(j>1?'s':'');if(j<70){var s=Math.round(j/7);return s+' semaine'+(s>1?'s':'');}var m=Math.round(j/30);return m+' mois';}
 
-/* Détermine si un client est « dû » et pour quel segment (priorité : première > vip > habitués). */
 function evalClient(c){
-  var vs=c.visites||[]; if(!vs.length||!c.email||!c.optin) return null;
-  var now=NOW.getTime(), last=lastVisit(vs), inactJ=Math.round((now-last)/864e5);
-  var avg=delaiMoyen(vs), rythmeJ=avg==null?null:Math.round(avg/864e5);
-  // Première visite
-  if(vs.length===1){
-    var sp=segActif('premiere'); if(!sp.actif) return null;
-    if(inactJ>=sp.delaiJ) return {seg:sp,inactJ:inactJ,rythmeJ:null,why:'1ʳᵉ visite il y a '+inactJ+' j (seuil '+sp.delaiJ+' j)'};
-    return null;
-  }
-  // VIP (si panier moyen suffisant et segment actif)
-  var sv=segActif('vip');
-  if(sv.actif && panierMoyen(vs)>=sv.minBasket){
-    if(now-last>=sv.factor*avg) return {seg:sv,inactJ:inactJ,rythmeJ:rythmeJ,why:'rythme ~'+rythmeJ+' j · absent '+inactJ+' j (seuil '+Math.round(sv.factor*rythmeJ)+' j) · panier '+Math.round(panierMoyen(vs))+' €'};
-    return null;
-  }
-  // Habitués
-  var sh=segActif('habitues'); if(!sh.actif) return null;
-  if(now-last>=sh.factor*avg) return {seg:sh,inactJ:inactJ,rythmeJ:rythmeJ,why:'rythme ~'+rythmeJ+' j · absent '+inactJ+' j (seuil '+Math.round(sh.factor*rythmeJ)+' j)'};
-  return null;
+  var vs=c.visites||[];if(!vs.length)return null;
+  var now=NOW.getTime(),l=last(vs),inactJ=(now-l)/864e5,avg=moy(vs);
+  // Nouveau client (1 seule visite)
+  if(vs.length===1){var r=R('new');if(!r.actif||inactJ<r.delaiJ)return null;
+    return {r:r,why:'Venu une seule fois il y a '+hum(inactJ)+', on ne l\'a jamais revu.'};}
+  var rythmeJ=avg/864e5;
+  // Très bon client
+  var rv=R('vip');
+  if(rv.actif&&panier(vs)>=rv.minBasket){if(inactJ<rv.patience*rythmeJ)return null;
+    return {r:rv,why:'Gros budget (panier ~'+Math.round(panier(vs))+' €), d\'habitude tous les '+hum(rythmeJ)+' — absent depuis '+hum(inactJ)+'.'};}
+  // Habitué
+  var rh=R('hab');if(!rh.actif||inactJ<rh.patience*rythmeJ)return null;
+  return {r:rh,why:'Vient en général tous les '+hum(rythmeJ)+' — pas revenu depuis '+hum(inactJ)+'.'};
 }
 
-var checked={}; // état des cases cochées
+var checked={};
 function queue(){
-  var out=[];
-  CLIENTS.forEach(function(c){var e=evalClient(c);if(e)out.push({nom:c.nom,id:c.id,e:e});});
-  var order={premiere:0,vip:1,habitues:2};
-  return out.sort(function(a,b){return (order[a.e.seg.id]-order[b.e.seg.id])||(b.e.inactJ-a.e.inactJ);});
+  var out=[];CLIENTS.forEach(function(c){var e=evalClient(c);if(e)out.push({nom:c.nom,id:c.id,e:e});});
+  var ord={new:0,hab:1,vip:2};
+  return out.sort(function(a,b){return (ord[a.e.r.id]-ord[b.e.r.id])||a.nom.localeCompare(b.nom);});
 }
 
-/* ── Rendu des réglages ── */
-function renderSegs(){
-  var tplOpts=function(sel){return TEMPLATES.map(function(t){return '<option'+(t===sel?' selected':'')+'>'+t+'</option>';}).join('');};
-  document.getElementById('segPanel').innerHTML=CONFIG.map(function(s,i){
-    var seuil = s.type==='fixe'
-      ? '<label>Seuil <input type="number" min="1" value="'+s.delaiJ+'" data-i="'+i+'" data-k="delaiJ"> jours</label>'
-      : '<label>Seuil = <input type="number" min="1" step="0.1" value="'+s.factor+'" data-i="'+i+'" data-k="factor"> × le rythme</label>';
-    var vipExtra = s.id==='vip' ? '<label>min <input type="number" min="0" value="'+s.minBasket+'" data-i="'+i+'" data-k="minBasket"> €</label>' : '';
-    return '<div class="seg'+(s.actif?'':' off')+'">'+
-      '<div class="seg-head"><span class="seg-badge '+s.badge+'">'+s.nom+'</span>'+
-        '<span class="seg-name"></span><span class="seg-cond">'+s.cond+(s.id==='vip'?' '+s.minBasket+' €':'')+'</span>'+
-        '<label class="sw"><input type="checkbox" data-i="'+i+'" data-k="actif" '+(s.actif?'checked':'')+'><span></span></label></div>'+
-      '<div class="seg-row">'+seuil+vipExtra+
-        '<span class="mode-pill"><button data-i="'+i+'" data-mode="propose" class="'+(s.mode==='propose'?'on':'')+'">Proposé</button>'+
-        '<button data-i="'+i+'" data-mode="auto" class="'+(s.mode==='auto'?'on':'')+'">Auto</button></span>'+
-        '<label>Modèle <select data-i="'+i+'" data-k="tpl">'+tplOpts(s.tpl)+'</select></label>'+
-      '</div></div>';
-  }).join('');
-}
-
-/* ── Rendu de la file ── */
-function renderQueue(){
+/* ── Rendu liste du jour ── */
+function badgeName(r){return {hab:'Habitué',new:'Nouveau client',vip:'Très bon client'}[r.id];}
+function renderList(){
   var q=queue();
-  var proposes=q.filter(function(x){return x.e.seg.mode==='propose';});
-  var autos=q.filter(function(x){return x.e.seg.mode==='auto';});
-  var nSel=proposes.filter(function(x){return checked[x.id];}).length;
-  var html='<div class="q-summary"><span class="q-num">'+proposes.length+'</span><span class="q-lbl">relance'+(proposes.length>1?'s':'')+' à valider'+(autos.length?' · '+autos.length+' en envoi auto':'')+'</span></div>';
-  if(!q.length){ document.getElementById('queuePanel').innerHTML=html+'<div class="muted">Personne à relancer aujourd\'hui : tout le monde respecte son rythme. 👍</div>'; return; }
-  html+='<div class="q-ctrl"><button class="q-all" id="qAll">Tout sélectionner / désélectionner</button>'+
-        '<button class="btn-send" id="qSend"'+(nSel?'':' disabled')+'>Valider & envoyer ('+nSel+')</button></div>';
-  html+=q.map(function(x){
-    var s=x.e.seg, auto=s.mode==='auto';
-    var ctrl=auto?'<span class="qi-auto">envoi auto</span>':'<input type="checkbox" data-id="'+x.id+'" '+(checked[x.id]?'checked':'')+'>';
-    return '<div class="qi">'+ctrl+
-      '<div class="qi-main"><div class="qi-name"><span class="tag '+s.badge+'">'+s.nom+'</span> '+x.nom+'</div>'+
-      '<div class="qi-meta">'+x.e.why+'</div></div>'+
-      '<div class="qi-tpl">→ '+s.tpl+'</div></div>';
+  var manuels=q.filter(function(x){return x.e.r.mode==='propose';});
+  var autos=q.filter(function(x){return x.e.r.mode==='auto';});
+  var nSel=manuels.filter(function(x){return checked[x.id];}).length;
+
+  var head='<div class="today"><div class="today-num">'+manuels.length+'</div>'+
+    '<div class="today-lbl"><b>client'+(manuels.length>1?'s':'')+'</b> à recontacter, en attente de votre feu vert</div>'+
+    '<button class="btn-p" id="send"'+(nSel?'':' disabled')+'>Envoyer '+(nSel?'('+nSel+') ':'')+'les relances</button>'+
+    (autos.length?'<div class="today-auto">+ '+autos.length+' relance'+(autos.length>1?'s':'')+' partiront automatiquement aujourd\'hui</div>':'')+'</div>';
+  document.getElementById('today').innerHTML=head;
+
+  if(!q.length){document.getElementById('list').innerHTML='<div class="muted">Personne à relancer aujourd\'hui : tous vos clients reviennent au bon rythme. 👍</div>';return;}
+  document.getElementById('list').innerHTML=q.map(function(x){
+    var r=x.e.r,auto=r.mode==='auto';
+    var right=auto?'<span class="auto-tag">Envoi auto</span>'
+                  :'<input class="cli-check" type="checkbox" data-id="'+x.id+'" '+(checked[x.id]?'checked':'')+' aria-label="Sélectionner">';
+    return '<div class="cli-card">'+right+
+      '<div class="cli-body"><span class="badge '+r.badge+'">'+badgeName(r)+'</span>'+
+      '<div class="cli-name">'+x.nom+'</div>'+
+      '<div class="cli-why">'+x.e.why+'</div>'+
+      '<div class="cli-mail">✉️ On lui enverra : « '+r.tpl+' »</div></div></div>';
   }).join('');
-  document.getElementById('queuePanel').innerHTML=html;
 }
 
-function renderAll(){renderSegs();renderQueue();}
+/* ── Rendu réglages ── */
+function tplSel(r){return '<select data-id="'+r.id+'" data-k="tpl">'+TEMPLATES.map(function(t){return '<option'+(t===r.tpl?' selected':'')+'>'+t+'</option>';}).join('')+'</select>';}
+function modeSeg(r){return '<span class="mode"><button data-id="'+r.id+'" data-mode="propose" class="'+(r.mode==='propose'?'on':'')+'">Me proposer</button>'+
+  '<button data-id="'+r.id+'" data-mode="auto" class="'+(r.mode==='auto'?'on':'')+'">Automatique</button></span>';}
+
+function renderRules(){
+  document.getElementById('rules').innerHTML=RULES.map(function(r){
+    var ctrl,hint;
+    if(r.id==='new'){
+      ctrl='<div><label class="lbl">Délai avant relance</label><input type="number" min="1" value="'+r.delaiJ+'" data-id="new" data-k="delaiJ"> jours</div>';
+      hint='Un client venu une seule fois n\'a pas encore d\'habitude : on attend ce délai fixe avant de le relancer.';
+    } else if(r.id==='vip'){
+      ctrl='<div><label class="lbl">Panier moyen à partir de</label><input type="number" min="0" value="'+r.minBasket+'" data-id="vip" data-k="minBasket"> €</div>'+
+           '<div><label class="lbl">Patience</label><select data-id="vip" data-k="patience"><option value="2"'+(r.patience==2?' selected':'')+'>Les relancer assez vite</option><option value="2.5"'+(r.patience==2.5?' selected':'')+'>Au bon moment</option><option value="3"'+(r.patience==3?' selected':'')+'>Leur laisser du temps</option></select></div>';
+      hint='On les contacte quand leur absence dépasse nettement leur rythme habituel.';
+    } else {
+      ctrl='<div><label class="lbl">Patience</label><select data-id="hab" data-k="patience"><option value="2"'+(r.patience==2?' selected':'')+'>Les relancer assez vite</option><option value="2.5"'+(r.patience==2.5?' selected':'')+'>Au bon moment (conseillé)</option><option value="3"'+(r.patience==3?' selected':'')+'>Leur laisser du temps</option></select></div>';
+      hint='« Au bon moment » = on attend que l\'absence dépasse environ 2,5 fois leur rythme habituel avant de relancer.';
+    }
+    return '<div class="rule'+(r.actif?'':' off')+'">'+
+      '<div class="rule-head"><div class="rule-ttl"><div class="rule-name">'+r.name+'</div><div class="rule-desc">'+r.desc+'</div></div>'+
+      '<button class="toggle '+(r.actif?'on':'off')+'" data-id="'+r.id+'" data-toggle="1" aria-label="Activer"></button></div>'+
+      '<div class="rule-body"><div class="row">'+ctrl+
+        '<div><label class="lbl">Envoi</label>'+modeSeg(r)+'</div>'+
+        '<div><label class="lbl">Email envoyé</label>'+tplSel(r)+'</div>'+
+      '</div><div class="rule-hint">'+hint+'</div></div></div>';
+  }).join('');
+}
+
+function renderAll(){renderRules();renderList();}
 
 /* ── Interactions ── */
-document.getElementById('segPanel').addEventListener('input',function(e){
-  var t=e.target,i=t.getAttribute('data-i'),k=t.getAttribute('data-k');if(i==null||!k)return;
-  i=+i;var val=t.type==='checkbox'?t.checked:(t.tagName==='SELECT'?t.value:parseFloat(t.value));
-  CONFIG[i][k]=val;renderAll();
+var rulesEl=document.getElementById('rules');
+rulesEl.addEventListener('click',function(e){
+  var tg=e.target.closest('[data-toggle]');if(tg){var r=R(tg.getAttribute('data-id'));r.actif=!r.actif;renderAll();return;}
+  var mb=e.target.closest('[data-mode]');if(mb){R(mb.getAttribute('data-id')).mode=mb.getAttribute('data-mode');renderAll();}
 });
-document.getElementById('segPanel').addEventListener('click',function(e){
-  var b=e.target.closest('button[data-mode]');if(!b)return;
-  CONFIG[+b.getAttribute('data-i')].mode=b.getAttribute('data-mode');renderAll();
+rulesEl.addEventListener('input',function(e){
+  var t=e.target,id=t.getAttribute('data-id'),k=t.getAttribute('data-k');if(!id||!k)return;
+  R(id)[k]=t.tagName==='SELECT'?(k==='tpl'?t.value:parseFloat(t.value)):parseFloat(t.value);renderAll();
 });
-document.getElementById('queuePanel').addEventListener('change',function(e){
-  var cb=e.target.closest('input[data-id]');if(!cb)return;
-  checked[cb.getAttribute('data-id')]=cb.checked;renderQueue();
-});
-document.getElementById('queuePanel').addEventListener('click',function(e){
-  if(e.target.id==='qAll'){var q=queue().filter(function(x){return x.e.seg.mode==='propose';});var allOn=q.every(function(x){return checked[x.id];});q.forEach(function(x){checked[x.id]=!allOn;});renderQueue();}
-  if(e.target.id==='qSend'){var n=queue().filter(function(x){return x.e.seg.mode==='propose'&&checked[x.id];}).length;if(n){alert('(Maquette) '+n+' relance(s) envoyée(s) via le pipeline Campagnes existant.\nLes clients envoyés seraient horodatés et retirés de la file jusqu\'à leur prochaine visite.');}}
+var listEl=document.getElementById('list');
+listEl.addEventListener('change',function(e){var cb=e.target.closest('input[data-id]');if(!cb)return;checked[cb.getAttribute('data-id')]=cb.checked;renderList();});
+document.getElementById('today').addEventListener('click',function(e){
+  if(e.target.id!=='send')return;
+  var n=queue().filter(function(x){return x.e.r.mode==='propose'&&checked[x.id];}).length;
+  if(n)alert('(Maquette) '+n+' relance'+(n>1?'s':'')+' envoyée'+(n>1?'s':'')+' par email.\nCes clients ne réapparaîtront plus dans la liste jusqu\'à leur prochaine visite.');
 });
 
 renderAll();

@@ -357,6 +357,7 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
         <option value="profil">Clients par profil (homme / femme / enfant)</option>
       </select>
       <div class="hint" id="segHint"></div>
+      <div id="tplSuggest" style="display:none;font-size:.82rem;color:#5E6572;margin-top:.5rem;line-height:1.5"></div>
     </div>
 
     <div class="field" id="paramWinback" style="display:none">
@@ -385,7 +386,7 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
 
     <div class="field" id="paramProfil" style="display:none">
       <label>Profil ciblé</label>
-      <select id="profilSel"><option value="homme">Homme</option><option value="femme">Femme</option><option value="enfant">Enfant</option><option value="none">Non précisé</option></select>
+      <select id="profilSel" onchange="updateTplSuggest()"><option value="homme">Homme</option><option value="femme">Femme</option><option value="enfant">Enfant</option><option value="none">Non précisé</option></select>
       <div class="hint">Cible les clients selon le profil renseigné dans leur fiche.</div>
     </div>
 
@@ -508,6 +509,7 @@ function segChange(){
   document.getElementById('paramPresta').style.display=seg==='presta'?'':'none';
   document.getElementById('paramProfil').style.display=seg==='profil'?'':'none';
   var h=document.getElementById('segHint');if(h)h.textContent=SEG_HINTS[seg]||'';
+  updateTplSuggest();
 }
 function minVisitsVal(){var n=parseInt((document.getElementById('minVisits')||{}).value,10);return(isNaN(n)||n<1)?1:n;}
 function minBasketVal(){var n=parseFloat((document.getElementById('minBasket')||{}).value);return(isNaN(n)||n<0)?0:n;}
@@ -605,7 +607,7 @@ function openPicker(){
   var tpls=loadTpls();
   var el=document.getElementById('pickerList');
   if(!tpls.length){el.innerHTML='<div style="font-size:.88rem;color:#A9B4C2;padding:.5rem 0">Aucun template. <a href="templates.html" style="color:#A22C29;font-weight:700">Créez-en un !</a></div>';}
-  else{el.innerHTML=tpls.map(function(t){return '<div class="picker-card" onclick="applyTpl(\''+t.id+'\')">'+'<div class="picker-nom">'+escH(t.nom||'Sans nom')+'</div>'+'<div class="picker-sujet">'+escH(t.sujet||'—')+'</div></div>';}).join('');}
+  else{el.innerHTML=tpls.map(function(t){return '<div class="picker-card" onclick="pickTpl(\''+t.id+'\')">'+'<div class="picker-nom">'+escH(t.nom||'Sans nom')+'</div>'+'<div class="picker-sujet">'+escH(t.sujet||'—')+'</div></div>';}).join('');}
   document.getElementById('overlay').classList.add('open');
 }
 function closePicker(){document.getElementById('overlay').classList.remove('open');}
@@ -623,6 +625,37 @@ function applyTpl(id){
   banner.style.display='';
   countChars();closePicker();
 }
+
+/* ── Présélection auto du modèle selon le segment ──────────────────────────
+   Chaque template porte un champ `segment` (défini dans Templates). Quand un
+   segment est choisi ici, on propose / pré-remplit le modèle correspondant. */
+var tplManual=false; // passe à true dès que l'utilisateur choisit/édite à la main
+function pickTpl(id){tplManual=true;applyTpl(id);updateTplSuggest();}
+function segKeyForTpl(){
+  var seg=val('seg');
+  if(seg==='profil')return 'profil:'+(profilVal()||'');
+  if(seg==='all')return '';
+  return seg; // winback, reward, freq, vip, presta
+}
+function bestTplForSeg(){
+  var key=segKeyForTpl();if(!key)return null;
+  var tpls=loadTpls();
+  for(var i=0;i<tpls.length;i++){if(String(tpls[i].segment||'')===key)return tpls[i];}
+  return null;
+}
+function updateTplSuggest(){
+  var box=document.getElementById('tplSuggest');if(!box)return;
+  var t=bestTplForSeg();
+  if(!t){box.style.display='none';box.innerHTML='';return;}
+  // Pré-remplissage auto tant que l'utilisateur n'a rien saisi/choisi à la main.
+  var subj=(document.getElementById('subject').value||'').trim();
+  var body=(document.getElementById('body').value||'').trim();
+  if(!tplManual&&(!subj&&!body||tplAuto)){applyTpl(t.id);tplAuto=true;}
+  box.style.display='';
+  box.innerHTML='✨ Modèle conseillé pour ce segment : <b>'+escH(t.nom)+'</b> '+
+    '<button type="button" class="btn-tpl" style="margin:.4rem 0 0" onclick="pickTpl(\''+t.id+'\')">Utiliser ce modèle</button>';
+}
+var tplAuto=false; // le contenu actuel provient d'une pré-sélection auto (réécrasable au changement de segment)
 
 function buildBodyFromTpl(t){
   var fide;try{fide=Object.assign({seuil:10,recompense:'Récompense'},JSON.parse(localStorage.getItem('fidelite-config-v1')||'{}'));}catch(e){fide={seuil:10,recompense:'Récompense'};}
@@ -685,6 +718,7 @@ function clearTpl(){
 
 if(!su())document.getElementById('notice').style.display='block';
 else jsonp(su(),{action:'quota'},function(r){if(r&&r.ok&&typeof r.quota!=='undefined')document.getElementById('quota').textContent='Quota Gmail restant aujourd\'hui : '+r.quota+' emails';});
+['subject','body'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('input',function(){tplManual=true;tplAuto=false;});});
 fillPresta();segChange();
 countChars();
 </script>

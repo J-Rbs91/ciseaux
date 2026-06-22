@@ -52,6 +52,14 @@
   .presta-opt .pn{flex:1;font-weight:600}
   .presta-opt .pm{color:var(--muted);font-size:.82rem;font-weight:400}
   .presta-opt.on{border-color:var(--rose);box-shadow:0 0 0 2px rgba(162,44,41,.25)}
+
+  /* ── ERGONOMIE TACTILE (tablette paysage / mobile) ── */
+  @media (pointer:coarse){
+    button:not(.toggle),
+    input:not([type=checkbox]):not([type=radio]):not([type=file]),
+    select{min-height:44px}
+    input[type=checkbox],input[type=radio]{width:20px;height:20px}
+  }
 </style>
 </head>
 <body>

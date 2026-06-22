@@ -301,6 +301,18 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
 
 /* ── ADAPTATION ÉCRAN LARGE (desktop) ── */
 @media(min-width:768px){main{max-width:820px}}
+
+/* ── ERGONOMIE TACTILE (tablette paysage / mobile) ── */
+@media (pointer:coarse){
+  button:not(.toggle),
+  input:not([type=checkbox]):not([type=radio]):not([type=file]),
+  select{min-height:44px}
+  input[type=checkbox],input[type=radio]{width:20px;height:20px}
+  a.back{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px}
+  .ms-opt{min-height:44px}
+  .theme-toggle{width:44px;height:44px}
+  .toggle{transform:scale(1.25);transform-origin:left center}
+}
 </style>
 <script>(function(){try{if(localStorage.getItem("kut-theme")==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();</script>
 </head>

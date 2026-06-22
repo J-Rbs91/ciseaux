@@ -86,6 +86,18 @@ html[data-theme="dark"] .st{color:#9AA6AE}
 html[data-theme="dark"] .collab{border-color:#313A3F}
 html[data-theme="dark"] .fld input,html[data-theme="dark"] .fld select,html[data-theme="dark"] .dayrow input[type=time],html[data-theme="dark"] input[type=date]{background:#14181A;color:#E7ECEE;border-color:#313A3F}
 html[data-theme="dark"] .savebar{background:#14181A}
+
+/* ── ERGONOMIE TACTILE (tablette paysage / mobile) ── */
+@media (pointer:coarse){
+  button:not(.toggle),
+  input:not([type=checkbox]):not([type=radio]):not([type=file]),
+  select{min-height:44px}
+  input[type=checkbox],input[type=radio]{width:20px;height:20px}
+  a.back{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px}
+  .ms-opt{min-height:44px}
+  .theme-toggle{width:44px;height:44px}
+  .toggle{transform:scale(1.25);transform-origin:left center}
+}
 </style>
 <script>(function(){try{if(localStorage.getItem("kut-theme")==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();</script>
 </head>

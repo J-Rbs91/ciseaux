@@ -76,6 +76,19 @@ main{padding:1.2rem;max-width:600px;margin:0 auto}
 .presta-empty{font-size:.82rem;color:#5E6572;padding:.2rem 0 .5rem}
 .field textarea{width:100%;border:1.5px solid #c8d4da;border-radius:10px;padding:.65rem .95rem;font-size:.95rem;color:#1C2321;outline:none;background:#fff;font-family:inherit;resize:vertical;min-height:90px;transition:border-color .15s}
 .field textarea:focus{border-color:#A22C29;box-shadow:0 0 0 3px rgba(94,101,114,.18)}
+/* Multi-select (sections concernées) */
+.ms{position:relative}
+.ms-toggle{width:100%;border:1.5px solid #c8d4da;border-radius:10px;padding:.65rem .95rem;font-size:.95rem;color:#1C2321;background:#fff;font-family:inherit;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:.5rem;transition:border-color .15s}
+.ms-toggle:focus{outline:none;border-color:#A22C29;box-shadow:0 0 0 3px rgba(94,101,114,.18)}
+.ms-val{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ms-val.placeholder{color:#A9B4C2}
+.ms-caret{flex-shrink:0;color:#A9B4C2;transition:transform .15s}
+.ms.open .ms-caret{transform:rotate(180deg)}
+.ms-panel{display:none;position:absolute;z-index:10;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1.5px solid #c8d4da;border-radius:10px;box-shadow:0 8px 24px rgba(28,35,33,.15);max-height:230px;overflow-y:auto;padding:.3rem}
+.ms.open .ms-panel{display:block}
+.ms-opt{display:flex;align-items:center;gap:.6rem;padding:.55rem .7rem;border-radius:8px;cursor:pointer;font-size:.92rem;font-weight:500;color:#1C2321}
+.ms-opt:hover{background:#f5f8fa}
+.ms-opt input{width:17px;height:17px;flex-shrink:0;accent-color:#A22C29;cursor:pointer}
 /* Footer « faites-moi un retour » */
 .hub-footer{max-width:600px;margin:.5rem auto 2.5rem;padding:1.3rem 1.2rem 0;text-align:center;font-size:.85rem;color:#5E6572;line-height:1.55;border-top:1px solid #dde4e8}
 .hub-footer .footer-emoji{font-size:1.3rem;display:block;margin-bottom:.35rem}
@@ -316,6 +329,11 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
 html[data-theme="dark"] .hub-footer{color:#9AA6AE!important;border-top-color:#313A3F!important}
 html[data-theme="dark"] .footer-link{color:#E0635D!important}
 html[data-theme="dark"] .footer-link:hover{color:#f07c76!important}
+html[data-theme="dark"] .ms-toggle{background:#171C1F!important;color:#E7ECEE!important;border-color:#313A3F!important}
+html[data-theme="dark"] .ms-val.placeholder{color:#7F8C94!important}
+html[data-theme="dark"] .ms-panel{background:#1F2528!important;border-color:#313A3F!important;box-shadow:0 8px 24px rgba(0,0,0,.5)!important}
+html[data-theme="dark"] .ms-opt{color:#E7ECEE!important}
+html[data-theme="dark"] .ms-opt:hover{background:#272F33!important}
 </style>
 <script>(function(){try{if(localStorage.getItem("kut-theme")==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();</script>
 </head>
@@ -454,6 +472,29 @@ html[data-theme="dark"] .footer-link:hover{color:#f07c76!important}
     <form id="contactForm" onsubmit="return sendContact(event)">
       <div class="field"><label>Nom ✱</label><input id="cName" type="text" required minlength="2" maxlength="100" autocomplete="name" placeholder="Votre nom"></div>
       <div class="field"><label>Email ✱</label><input id="cMail" type="email" required maxlength="150" autocomplete="email" placeholder="vous@exemple.fr"></div>
+      <div class="field">
+        <label>Fonctionnalité(s) / section(s) concernée(s)</label>
+        <div class="ms" id="cSections">
+          <button type="button" class="ms-toggle" id="cSecToggle" onclick="toggleSections(event)" aria-haspopup="true" aria-expanded="false">
+            <span class="ms-val placeholder" id="cSecVal">Sélectionner…</span>
+            <span class="ms-caret" aria-hidden="true">▾</span>
+          </button>
+          <div class="ms-panel" id="cSecPanel" oninput="refreshSections()">
+            <label class="ms-opt"><input type="checkbox" value="Accueil / Hub"> Accueil / Hub</label>
+            <label class="ms-opt"><input type="checkbox" value="Clients"> Clients</label>
+            <label class="ms-opt"><input type="checkbox" value="Fidélité"> Fidélité</label>
+            <label class="ms-opt"><input type="checkbox" value="Prestations"> Prestations</label>
+            <label class="ms-opt"><input type="checkbox" value="Caisse"> Caisse</label>
+            <label class="ms-opt"><input type="checkbox" value="Campagnes"> Campagnes</label>
+            <label class="ms-opt"><input type="checkbox" value="Offres"> Offres</label>
+            <label class="ms-opt"><input type="checkbox" value="Templates"> Templates</label>
+            <label class="ms-opt"><input type="checkbox" value="Statistiques"> Statistiques</label>
+            <label class="ms-opt"><input type="checkbox" value="Réservations"> Réservations</label>
+            <label class="ms-opt"><input type="checkbox" value="Synchro Drive"> Synchro Drive</label>
+            <label class="ms-opt"><input type="checkbox" value="Autre"> Autre</label>
+          </div>
+        </div>
+      </div>
       <div class="field"><label>Message ✱</label><textarea id="cMsg" required minlength="10" maxlength="2000" placeholder="Votre retour…"></textarea></div>
       <button type="submit" class="btn btn-primary btn-full" id="cSubmit"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M21.66,11.06,3.66,2.06a1,1,0,0,0-1.32,1.3l3.13,7.64L2.34,18.64a1,1,0,0,0,.92,1.36,1,1,0,0,0,.4-.08l18-9a1,1,0,0,0,0-1.86ZM5.92,16.2l1.74-4.2h4.59a1,1,0,0,0,0-2H7.66L5.92,5.8,18.76,11Z"></path></svg> Envoyer</button>
       <div class="status" id="cSt" role="status" aria-live="polite"></div>
@@ -640,10 +681,27 @@ function majBadgeResa(){
   var inited=false;
   function ensureInit(){if(inited||typeof emailjs==="undefined")return;try{emailjs.init(PUBLIC_KEY);inited=true;}catch(e){}}
   function ov(){return document.getElementById('contactOverlay');}
+  // ── Multi-select « sections concernées » ──
+  function selSections(){var out=[];var els=document.querySelectorAll('#cSecPanel input:checked');for(var i=0;i<els.length;i++)out.push(els[i].value);return out;}
+  window.refreshSections=function(){
+    var sel=selSections(), val=document.getElementById('cSecVal');
+    if(!sel.length){val.textContent='Sélectionner…';val.className='ms-val placeholder';}
+    else{val.textContent=sel.join(', ');val.className='ms-val';}
+  };
+  window.toggleSections=function(e){
+    e.stopPropagation();
+    var ms=document.getElementById('cSections'), t=document.getElementById('cSecToggle');
+    var open=ms.classList.toggle('open');t.setAttribute('aria-expanded',open?'true':'false');
+  };
+  function closeSectionsPanel(){var ms=document.getElementById('cSections');if(ms){ms.classList.remove('open');document.getElementById('cSecToggle').setAttribute('aria-expanded','false');}}
+  function resetSections(){var els=document.querySelectorAll('#cSecPanel input:checked');for(var i=0;i<els.length;i++)els[i].checked=false;closeSectionsPanel();refreshSections();}
+  // Refermer le panneau si on clique en dehors.
+  document.addEventListener('click',function(e){var ms=document.getElementById('cSections');if(ms&&ms.classList.contains('open')&&!ms.contains(e.target))closeSectionsPanel();});
+
   window.openContact=function(){ensureInit();ov().classList.add('open');setTimeout(function(){var n=document.getElementById('cName');if(n)n.focus();},60);};
-  window.closeContact=function(){ov().classList.remove('open');};
+  window.closeContact=function(){ov().classList.remove('open');closeSectionsPanel();};
   window.contactBackdrop=function(e){if(e.target===ov())closeContact();};
-  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&ov().classList.contains('open'))closeContact();});
+  document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;if(document.getElementById('cSections').classList.contains('open'))closeSectionsPanel();else if(ov().classList.contains('open'))closeContact();});
   window.sendContact=function(e){
     e.preventDefault();
     var btn=document.getElementById('cSubmit'), st=document.getElementById('cSt');
@@ -653,10 +711,12 @@ function majBadgeResa(){
     if(!name||!mail||!msg)return false;
     ensureInit();
     if(typeof emailjs==="undefined"){st.className='status err';st.textContent='Service indisponible — vérifiez votre connexion et réessayez.';return false;}
+    var secs=selSections();
+    var body='[Retour KuT]\n'+(secs.length?'Concerne : '+secs.join(', ')+'\n':'')+'\n'+msg;
     btn.disabled=true;btn.textContent='Envoi…';st.className='status';st.textContent='';
-    emailjs.send(SERVICE_ID,TEMPLATE_ID,{from_name:name,from_email:mail,message:'[Retour KuT]\n\n'+msg}).then(function(){
+    emailjs.send(SERVICE_ID,TEMPLATE_ID,{from_name:name,from_email:mail,message:body}).then(function(){
       st.className='status ok';st.textContent='✓ Merci ! Votre retour a bien été envoyé.';
-      document.getElementById('contactForm').reset();
+      document.getElementById('contactForm').reset();resetSections();
       setTimeout(closeContact,1800);
     }).catch(function(){
       st.className='status err';st.textContent='Erreur lors de l\'envoi. Réessayez plus tard.';

@@ -110,6 +110,40 @@ html[data-theme="dark"] .empty-text{color:#9AA6AE}
   .kpi-grid{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
 }
 
+/* ── Progression commerciale ── */
+.scope{background:#f5f8fa;border:1.5px solid #c8d4da;border-radius:12px;padding:.6rem .85rem;font-size:.78rem;color:#5E6572;line-height:1.45;margin-bottom:1.1rem}
+.scope b{color:#1C2321}
+.sec-h{font-size:.82rem;font-weight:800;color:#1C2321;letter-spacing:.02em;margin:.2rem 0 .3rem;display:flex;align-items:center;gap:.45rem}
+.sec-sub{font-size:.74rem;color:#A9B4C2;margin-bottom:.9rem}
+.lever{padding:.7rem 0;border-bottom:1px solid #f0f3f2;display:grid;grid-template-columns:1fr auto;gap:.2rem .6rem;align-items:center}
+.lever:last-child{border-bottom:none}
+.lever-n{font-size:.86rem;font-weight:700;color:#1C2321}
+.lever-d{font-size:.72rem;color:#A9B4C2;margin-top:.1rem}
+.lever-v{font-size:1.15rem;font-weight:800;text-align:right;white-space:nowrap}
+.deltas{display:flex;gap:.5rem;justify-content:flex-end;margin-top:.15rem;font-size:.7rem;font-weight:700}
+.deltas .lbl{color:#A9B4C2;font-weight:600}
+.d.pos{color:#3E7C4F}.d.neg{color:#A22C29}.d.flat,.d.na{color:#A9B4C2}
+.spark{grid-column:1/-1;display:flex;align-items:flex-end;gap:2px;height:30px;margin-top:.45rem}
+.spark i{display:block;flex:1;min-height:2px;background:linear-gradient(180deg,#c0413e,#A22C29);border-radius:2px 2px 0 0}
+.spark i.cur{background:#1C2321}
+.split{display:flex;gap:.5rem;margin:.2rem 0 .1rem}
+.split-b{height:12px;border-radius:4px}
+.split-b.new{background:#3E7C4F}.split-b.fid{background:#A22C29}
+.split-l{display:flex;justify-content:space-between;font-size:.72rem;color:#5E6572;margin-top:.35rem}
+.gauge{height:14px;border-radius:8px;background:#EEF1EF;overflow:hidden;margin:.5rem 0 .4rem}
+.gauge-f{height:100%;background:linear-gradient(90deg,#A22C29,#c97e7c);border-radius:8px}
+.occ-big{font-size:1.7rem;font-weight:800}
+.ph-list .rank-sub{margin-left:0}
+.warn-data{font-size:.72rem;color:#A9B4C2;margin-top:.5rem;font-style:italic}
+
+html[data-theme="dark"] .scope{background:#1F2528;border-color:#313A3F;color:#9AA6AE}
+html[data-theme="dark"] .scope b,html[data-theme="dark"] .sec-h{color:#E7ECEE}
+html[data-theme="dark"] .lever{border-bottom-color:#262d31}
+html[data-theme="dark"] .lever-n{color:#E7ECEE}
+html[data-theme="dark"] .gauge{background:#171C1F}
+html[data-theme="dark"] .spark i.cur{background:#E7ECEE}
+html[data-theme="dark"] .d.pos{color:#6FBF85}html[data-theme="dark"] .d.neg{color:#E0635D}
+
 /* ── ERGONOMIE TACTILE (tablette paysage / mobile) ── */
 @media (pointer:coarse){
   button:not(.toggle),
@@ -249,6 +283,120 @@ function dormants(){
   return n;
 }
 
+/* ════════════ PROGRESSION COMMERCIALE ════════════
+   Périmètre : la base KuT = clients inscrits au programme de fidélité.
+   Tous les indicateurs ci-dessous portent donc sur cette population. */
+
+function pm(){ try{return JSON.parse(localStorage.getItem(LS_P)||'{}')||{};}catch(e){return{};} }
+function pctDelta(cur,prev){ if(prev==null||prev<=0) return null; return Math.round((cur-prev)/prev*100); }
+function eur2(n){return eur(n);}
+
+/* Catalogue prestations : nom normalisé -> {prix,duree(min)} */
+function prestaCat(){
+  var p=pm(), arr=Array.isArray(p.prestations)?p.prestations:[], map={};
+  arr.forEach(function(x){ var k=String(x&&x.nom||'').trim().toLowerCase(); if(k) map[k]={prix:+x.prix||0,duree:+x.duree||0}; });
+  return map;
+}
+function dureeItem(cat,nom){ var r=cat[String(nom||'').trim().toLowerCase()]; return r?(+r.duree||0):0; }
+
+/* Première visite (ms) de chaque client — sert à l'acquisition. */
+function premiereVisite(){
+  var map={};
+  lc().forEach(function(c){
+    var vs=Array.isArray(c.visites)?c.visites:[], min=Infinity;
+    vs.forEach(function(v){var t=new Date(v.date).getTime(); if(!isNaN(t)&&t<min)min=t;});
+    if(min<Infinity) map[c.id]=min;
+  });
+  return map;
+}
+/* Visites triées (ms + montant) par client. */
+function visitesTriees(){
+  var map={};
+  lc().forEach(function(c){
+    var vs=(Array.isArray(c.visites)?c.visites:[]).map(function(v){return {t:new Date(v.date).getTime(),m:+v.montant||0};})
+            .filter(function(x){return !isNaN(x.t);}).sort(function(a,b){return a.t-b.t;});
+    map[c.id]={vs:vs, raw:Array.isArray(c.visites)?c.visites:[]};
+  });
+  return map;
+}
+
+/* Les 5 leviers + CA pour le mois calendaire (y,m).
+   fv/vt/ap précalculés (cf. progressionData) pour éviter de tout reconstruire. */
+function leviersMois(y,m,fv,vt,ap){
+  var b0=new Date(y,m,1).getTime(), b1=new Date(y,m+1,1).getTime()-1;
+  var ca=0, n=0, servis={}, caCli={};
+  ap.forEach(function(p){
+    var t=p.d.getTime(); if(t<b0||t>b1) return;
+    ca+=p.montant; n++; servis[p.cid]=1; caCli[p.cid]=(caCli[p.cid]||0)+p.montant;
+  });
+  var nouveaux=0, revenus=0, caNouv=0, caFid=0, reactives=0, caReact=0;
+  Object.keys(servis).forEach(function(cid){
+    var first=fv[cid], estNouveau = first!=null && first>=b0 && first<=b1;
+    if(estNouveau){ nouveaux++; caNouv+=caCli[cid]; } else { revenus++; caFid+=caCli[cid]; }
+    var entry=vt[cid];
+    if(entry){
+      var arr=entry.vs, idx=-1;
+      for(var i=0;i<arr.length;i++){ if(arr[i].t>=b0&&arr[i].t<=b1){idx=i;break;} }
+      if(idx>0){ var gap=arr[idx].t-arr[idx-1].t; if(gap>=seuilSommeil(entry.raw)){ reactives++; caReact+=arr[idx].m; } }
+    }
+  });
+  var nS=Object.keys(servis).length;
+  return { ca:ca, n:n, servis:nS, panier:n?ca/n:0,
+    nouveaux:nouveaux, revenus:revenus, tauxRetour:nS?revenus/nS:0,
+    freq:nS?n/nS:0, caNouv:caNouv, caFid:caFid, reactives:reactives, caReact:caReact };
+}
+
+/* 13 mois glissants (index 12 = mois courant, 11 = M-1, 0 = N-1). */
+function progressionData(){
+  var now=new Date(), arr=[], fv=premiereVisite(), vt=visitesTriees(), ap=allPassages();
+  for(var i=12;i>=0;i--){ var d=new Date(now.getFullYear(),now.getMonth()-i,1); arr.push({y:d.getFullYear(),m:d.getMonth(),L:leviersMois(d.getFullYear(),d.getMonth(),fv,vt,ap)}); }
+  return arr;
+}
+
+/* ── Agenda : capacité (minutes) et temps réalisé (proxy d'occupation) ── */
+function hm(s){ var a=String(s||'').split(':'); return (parseInt(a[0],10)||0)*60+(parseInt(a[1],10)||0); }
+function openMinutes(j){ if(!j||!j.open)return 0; var mins=hm(j.end)-hm(j.start); var p=j.pause; if(p&&p[0]&&p[1])mins-=(hm(p[1])-hm(p[0])); return Math.max(0,mins); }
+function ymd(ms){ var d=new Date(ms); var mm=('0'+(d.getMonth()+1)).slice(-2), dd=('0'+d.getDate()).slice(-2); return d.getFullYear()+'-'+mm+'-'+dd; }
+function estFerme(ag,ms){ var s=ymd(ms); return (Array.isArray(ag.fermetures)?ag.fermetures:[]).some(function(x){var d1=x.d1||x.d2,d2=x.d2||x.d1; return d1&&s>=d1&&s<=d2;}); }
+function dayCapacity(ag,ms){
+  if(estFerme(ag,ms))return 0;
+  var dow=new Date(ms).getDay();
+  if(ag.mode==='collaborateurs' && Array.isArray(ag.collaborateurs) && ag.collaborateurs.length){
+    return ag.collaborateurs.reduce(function(s,co){return s+openMinutes(co.jours&&co.jours[dow]);},0);
+  }
+  return openMinutes(ag.jours&&ag.jours[dow]) * Math.max(1,+ag.capacite||1);
+}
+function agendaConfig(){ var a=(pm().agenda)||{}; var ok=(a.jours||(a.collaborateurs&&a.collaborateurs.length)); return ok?a:null; }
+function capaciteRange(start,end){
+  var ag=agendaConfig(); if(!ag)return 0;
+  var t=new Date(start); t.setHours(0,0,0,0); var fin=new Date(end).getTime(), sum=0, g=0;
+  while(t.getTime()<=fin && g++<800){ sum+=dayCapacity(ag,t.getTime()); t.setDate(t.getDate()+1); }
+  return sum;
+}
+function tempsRealise(ps){ var cat=prestaCat(), min=0; ps.forEach(function(p){ p.items.forEach(function(it){ min+=dureeItem(cat,it.nom); }); }); return min; }
+
+/* Bornes [start,end] de la période active (pour occupation/temps réalisé). */
+function periodeRange(){
+  var now=new Date();
+  if(period==='prev'){ return [new Date(now.getFullYear(),now.getMonth()-1,1), new Date(now.getFullYear(),now.getMonth(),0,23,59,59)]; }
+  if(period==='y12'){ return [new Date(now.getFullYear(),now.getMonth()-11,1), now]; }
+  if(period==='all'){ var mn=Infinity; allPassages().forEach(function(p){if(p.d.getTime()<mn)mn=p.d.getTime();}); return [new Date(mn===Infinity?now.getTime():mn), now]; }
+  return [new Date(now.getFullYear(),now.getMonth(),1), now]; // month
+}
+
+/* Top prestations par rentabilité horaire (CA ÷ temps engagé). */
+function topRentabiliteTemps(ps){
+  var cat=prestaCat(), map={};
+  ps.forEach(function(p){ p.items.forEach(function(it){
+    var k=String(it.nom||'—').trim()||'—', d=dureeItem(cat,it.nom);
+    var m=map[k]||(map[k]={nom:k,count:0,ca:0,min:0}); m.count++; m.ca+=(+it.prix||0); m.min+=d;
+  }); });
+  var rows=Object.keys(map).map(function(k){var r=map[k]; r.parH=r.min>0?r.ca/(r.min/60):null; return r;});
+  var connus=rows.filter(function(r){return r.parH!=null;}).sort(function(a,b){return b.parH-a.parH;});
+  var inconnus=rows.filter(function(r){return r.parH==null;}).length;
+  return {rows:connus, sansDuree:inconnus};
+}
+
 function bars(m){
   var max=Math.max.apply(null, m.vals.concat([1]));
   var H=104;
@@ -271,6 +419,79 @@ function rankList(rows, valFn, subFn){
       '<span class="rank-val">'+valFn(r)+'</span><span class="rank-sub">'+subFn(r)+'</span></div>'+
       '<div class="rank-track"><div class="rank-fill" style="width:'+pct+'%"></div></div></div>';
   }).join('');
+}
+
+function deltaSpan(cur,prev){
+  var p=pctDelta(cur,prev);
+  if(p==null) return '<span class="d na">n/a</span>';
+  var cls=p>0?'pos':(p<0?'neg':'flat'), a=p>0?'▲':(p<0?'▼':'=');
+  return '<span class="d '+cls+'">'+a+' '+Math.abs(p)+'%</span>';
+}
+function sparkHtml(vals){
+  var max=Math.max.apply(null, vals.concat([1]));
+  return '<div class="spark">'+vals.map(function(v,i){
+    var h=Math.max(2,Math.round((v/max)*28));
+    return '<i class="'+(i===vals.length-1?'cur':'')+'" style="height:'+h+'px"></i>';
+  }).join('')+'</div>';
+}
+function leverRow(nom,desc,valStr,curV,m1V,n1V,serie){
+  return '<div class="lever">'+
+    '<div><div class="lever-n">'+nom+'</div><div class="lever-d">'+desc+'</div></div>'+
+    '<div><div class="lever-v">'+valStr+'</div>'+
+      '<div class="deltas"><span class="lbl">M‑1</span>'+deltaSpan(curV,m1V)+'<span class="lbl">N‑1</span>'+deltaSpan(curV,n1V)+'</div></div>'+
+    sparkHtml(serie)+'</div>';
+}
+function renderProgression(){
+  var D=progressionData(), cur=D[12].L, m1=D[11].L, n1=D[0].L;
+  var moisLbl=MOIS_LONG[D[12].m]+' '+D[12].y;
+  function serie(key){ return D.slice(1).map(function(x){return x.L[key];}); }
+  var now=new Date(), jour=now.getDate(), nbJours=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  var proj=jour>0?cur.ca/jour*nbJours:cur.ca;
+  var h='<div class="panel">'+
+    '<div class="sec-h">📈 Progression commerciale</div>'+
+    '<div class="sec-sub">Mois en cours ('+moisLbl+') — comparé au mois précédent (M‑1) et au même mois l\'an dernier (N‑1).</div>';
+  h+=leverRow('Chiffre d\'affaires','Projection fin de mois ≈ '+eur0(proj),eur0(cur.ca),cur.ca,m1.ca,n1.ca,serie('ca'));
+  h+=leverRow('Acquisition','Nouveaux clients (1ʳᵉ visite ce mois)',String(cur.nouveaux),cur.nouveaux,m1.nouveaux,n1.nouveaux,serie('nouveaux'));
+  h+=leverRow('Rétention','Clients connus revenus ce mois ('+Math.round(cur.tauxRetour*100)+' %)',String(cur.revenus),cur.revenus,m1.revenus,n1.revenus,serie('revenus'));
+  h+=leverRow('Fréquence','Visites par client servi',(Math.round(cur.freq*100)/100).toLocaleString('fr-FR'),cur.freq,m1.freq,n1.freq,serie('freq'));
+  h+=leverRow('Valeur','Panier moyen',eur(cur.panier),cur.panier,m1.panier,n1.panier,serie('panier'));
+  h+=leverRow('Réactivation','Clients rendormis revenus ('+eur0(cur.caReact)+' récupérés)',String(cur.reactives),cur.reactives,m1.reactives,n1.reactives,serie('reactives'));
+  h+='</div>';
+  var tot=cur.caNouv+cur.caFid, pn=tot>0?Math.round(cur.caNouv/tot*100):0;
+  h+='<div class="panel"><div class="panel-title">CA nouveaux vs fidèles<span class="pt-sub">'+moisLbl+'</span></div>';
+  if(tot>0){
+    h+='<div class="split"><div class="split-b new" style="width:'+pn+'%"></div><div class="split-b fid" style="width:'+(100-pn)+'%"></div></div>'+
+       '<div class="split-l"><span style="color:#3E7C4F">Nouveaux '+eur0(cur.caNouv)+' ('+pn+' %)</span><span style="color:#A22C29">Fidèles '+eur0(cur.caFid)+' ('+(100-pn)+' %)</span></div>';
+  } else { h+='<div class="muted" style="text-align:left;padding:.2rem 0">Pas de CA ce mois.</div>'; }
+  return h+'</div>';
+}
+function renderRentabilite(ps){
+  var R=topRentabiliteTemps(ps);
+  var h='<div class="panel"><div class="panel-title">Rentabilité par temps<span class="pt-sub">CA / heure engagée</span></div>';
+  if(!R.rows.length) return h+'<div class="muted" style="text-align:left;padding:.2rem 0">Renseignez la <b>durée</b> de vos prestations (page Prestations) pour activer ce classement.</div></div>';
+  var max=R.rows[0].parH||1;
+  h+='<div class="ph-list">'+R.rows.slice(0,5).map(function(r,i){
+    var pct=Math.max(3,Math.round(r.parH/max*100));
+    return '<div class="rank-item"><div class="rank-head"><span class="rank-rk">'+(i+1)+'</span>'+
+      '<span class="rank-name">'+esc(r.nom)+'</span>'+
+      '<span class="rank-val">'+eur0(r.parH)+'/h</span><span class="rank-sub">'+eur0(r.ca)+' · '+Math.round(r.min)+' min</span></div>'+
+      '<div class="rank-track"><div class="rank-fill" style="width:'+pct+'%"></div></div></div>';
+  }).join('')+'</div>';
+  if(R.sansDuree>0) h+='<div class="warn-data">'+R.sansDuree+' prestation(s) sans durée renseignée, non classées.</div>';
+  return h+'</div>';
+}
+function renderOccupation(ps){
+  var ag=agendaConfig();
+  var h='<div class="panel"><div class="panel-title">Taux d\'occupation de l\'agenda<span class="pt-sub">temps réalisé / capacité</span></div>';
+  if(!ag) return h+'<div class="muted" style="text-align:left;padding:.2rem 0">Configurez les <b>horaires</b> du salon (Mon salon › Agenda) pour activer cet indicateur.</div></div>';
+  var r=periodeRange(), capMin=capaciteRange(r[0],r[1]), usedMin=tempsRealise(ps);
+  if(capMin<=0) return h+'<div class="muted" style="text-align:left;padding:.2rem 0">Aucune capacité d\'ouverture sur la période.</div></div>';
+  var taux=Math.round(usedMin/capMin*100), w=Math.min(100,taux);
+  h+='<div class="occ-big" style="color:'+(taux>=70?'#3E7C4F':(taux>=40?'#1C2321':'#A22C29'))+'">'+taux+' %</div>'+
+     '<div class="gauge"><div class="gauge-f" style="width:'+w+'%"></div></div>'+
+     '<div class="muted" style="text-align:left;padding:0">'+Math.round(usedMin/60)+' h réalisées sur '+Math.round(capMin/60)+' h ouvrées (période).</div>'+
+     '<div class="warn-data">Estimation basée sur le temps des prestations réalisées rapporté aux heures d\'ouverture (hors no‑shows et temps morts).</div>';
+  return h+'</div>';
 }
 
 function render(){
@@ -303,6 +524,8 @@ function render(){
   var prest=topPrestations(ps), cli=topClients(ps), m=monthly(), dorm=dormants();
 
   var html='';
+  // Périmètre
+  html+='<div class="scope">📋 <b>Périmètre</b> : ces statistiques portent sur les <b>clients inscrits au programme de fidélité</b> (les seuls enregistrés dans KuT). Les clients de passage non inscrits ne sont pas comptabilisés.</div>';
   // KPI
   html+='<div class="kpi-grid">'+
     '<div class="kpi"><div class="k">Chiffre d\'affaires</div><div class="v">'+eur0(k.ca)+'</div>'+deltaHtml+'</div>'+
@@ -311,13 +534,22 @@ function render(){
     '<div class="kpi"><div class="k">Clients servis</div><div class="v">'+k.clients+'</div></div>'+
     '</div>';
 
+  // Progression commerciale (5 leviers + comparaisons M-1 / N-1 + tendance)
+  html+=renderProgression();
+
   // Graphe 12 mois
   html+='<div class="panel"><div class="panel-title">Chiffre d\'affaires<span class="pt-sub">12 derniers mois</span></div>'+bars(m)+'</div>';
 
-  // Top prestations
+  // Top prestations (par CA)
   prest.forEach(function(r){r._v=r.ca;});
-  html+='<div class="panel"><div class="panel-title">Prestations les plus rentables<span class="pt-sub">sur la période</span></div>'+
+  html+='<div class="panel"><div class="panel-title">Prestations les plus rentables<span class="pt-sub">par CA sur la période</span></div>'+
     rankList(prest, function(r){return eur0(r.ca);}, function(r){return '×'+r.count;})+'</div>';
+
+  // Rentabilité par temps (CA / heure)
+  html+=renderRentabilite(ps);
+
+  // Taux d'occupation de l'agenda
+  html+=renderOccupation(ps);
 
   // Top clients
   cli.forEach(function(r){r._v=r.ca;});

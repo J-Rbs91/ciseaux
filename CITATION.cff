@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+title: KuT
+message: "Si vous utilisez ce logiciel, merci de le citer comme indiqué ci-dessous."
+type: software
+authors:
+  - family-names: Ribes
+    given-names: Jérémy
+    email: ribesjeremy@gmail.com
+repository-code: "https://github.com/J-Rbs91/ciseaux"
+url: "https://j-rbs91.github.io/ciseaux/"
+abstract: >-
+  Outil open source pour salons de coiffure : CRM clients, programme de
+  fidélité configurable, clôture de caisse, statistiques, campagnes email,
+  réservations en ligne et planning d'équipe. Application 100 % statique
+  (PWA), sans backend, avec synchronisation via le Google Drive de
+  l'utilisateur.
+keywords:
+  - salon
+  - coiffure
+  - hairdresser
+  - CRM
+  - fidélité
+  - loyalty
+  - caisse
+  - réservation
+  - PWA
+  - static-site
+license: MIT
+date-released: "2026-06-22"

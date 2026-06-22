@@ -452,6 +452,11 @@ html[data-theme="dark"] .ms-opt:hover{background:#272F33!important}
     <input type="file" id="fileIn" accept=".json" style="display:none" onchange="doImport(event)">
     <div class="status" id="fileSt"></div>
 
+    <div class="sep"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M12,2A10,10,0,1,0,22,12,1,1,0,0,0,20,12a8,8,0,1,1-2.3-5.6V8a1,1,0,0,0,2,0V3a1,1,0,0,0-1-1H14a1,1,0,0,0,0,2h2.4A10,10,0,0,0,12,2Zm-.2,5a1,1,0,0,0-1,1v4a1,1,0,0,0,.4.8l3,2.2a1,1,0,0,0,1.2-1.6L12.8,11.5V8A1,1,0,0,0,11.8,7Z"></path></svg> Guide</div>
+    <div class="row">
+      <button class="btn btn-outline" type="button" onclick="closeModal();if(window.ktReplayGuide)ktReplayGuide();"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M12,2A10,10,0,1,0,22,12,1,1,0,0,0,20,12a8,8,0,1,1-2.3-5.6V8a1,1,0,0,0,2,0V3a1,1,0,0,0-1-1H14a1,1,0,0,0,0,2h2.4A10,10,0,0,0,12,2Zm-.2,5a1,1,0,0,0-1,1v4a1,1,0,0,0,.4.8l3,2.2a1,1,0,0,0,1.2-1.6L12.8,11.5V8A1,1,0,0,0,11.8,7Z"></path></svg> Revoir le guide</button>
+    </div>
+
     <div style="margin-top:1.5rem;display:flex;gap:.7rem">
       <button class="btn btn-primary btn-full" onclick="saveProfil()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M18.71,7.21a1,1,0,0,0-1.42,0L9.84,14.67,6.71,11.53A1,1,0,1,0,5.29,13l3.84,3.84a1,1,0,0,0,1.42,0l8.16-8.16A1,1,0,0,0,18.71,7.21Z"></path></svg> Enregistrer</button>
       <button class="btn btn-outline" onclick="closeModal()">Annuler</button>

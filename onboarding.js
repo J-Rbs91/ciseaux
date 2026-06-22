@@ -246,11 +246,6 @@
       ".kt-replay:hover{background:#e1e7e4}" +
       ".kt-next{background:#A22C29;color:#fff}" +
       ".kt-next:hover{background:#8a2422}" +
-      // Bouton « Revoir le guide » (accueil).
-      ".kt-replaybtn{position:fixed;left:14px;bottom:14px;z-index:9000;background:#1C2321;color:#fff;border:none;" +
-      "border-radius:22px;padding:.55rem .95rem;font-size:.8rem;font-weight:700;font-family:inherit;cursor:pointer;" +
-      "box-shadow:0 4px 16px rgba(28,35,33,.28);display:flex;align-items:center;gap:.4rem;opacity:.92}" +
-      ".kt-replaybtn:hover{opacity:1}" +
       // Mode sombre
       'html[data-theme="dark"] .kt-pop{background:#1F2528;color:#E7ECEE;border-color:rgba(255,255,255,.08)}' +
       'html[data-theme="dark"] .kt-text{color:#9AA6AE}' +
@@ -259,8 +254,7 @@
       'html[data-theme="dark"] .kt-bar{background:#2a3236}' +
       'html[data-theme="dark"] .kt-sh{background:#2a3236}' +
       'html[data-theme="dark"] .kt-dot{background:#3a4347}' +
-      'html[data-theme="dark"] .kt-skip{color:#7f8c94}' +
-      'html[data-theme="dark"] .kt-replaybtn{background:#0E1214}';
+      'html[data-theme="dark"] .kt-skip{color:#7f8c94}';
     var st = document.createElement("style");
     st.id = "kt-tour-css";
     st.textContent = css;
@@ -828,20 +822,9 @@
     }
   }
 
-  // ── Bouton « Revoir le guide » (accueil) ─────────────────────────────────
+  // ── Hook « Revoir le guide » (déclenché depuis les réglages « Mon salon ») ──
   function injectReplay() {
-    if (PAGE !== "index.html") return;
-    if (document.getElementById("kt-replaybtn")) return;
-    injectCSS();
-    var b = document.createElement("button");
-    b.id = "kt-replaybtn";
-    b.className = "kt-replaybtn";
-    b.type = "button";
-    b.innerHTML =
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M12,2A10,10,0,1,0,22,12,1,1,0,0,0,20,12a8,8,0,1,1-2.3-5.6V8a1,1,0,0,0,2,0V3a1,1,0,0,0-1-1H14a1,1,0,0,0,0,2h2.4A10,10,0,0,0,12,2Zm-.2,5a1,1,0,0,0-1,1v4a1,1,0,0,0,.4.8l3,2.2a1,1,0,0,0,1.2-1.6L12.8,11.5V8A1,1,0,0,0,11.8,7Z"></path></svg>' +
-      "Revoir le guide";
-    b.addEventListener("click", function () { start(0); });
-    document.body.appendChild(b);
+    window.ktReplayGuide = function () { start(0); };
   }
 
   // ── Démarrage ────────────────────────────────────────────────────────────

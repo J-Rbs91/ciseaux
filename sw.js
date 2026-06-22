@@ -1,6 +1,6 @@
 // Service worker KuT — installabilité PWA + cache hors-ligne du shell.
 // Incrémenter la version à chaque déploiement pour forcer la mise à jour.
-const CACHE = "kut-v8";
+const CACHE = "kut-v9";
 
 // Coquille de l'app pré-chargée à l'installation. Le scope est la racine
 // du site (ex. /ciseaux/), donc les chemins sont relatifs à celle-ci.

@@ -488,8 +488,8 @@ function renderKeyAlerts(salonJours){
       if(ce!=null&&sc!=null&&ce>=sc)closeCov=true;
     });
     if(!openCov||!closeCov){
-      var manque=[];if(!openCov)manque.push('ouverture');if(!closeCov)manque.push('fermeture');
-      pbs.push(d[1]+' : aucun porteur de clés à l\''+manque.join(' / la '));
+      var manque=[];if(!openCov)manque.push('à l\'ouverture');if(!closeCov)manque.push('à la fermeture');
+      pbs.push(d[1]+' : aucun porteur de clés '+manque.join(' ni '));
     }
   });
   box.innerHTML=pbs.length

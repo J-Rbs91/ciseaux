@@ -92,7 +92,7 @@ html[data-theme="dark"] .share-url{background:#14181A;color:#E7ECEE;border-color
 
 <div class="bar">
   <button class="btn primary" onclick="reload()">↻ Actualiser</button>
-  <button class="btn" onclick="openAgenda()">⚙ Réglages agenda</button>
+  <a class="btn" href="planning.html">⚙ Planning &amp; agenda</a>
   <button class="btn" onclick="openShare()">🔗 Lien de réservation</button>
   <span class="st" id="st"></span>
 </div>
@@ -106,48 +106,6 @@ html[data-theme="dark"] .share-url{background:#14181A;color:#E7ECEE;border-color
 </div>
 
 <div class="list" id="list"></div>
-
-<!-- Réglages agenda -->
-<div class="overlay" id="ovAgenda" onclick="bkAgenda(event)">
-  <div class="modal">
-    <div class="mh"><h2>Réglages de l'agenda</h2><button class="xbtn" onclick="closeAgenda()">&times;</button></div>
-    <div class="fld"><label>Organisation</label><select id="agMode" onchange="toggleMode()"><option value="capacite">Postes anonymes (capacité)</option><option value="collaborateurs">Collaborateurs nommés (plannings séparés)</option></select><div class="hint">« Collaborateurs » : le client peut choisir avec qui (ou « sans préférence »), chacun a ses horaires et ses prestations.</div></div>
-    <div class="fld"><label>Emails automatiques</label>
-      <label style="display:flex;gap:.45rem;align-items:center;font-weight:400;margin:.2rem 0"><input type="checkbox" id="agMailConfirm" style="width:auto"> Email de confirmation à la réservation</label>
-      <label style="display:flex;gap:.45rem;align-items:center;font-weight:400"><input type="checkbox" id="agMailRappel" style="width:auto"> Email de rappel la veille (vers 7h)</label>
-      <div class="hint">Nécessite l'autorisation Gmail du script (et, pour le rappel, le déclencheur <code>creerDeclencheurRappels</code>).</div>
-    </div>
-    <div class="grid2">
-      <div class="fld" id="capField"><label>Postes en parallèle</label><input id="agCap" type="number" min="1" step="1"><div class="hint">RDV simultanés</div></div>
-      <div class="fld"><label>Pas des créneaux</label><select id="agGran"><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="60">60 min</option></select></div>
-      <div class="fld"><label>Délai mini (min)</label><input id="agDelai" type="number" min="0" step="15"><div class="hint">Avant un RDV</div></div>
-      <div class="fld"><label>Horizon (jours)</label><input id="agHorizon" type="number" min="1" step="1"><div class="hint">Réservable à l'avance</div></div>
-    </div>
-    <div id="capSection">
-      <div class="days">
-        <div class="dayhead"><span>Jour</span><span>Ouv.</span><span>Ferm.</span><span>Pause d…</span><span>…à</span></div>
-        <div id="daysBox"></div>
-        <div class="hint">Horaires d'ouverture du salon. Laissez la pause vide s'il n'y en a pas ; décochez un jour pour le fermer. En mode collaborateurs, ces horaires bornent l'ensemble des plannings (aucun RDV hors de ces heures).</div>
-      </div>
-    </div>
-    <div class="fld" id="fermSection">
-      <label>Fermetures exceptionnelles du salon</label>
-      <div id="fermBox"></div>
-      <button class="btn" onclick="addFerm()">+ Ajouter une fermeture</button>
-      <div class="hint" style="margin-top:.4rem">Jours fériés, congés annuels… Aucune réservation possible sur ces dates (laissez la 2ᵉ date vide pour une seule journée).</div>
-    </div>
-    <div id="collabSection" style="display:none">
-      <div id="collabBox"></div>
-      <button class="btn" onclick="addCollab()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:-.18em;margin-right:.3rem" aria-hidden="true"><path d="M21,10.5H20v-1a1,1,0,0,0-2,0v1H17a1,1,0,0,0,0,2h1v1a1,1,0,0,0,2,0v-1h1a1,1,0,0,0,0-2Zm-7.7,1.72A4.92,4.92,0,0,0,15,8.5a5,5,0,0,0-10,0,4.92,4.92,0,0,0,1.7,3.72A8,8,0,0,0,2,19.5a1,1,0,0,0,2,0,6,6,0,0,1,12,0,1,1,0,0,0,2,0A8,8,0,0,0,13.3,12.22ZM10,11.5a3,3,0,1,1,3-3A3,3,0,0,1,10,11.5Z"/></svg>Ajouter un collaborateur</button>
-      <div class="hint" style="margin-top:.4rem">Chaque collaborateur a ses propres horaires (un seul RDV à la fois par personne) et ses absences/congés. Évitez de renommer un collaborateur ayant des RDV à venir.</div>
-    </div>
-    <div class="row" style="display:flex;gap:.5rem;margin-top:1rem">
-      <button class="btn primary" onclick="saveAgenda()">Enregistrer</button>
-      <button class="btn" onclick="closeAgenda()">Annuler</button>
-      <span class="st" id="agSt"></span>
-    </div>
-  </div>
-</div>
 
 <!-- Partage du lien -->
 <div class="overlay" id="ovShare" onclick="bkShare(event)">
@@ -297,215 +255,6 @@ function checkNotice(){
   }else n.style.display='none';
 }
 
-// ── Réglages agenda ──────────────────────────────────────────
-var DAYS=[['1','Lundi'],['2','Mardi'],['3','Mercredi'],['4','Jeudi'],['5','Vendredi'],['6','Samedi'],['0','Dimanche']];
-// Icônes Unicons (line) — raccord avec la DA du hub (cartes d'accueil).
-var IC_USER='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="#A22C29" style="flex:none" aria-hidden="true"><path d="M15.71,12.71a6,6,0,1,0-7.42,0,10,10,0,0,0-6.22,8.18,1,1,0,0,0,2,.22,8,8,0,0,1,15.9,0,1,1,0,0,0,1,.89h.11a1,1,0,0,0,.88-1.1A10,10,0,0,0,15.71,12.71ZM12,12a4,4,0,1,1,4-4A4,4,0,0,1,12,12Z"/></svg>';
-var IC_USERPLUS='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M21,10.5H20v-1a1,1,0,0,0-2,0v1H17a1,1,0,0,0,0,2h1v1a1,1,0,0,0,2,0v-1h1a1,1,0,0,0,0-2Zm-7.7,1.72A4.92,4.92,0,0,0,15,8.5a5,5,0,0,0-10,0,4.92,4.92,0,0,0,1.7,3.72A8,8,0,0,0,2,19.5a1,1,0,0,0,2,0,6,6,0,0,1,12,0,1,1,0,0,0,2,0A8,8,0,0,0,13.3,12.22ZM10,11.5a3,3,0,1,1,3-3A3,3,0,0,1,10,11.5Z"/></svg>';
-var IC_KEY='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="#A22C29" style="flex:none" aria-hidden="true"><path d="M21.71,6.53,20.29,5.12l1.42-1.41a1,1,0,1,0-1.42-1.42L9.75,12.83a5,5,0,1,0,1.42,1.42l4.88-4.89,1.41,1.42a1,1,0,0,0,.71.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.42L17.46,8l1.42-1.42L20.29,8a1,1,0,0,0,.71.29A1,1,0,0,0,21.71,8,1,1,0,0,0,21.71,6.53ZM7,20a3,3,0,1,1,3-3A3,3,0,0,1,7,20Z"/></svg>';
-var AG_DEF={capacite:1,granularite:15,delaiMin:60,horizonJours:30,jours:{
-  '0':{open:false,start:'09:00',end:'19:00',pause:['','']},
-  '1':{open:true,start:'09:00',end:'19:00',pause:['','']},
-  '2':{open:true,start:'09:00',end:'19:00',pause:['','']},
-  '3':{open:true,start:'09:00',end:'19:00',pause:['','']},
-  '4':{open:true,start:'09:00',end:'19:00',pause:['','']},
-  '5':{open:true,start:'09:00',end:'19:00',pause:['','']},
-  '6':{open:true,start:'09:00',end:'18:00',pause:['','']}
-}};
-var agProfil=null, collabState=[], PRESTA_NOMS=[], fermeturesState=[];
-function clone(x){return JSON.parse(JSON.stringify(x));}
-
-function openAgenda(){
-  var url=su();
-  if(!url){setSt('err','Configurez la synchro dans « Mon salon ».');return;}
-  document.getElementById('agSt').textContent='⏳ Chargement…';
-  document.getElementById('ovAgenda').classList.add('open');
-  jsonp(url,{action:'load'},function(r){
-    agProfil={};
-    if(r&&r.ok&&r.data){try{agProfil=JSON.parse(r.data)||{};}catch(e){agProfil={};}}
-    var ag=agProfil.agenda||AG_DEF;
-    PRESTA_NOMS=(Array.isArray(agProfil.prestations)?agProfil.prestations:[]).map(function(p){return String(p.nom||'').trim();}).filter(Boolean);
-    document.getElementById('agMode').value=(ag.mode==='collaborateurs')?'collaborateurs':'capacite';
-    document.getElementById('agMailConfirm').checked=(ag.mailConfirm!==false);
-    document.getElementById('agMailRappel').checked=(ag.mailRappel!==false);
-    document.getElementById('agCap').value=ag.capacite||1;
-    document.getElementById('agGran').value=String(ag.granularite||15);
-    document.getElementById('agDelai').value=(ag.delaiMin!=null?ag.delaiMin:60);
-    document.getElementById('agHorizon').value=ag.horizonJours||30;
-    document.getElementById('daysBox').innerHTML=dayRows('g',ag.jours||AG_DEF.jours);
-    collabState=Array.isArray(ag.collaborateurs)?clone(ag.collaborateurs):[];
-    fermeturesState=Array.isArray(ag.fermetures)?clone(ag.fermetures):[];
-    renderFermetures();
-    renderCollabs();
-    toggleMode();
-    document.getElementById('agSt').textContent='';
-  });
-}
-
-function toggleMode(){
-  var collab=document.getElementById('agMode').value==='collaborateurs';
-  document.getElementById('capField').style.display=collab?'none':'';
-  // Les horaires d'ouverture du salon restent visibles dans les deux modes : en mode
-  // collaborateurs ils servent de borne globale aux plannings individuels.
-  document.getElementById('collabSection').style.display=collab?'':'none';
-}
-
-// Génère les 7 lignes d'horaires (ids préfixés) pour un planning.
-function dayRows(prefix,jours){
-  return '<div class="dayhead"><span>Jour</span><span>Ouv.</span><span>Ferm.</span><span>Pause d…</span><span>…à</span></div>'+
-  DAYS.map(function(d){
-    var j=(jours&&jours[d[0]])||{open:false,start:'09:00',end:'19:00',pause:['','']};
-    var pa=Array.isArray(j.pause)?j.pause:['',''];var id=prefix+d[0];
-    return '<div class="dayrow">'+
-      '<span class="dn"><input type="checkbox" id="'+id+'_o"'+(j.open?' checked':'')+'> '+d[1]+'</span>'+
-      '<input type="time" id="'+id+'_s" value="'+esc(j.start||'09:00')+'">'+
-      '<input type="time" id="'+id+'_e" value="'+esc(j.end||'19:00')+'">'+
-      '<input type="time" id="'+id+'_pa" value="'+esc(pa[0]||'')+'">'+
-      '<input type="time" id="'+id+'_pb" value="'+esc(pa[1]||'')+'">'+
-    '</div>';
-  }).join('');
-}
-function readDays(prefix){
-  var jours={};
-  DAYS.forEach(function(d){var id=prefix+d[0];
-    jours[d[0]]={open:document.getElementById(id+'_o').checked,
-      start:document.getElementById(id+'_s').value||'09:00',
-      end:document.getElementById(id+'_e').value||'19:00',
-      pause:[document.getElementById(id+'_pa').value||'',document.getElementById(id+'_pb').value||'']};
-  });
-  return jours;
-}
-
-function prestaChecks(i,selected){
-  if(!PRESTA_NOMS.length) return '<div class="hint">Renseignez d\'abord vos prestations (page Prestations) pour les attribuer.</div>';
-  var sel={};(selected||[]).forEach(function(n){sel[String(n).trim()]=1;});
-  return '<div class="hint" style="margin:.3rem 0 .2rem">Prestations réalisées (aucune cochée = toutes) :</div>'+
-    '<div style="display:flex;flex-wrap:wrap;gap:.3rem .8rem">'+PRESTA_NOMS.map(function(nom,j){
-      return '<label style="display:flex;gap:.3rem;align-items:center;font-size:.8rem;font-weight:400"><input type="checkbox" id="cp'+i+'_'+j+'" style="width:auto"'+(sel[nom]?' checked':'')+'> '+esc(nom)+'</label>';
-    }).join('')+'</div>';
-}
-function renderCollabs(){
-  var box=document.getElementById('collabBox');
-  box.innerHTML=collabState.map(function(c,i){
-    return '<div style="border:1px solid var(--line,#e1e8e6);border-radius:10px;padding:.6rem;margin-bottom:.6rem">'+
-      '<div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.4rem">'+
-        IC_USER+
-        '<input id="cn'+i+'" value="'+esc(c.nom||'')+'" placeholder="Nom du collaborateur" style="flex:1;padding:.45rem .6rem;border:1.5px solid #c8d4da;border-radius:9px;font:inherit">'+
-        '<button class="btn btn-del" onclick="removeCollab('+i+')">Suppr.</button>'+
-      '</div>'+
-      '<label style="display:flex;gap:.45rem;align-items:center;font-weight:400;font-size:.82rem;margin:.2rem 0 .4rem"><input type="checkbox" id="ck'+i+'" style="width:auto;flex:none"'+(c.cles?' checked':'')+'> '+IC_KEY+' A les clés du salon <span style="color:var(--muted,#5E6572)">(ouverture / fermeture)</span></label>'+
-      prestaChecks(i, c.prestations) + dayRows('c'+i+'_', c.jours||AG_DEF.jours) + absenceSection(i, c.absences)+
-    '</div>';
-  }).join('')||'<div class="hint">Aucun collaborateur. Ajoutez-en au moins un.</div>';
-}
-// Absences / congés ponctuels d'un collaborateur (plages de dates où il n'est pas réservable).
-function absenceSection(i,list){
-  list=Array.isArray(list)?list:[];
-  return '<div class="hint" style="margin:.5rem 0 .2rem">Absences / congés (aucun RDV possible) :</div>'+
-    list.map(function(a,j){
-      return '<div style="display:flex;gap:.4rem;align-items:center;margin:.2rem 0">'+
-        '<input type="date" id="ca'+i+'_d'+j+'" value="'+esc((a&&a.debut)||'')+'" style="flex:1">'+
-        '<span style="color:var(--muted,#5E6572)">→</span>'+
-        '<input type="date" id="ca'+i+'_f'+j+'" value="'+esc((a&&a.fin)||'')+'" style="flex:1">'+
-        '<button type="button" class="btn btn-del" onclick="removeAbsence('+i+','+j+')">✕</button>'+
-      '</div>';
-    }).join('')+
-    '<button type="button" class="btn" onclick="addAbsence('+i+')" style="margin-top:.2rem">+ Absence</button>';
-}
-function readAbsences(i){
-  var list=(collabState[i]&&Array.isArray(collabState[i].absences))?collabState[i].absences:[];
-  var out=[];
-  for(var j=0;j<list.length;j++){
-    var d=document.getElementById('ca'+i+'_d'+j), f=document.getElementById('ca'+i+'_f'+j);
-    out.push({debut:d?d.value:'', fin:f?f.value:''});   // on conserve les lignes vides pendant l'édition
-  }
-  return out;
-}
-function addAbsence(i){ syncCollabState(); collabState[i].absences=(collabState[i].absences||[]).concat([{debut:'',fin:''}]); renderCollabs(); }
-function removeAbsence(i,j){ syncCollabState(); (collabState[i].absences||[]).splice(j,1); renderCollabs(); }
-function readPrestas(i){
-  var out=[];PRESTA_NOMS.forEach(function(nom,j){var el=document.getElementById('cp'+i+'_'+j);if(el&&el.checked)out.push(nom);});
-  return out;
-}
-function syncCollabState(){
-  collabState=collabState.map(function(c,i){
-    var nEl=document.getElementById('cn'+i);
-    var clEl=document.getElementById('ck'+i);
-    return { nom:(nEl?nEl.value:c.nom)||'', jours:readDays('c'+i+'_'), prestations:readPrestas(i), absences:readAbsences(i), cles:clEl?clEl.checked:!!c.cles };
-  });
-}
-function addCollab(){
-  syncCollabState();
-  var tmpl=document.getElementById('daysBox')?readDays('g'):clone(AG_DEF.jours);
-  collabState.push({nom:'',jours:tmpl});
-  renderCollabs();
-}
-function removeCollab(i){ syncCollabState(); collabState.splice(i,1); renderCollabs(); }
-
-// ── Fermetures exceptionnelles du salon (jours fériés, congés annuels…) ──
-function renderFermetures(){
-  var box=document.getElementById('fermBox');
-  box.innerHTML=fermeturesState.map(function(a,j){
-    return '<div style="display:flex;gap:.4rem;align-items:center;margin:.2rem 0">'+
-      '<input type="date" id="fm_d'+j+'" value="'+esc((a&&a.debut)||'')+'" style="flex:1">'+
-      '<span style="color:var(--muted,#5E6572)">→</span>'+
-      '<input type="date" id="fm_f'+j+'" value="'+esc((a&&a.fin)||'')+'" style="flex:1">'+
-      '<button type="button" class="btn btn-del" onclick="removeFerm('+j+')">✕</button>'+
-    '</div>';
-  }).join('')||'<div class="hint">Aucune fermeture exceptionnelle.</div>';
-}
-function readFerm(){
-  var out=[];
-  for(var j=0;j<fermeturesState.length;j++){
-    var d=document.getElementById('fm_d'+j), f=document.getElementById('fm_f'+j);
-    out.push({debut:d?d.value:'', fin:f?f.value:''});
-  }
-  return out;
-}
-function addFerm(){ fermeturesState=readFerm(); fermeturesState.push({debut:'',fin:''}); renderFermetures(); }
-function removeFerm(j){ fermeturesState=readFerm(); fermeturesState.splice(j,1); renderFermetures(); }
-
-function saveAgenda(){
-  var url=su();if(!url)return;
-  var mode=document.getElementById('agMode').value==='collaborateurs'?'collaborateurs':'capacite';
-  syncCollabState();
-  // Ne garde que les plages avec une date de début ; borne la fin par défaut sur le début.
-  function cleanPlages(list){
-    return (Array.isArray(list)?list:[]).filter(function(a){return a&&a.debut;})
-      .map(function(a){return {debut:a.debut, fin:(a.fin&&a.fin>=a.debut)?a.fin:a.debut};});
-  }
-  var collaborateurs=collabState.filter(function(c){return String(c.nom||'').trim();})
-    .map(function(c){return {nom:String(c.nom).trim(),jours:c.jours,prestations:(c.prestations||[]),absences:cleanPlages(c.absences),cles:!!c.cles};});
-  if(mode==='collaborateurs'){
-    if(!collaborateurs.length){document.getElementById('agSt').textContent='Ajoutez au moins un collaborateur.';return;}
-    var noms={},dup=false;
-    collaborateurs.forEach(function(c){var k=c.nom.toLowerCase();if(noms[k])dup=true;noms[k]=1;});
-    if(dup){document.getElementById('agSt').textContent='Deux collaborateurs portent le même nom.';return;}
-  }
-  var ag={
-    mode:mode,
-    formUrl:location.href.split('?')[0].replace(/[^/]*$/,'')+'reservation.html',  // base du formulaire (liens emails)
-    mailConfirm:document.getElementById('agMailConfirm').checked,
-    mailRappel:document.getElementById('agMailRappel').checked,
-    capacite:Math.max(1,parseInt(document.getElementById('agCap').value,10)||1),
-    granularite:parseInt(document.getElementById('agGran').value,10)||15,
-    delaiMin:Math.max(0,parseInt(document.getElementById('agDelai').value,10)||0),
-    horizonJours:Math.max(1,parseInt(document.getElementById('agHorizon').value,10)||30),
-    jours:readDays('g'),
-    collaborateurs:collaborateurs,
-    fermetures:cleanPlages(readFerm())
-  };
-  if(!agProfil||typeof agProfil!=='object')agProfil={};
-  agProfil.agenda=ag;
-  document.getElementById('agSt').textContent='⏳ …';
-  jsonp(url,{action:'save',data:JSON.stringify(agProfil)},function(r){
-    if(r&&r.ok){document.getElementById('agSt').textContent='✓ Enregistré';setTimeout(closeAgenda,900);}
-    else document.getElementById('agSt').textContent='Échec : '+((r&&r.error)||'inconnue');
-  });
-}
-function closeAgenda(){document.getElementById('ovAgenda').classList.remove('open');}
-function bkAgenda(e){if(e.target===document.getElementById('ovAgenda'))closeAgenda();}
-
 // ── Partage du lien ──────────────────────────────────────────
 function shareLink(){
   var base=location.href.replace(/[^/]*$/,'');
@@ -529,8 +278,6 @@ function closeShare(){document.getElementById('ovShare').classList.remove('open'
 function bkShare(e){if(e.target===document.getElementById('ovShare'))closeShare();}
 
 reload();
-// Ouverture directe des réglages d'agenda/planning depuis le hub d'accueil (carte « Planning équipe »).
-(function(){try{if(new URLSearchParams(location.search).get('agenda'))openAgenda();}catch(e){}})();
 </script>
 <script>
 (function(){

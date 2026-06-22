@@ -152,12 +152,19 @@ collaborateur, des **absences/congés ponctuels** (`collaborateur.absences`) : s
 réservation n'est proposée (ni acceptée côté serveur). Chaque plage est un couple
 `{debut, fin}` au format `YYYY-MM-DD` (fin incluse ; égale au début pour une seule journée).
 
-On peut aussi cocher, par collaborateur, qu'il **a les clés du salon** (`collaborateur.cles`) :
-information interne (jamais exposée au public) pratique pour gérer les ouvertures/fermetures
-dans les grosses équipes.
+On peut aussi, par collaborateur :
+- cocher qu'il **a les clés du salon** (`collaborateur.cles`) — info interne (jamais exposée au
+  public). La **vue globale** alerte si, un jour ouvré, aucun porteur de clés ne couvre
+  l'ouverture ou la fermeture (dysfonctionnement de planning) ;
+- saisir son **temps de travail hebdomadaire contractuel** (`collaborateur.contratHebdo`, en
+  **minutes**). La vue globale calcule le **total hebdomadaire** réellement planifié (matin +
+  après-midi, hors pause) et l'**écart au contrat** (heures supplémentaires ou manquantes).
 
-Ces réglages sont accessibles depuis le **hub d'accueil** (carte **« Planning équipe »**) comme
-depuis la page **Réservations → ⚙ Réglages agenda**.
+Ces réglages vivent sur une **page dédiée `planning.html`** (carte **« Planning équipe »** du hub
+d'accueil), qui présente une **vue globale de la semaine** (magasin + équipe) en plus de l'édition
+détaillée. La page **Réservations** y renvoie via le bouton **« ⚙ Planning & agenda »**. Ces champs
+sont purement informatifs côté gestion : ils ne sont pas exposés au formulaire public et n'entrent
+pas dans le calcul des créneaux.
 
 Tout est enregistré dans le profil (`profil.agenda`) et synchronisé.
 

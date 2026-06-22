@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'">
+<title>Planning équipe — KuT</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="theme-color" content="#1C2321">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script defer src="pwa.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Manrope",-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#EEF1EF;color:#1C2321;min-height:100vh;padding-bottom:4rem}
+header{background:#1C2321;color:#fff;padding:1rem 1.2rem;display:flex;align-items:center;gap:.8rem;position:sticky;top:0;z-index:20}
+.back{color:#fff;text-decoration:none;font-size:1.3rem;opacity:.85;line-height:1;padding:.2rem}
+.back:hover{opacity:1}
+h1{font-size:1.08rem;font-weight:800;flex:1}
+.wrap{max-width:680px;margin:0 auto;padding:1rem 1.1rem 2rem}
+.card{background:#fff;border:1px solid #e1e8e6;border-radius:16px;padding:1.1rem 1.2rem 1.3rem;margin-bottom:1rem;box-shadow:0 1px 8px rgba(28,35,33,.06)}
+.card h2{font-size:.96rem;font-weight:800;margin-bottom:.2rem;display:flex;align-items:center;gap:.45rem}
+.card .sub{font-size:.78rem;color:#5E6572;margin:0 0 .7rem}
+.btn{border:1.5px solid #c8d4da;background:#fff;color:#1C2321;border-radius:18px;padding:.45rem .9rem;font:inherit;font-size:.8rem;font-weight:700;cursor:pointer}
+.btn:hover{background:#f3f6f5}
+.btn.primary{background:#A22C29;border-color:#A22C29;color:#fff}
+.btn.primary:hover{background:#8a2422}
+.btn-del{border-color:#E0635D;color:#E0635D}
+.st{font-size:.8rem;color:#5E6572}.st.err{color:#A22C29}
+.fld{margin:.6rem 0}
+.fld label{display:block;font-weight:700;font-size:.82rem;margin-bottom:.25rem}
+.fld input,.fld select{width:100%;padding:.5rem .6rem;border:1.5px solid #c8d4da;border-radius:9px;font:inherit;background:#fff;color:#1C2321}
+.hint{font-size:.74rem;color:#A9B4C2;margin-top:.25rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.days{margin-top:.5rem}
+.dayrow{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.4rem;font-size:.8rem}
+.dayrow .dn{display:flex;align-items:center;gap:.35rem;font-weight:700}
+.dayrow input[type=time]{width:100%;padding:.35rem .3rem;border:1.5px solid #c8d4da;border-radius:8px;font:inherit;font-size:.78rem;background:#fff;color:#1C2321}
+.dayhead{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;gap:.4rem;font-size:.68rem;color:#A9B4C2;font-weight:700;margin:.3rem 0}
+.collab{border:1px solid #e1e8e6;border-radius:12px;padding:.7rem;margin-bottom:.7rem}
+table.grid{border-collapse:collapse;font-size:.72rem;white-space:nowrap}
+table.grid th,table.grid td{border:1px solid #d7dedb;padding:.3rem .4rem;text-align:center}
+table.grid .corner,table.grid .who{text-align:left;font-weight:800;background:#f5f8fa;position:sticky;left:0;z-index:1}
+table.grid .dayhd{background:#cfe3cf;font-weight:800}
+table.grid .dayhd.closed{background:#f0caca}
+table.grid .mk{background:#eef3ee;color:#5E6572;font-weight:700;font-size:.68rem}
+table.grid .mk.closed{background:#f6dede}
+table.grid td.off{background:#c9cfcd;color:transparent}
+table.grid td.work{background:#e7eef4}
+table.grid .magasin td.work{background:#dfe9df}
+table.grid .tot{font-weight:800;background:#f5f8fa}
+table.grid .ecart.neg{background:#e23b34;color:#fff;font-weight:800}
+table.grid .ecart.pos{background:#e8f5ec;color:#1f7a44;font-weight:800}
+table.grid .ecart.zero{background:#f5f8fa;font-weight:700}
+.alert{background:#fbeaea;border:1px solid #f0caca;color:#A22C29;border-radius:10px;padding:.6rem .8rem;font-size:.8rem;margin-bottom:.6rem}
+.alert ul{margin:.3rem 0 0 1.1rem}
+.alert.ok{background:#e8f5ec;border-color:#bfe6cd;color:#1f7a44}
+html[data-theme="dark"] table.grid th,html[data-theme="dark"] table.grid td{border-color:#3a4449}
+html[data-theme="dark"] table.grid .corner,html[data-theme="dark"] table.grid .who,html[data-theme="dark"] table.grid .tot{background:#272f33;color:#E7ECEE}
+html[data-theme="dark"] table.grid td.off{background:#3a4146;color:transparent}
+html[data-theme="dark"] table.grid td.work{background:#1d2c38}
+html[data-theme="dark"] table.grid .magasin td.work{background:#22301f}
+html[data-theme="dark"] table.grid .mk{background:#232a2e;color:#9AA6AE}
+.savebar{position:sticky;bottom:0;background:#EEF1EF;padding:.8rem 0;display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+.theme-toggle{width:38px;height:38px;border-radius:50%;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.18);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;transition:background .15s}
+.theme-toggle:hover{background:rgba(255,255,255,.28)}
+html[data-theme="dark"] body{background:#14181A;color:#E7ECEE}
+html[data-theme="dark"] .card{background:#1F2528;border-color:#313A3F;box-shadow:0 1px 8px rgba(0,0,0,.4)}
+html[data-theme="dark"] .card .sub{color:#9AA6AE}
+html[data-theme="dark"] .btn{background:#1F2528;color:#E7ECEE;border-color:#313A3F}
+html[data-theme="dark"] .btn:hover{background:#272F33}
+html[data-theme="dark"] .btn.primary{background:#A22C29;border-color:#A22C29;color:#fff}
+html[data-theme="dark"] .st{color:#9AA6AE}
+html[data-theme="dark"] .collab{border-color:#313A3F}
+html[data-theme="dark"] .fld input,html[data-theme="dark"] .fld select,html[data-theme="dark"] .dayrow input[type=time],html[data-theme="dark"] input[type=date]{background:#14181A;color:#E7ECEE;border-color:#313A3F}
+html[data-theme="dark"] .savebar{background:#14181A}
+</style>
+<script>(function(){try{if(localStorage.getItem("kut-theme")==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();</script>
+</head>
+<body>
+<header>
+  <a href="index.html" class="back" aria-label="Retour"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" style="display:block" aria-hidden="true"><path d="M13.41,12l3.3-3.29a1,1,0,1,0-1.42-1.42l-4,4a1,1,0,0,0,0,1.42l4,4a1,1,0,0,0,1.42,0,1,1,0,0,0,0-1.42ZM8,7A1,1,0,0,0,7,8v8a1,1,0,0,0,2,0V8A1,1,0,0,0,8,7Z"></path></svg></a>
+  <h1>Planning équipe</h1>
+</header>
+
+<div class="wrap">
+  <div id="notConfigured" class="card" style="display:none">
+    <h2>Synchro non configurée</h2>
+    <p class="sub">Renseignez d'abord l'URL de votre script (page d'accueil → <strong>Mon salon</strong> → Synchro Google Drive) pour gérer le planning de l'équipe.</p>
+    <a class="btn primary" href="index.html">← Configurer « Mon salon »</a>
+  </div>
+
+  <div id="editor" style="display:none">
+    <!-- Vue globale de la semaine -->
+    <div class="card">
+      <h2>Vue globale de la semaine</h2>
+      <p class="sub">Présence de l'équipe sur une semaine type (matin / après-midi, à la minute près), total hebdomadaire et écart au contrat. Modifiez les plannings plus bas, puis rafraîchissez.</p>
+      <div id="keyAlert"></div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table id="gridTable" class="grid"></table></div>
+      <button class="btn" onclick="refreshGrid()" style="margin-top:.6rem">↻ Rafraîchir la vue</button>
+    </div>
+
+    <!-- Organisation & créneaux -->
+    <div class="card">
+      <h2>Organisation</h2>
+      <div class="fld"><label>Mode</label>
+        <select id="agMode" onchange="toggleMode()">
+          <option value="capacite">Postes anonymes (capacité)</option>
+          <option value="collaborateurs">Collaborateurs nommés (plannings séparés)</option>
+        </select>
+        <div class="hint">« Collaborateurs » : le client peut choisir avec qui (ou « sans préférence »), chacun a ses horaires, ses prestations et ses absences.</div>
+      </div>
+      <div class="grid2">
+        <div class="fld" id="capField"><label>Postes en parallèle</label><input id="agCap" type="number" min="1" step="1"><div class="hint">RDV simultanés</div></div>
+        <div class="fld"><label>Pas des créneaux</label><select id="agGran"><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="60">60 min</option></select></div>
+        <div class="fld"><label>Délai mini (min)</label><input id="agDelai" type="number" min="0" step="5"><div class="hint">Avant un RDV</div></div>
+        <div class="fld"><label>Horizon (jours)</label><input id="agHorizon" type="number" min="1" step="1"><div class="hint">Réservable à l'avance</div></div>
+      </div>
+      <div class="fld"><label>Emails automatiques</label>
+        <label style="display:flex;gap:.45rem;align-items:center;font-weight:400;margin:.2rem 0"><input type="checkbox" id="agMailConfirm" style="width:auto"> Email de confirmation à la réservation</label>
+        <label style="display:flex;gap:.45rem;align-items:center;font-weight:400"><input type="checkbox" id="agMailRappel" style="width:auto"> Email de rappel la veille (vers 7h)</label>
+        <div class="hint">Nécessite l'autorisation Gmail du script (et, pour le rappel, le déclencheur <code>creerDeclencheurRappels</code>).</div>
+      </div>
+    </div>
+
+    <!-- Horaires habituels du salon -->
+    <div class="card" id="capSection">
+      <h2>Horaires habituels du salon</h2>
+      <p class="sub">Heure d'ouverture / fermeture et pause éventuelle, à la minute près. Décochez un jour pour le fermer. En mode collaborateurs, ces horaires bornent l'ensemble des plannings.</p>
+      <div class="days">
+        <div class="dayhead"><span>Jour</span><span>Ouv.</span><span>Ferm.</span><span>Pause d…</span><span>…à</span></div>
+        <div id="daysBox"></div>
+      </div>
+    </div>
+
+    <!-- Fermetures exceptionnelles -->
+    <div class="card">
+      <h2>Fermetures exceptionnelles</h2>
+      <p class="sub">Jours fériés, congés annuels… Aucune réservation possible sur ces dates (laissez la 2ᵉ date vide pour une seule journée).</p>
+      <div id="fermBox"></div>
+      <button class="btn" onclick="addFerm()" style="margin-top:.5rem">+ Ajouter une fermeture</button>
+    </div>
+
+    <!-- Équipe & plannings -->
+    <div class="card" id="collabSection" style="display:none">
+      <h2>Équipe &amp; plannings</h2>
+      <p class="sub">Pour chaque collaborateur : ses prestations, sa présence hebdomadaire (à la minute près) et ses absences/congés. Un seul RDV à la fois par personne.</p>
+      <div id="collabBox"></div>
+      <button class="btn" onclick="addCollab()">+ Ajouter un collaborateur</button>
+    </div>
+
+    <div class="savebar">
+      <button class="btn primary" onclick="savePlanning()">Enregistrer le planning</button>
+      <span class="st" id="agSt"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+var LS_S='sync-url-v1', LS_K='admin-key-v1';
+function su(){return(localStorage.getItem(LS_S)||'').trim();}
+function ak(){return(localStorage.getItem(LS_K)||'').trim();}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function setSt(cls,msg){var e=document.getElementById('agSt');e.className='st '+(cls||'');e.textContent=msg||'';}
+
+// POST d'abord (clé admin dans le corps, hors URL/journaux) ; repli JSONP si échec.
+function jsonp(base,params,cb){
+  if(!('key' in params)){var k=ak();if(k)params.key=k;}
+  if(typeof fetch==='function'){
+    var fini=false,secours=setTimeout(function(){if(!fini){fini=true;jsonpRaw(base,params,cb);}},12000);
+    fetch(base,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(params),redirect:'follow'})
+      .then(function(r){return r.text();})
+      .then(function(txt){if(fini)return;var data;try{data=JSON.parse(txt);}catch(e){fini=true;clearTimeout(secours);jsonpRaw(base,params,cb);return;}fini=true;clearTimeout(secours);cb(data);})
+      .catch(function(){if(!fini){fini=true;clearTimeout(secours);jsonpRaw(base,params,cb);}});
+    return;
+  }
+  jsonpRaw(base,params,cb);
+}
+function jsonpRaw(base,params,cb){
+  if(!('key' in params)){var k=ak();if(k)params.key=k;}
+  var name='cb_'+Date.now()+'_'+Math.floor(Math.random()*1e6);
+  var s=document.createElement('script'),done=false;
+  var t=setTimeout(function(){if(!done)fin({ok:false,error:'délai dépassé'});},20000);
+  function fin(r){done=true;clearTimeout(t);try{delete window[name];}catch(e){window[name]=undefined;}if(s.parentNode)s.parentNode.removeChild(s);cb(r);}
+  window[name]=function(r){fin(r);};
+  s.onerror=function(){fin({ok:false,error:'réseau'});};
+  var q=[];for(var k in params)if(params.hasOwnProperty(k))q.push(encodeURIComponent(k)+'='+encodeURIComponent(params[k]));
+  q.push('callback='+name);
+  s.src=base+(base.indexOf('?')>=0?'&':'?')+q.join('&');
+  document.body.appendChild(s);
+}
+
+// ── Données & icônes ─────────────────────────────────────────
+var DAYS=[['1','Lundi'],['2','Mardi'],['3','Mercredi'],['4','Jeudi'],['5','Vendredi'],['6','Samedi'],['0','Dimanche']];
+var IC_USER='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="#A22C29" style="flex:none" aria-hidden="true"><path d="M15.71,12.71a6,6,0,1,0-7.42,0,10,10,0,0,0-6.22,8.18,1,1,0,0,0,2,.22,8,8,0,0,1,15.9,0,1,1,0,0,0,1,.89h.11a1,1,0,0,0,.88-1.1A10,10,0,0,0,15.71,12.71ZM12,12a4,4,0,1,1,4-4A4,4,0,0,1,12,12Z"/></svg>';
+var IC_KEY='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="#A22C29" style="flex:none" aria-hidden="true"><path d="M21.71,6.53,20.29,5.12l1.42-1.41a1,1,0,1,0-1.42-1.42L9.75,12.83a5,5,0,1,0,1.42,1.42l4.88-4.89,1.41,1.42a1,1,0,0,0,.71.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.42L17.46,8l1.42-1.42L20.29,8a1,1,0,0,0,.71.29A1,1,0,0,0,21.71,8,1,1,0,0,0,21.71,6.53ZM7,20a3,3,0,1,1,3-3A3,3,0,0,1,7,20Z"/></svg>';
+var AG_DEF={capacite:1,granularite:15,delaiMin:60,horizonJours:30,jours:{
+  '0':{open:false,start:'09:00',end:'19:00',pause:['','']},
+  '1':{open:true,start:'09:00',end:'19:00',pause:['','']},
+  '2':{open:true,start:'09:00',end:'19:00',pause:['','']},
+  '3':{open:true,start:'09:00',end:'19:00',pause:['','']},
+  '4':{open:true,start:'09:00',end:'19:00',pause:['','']},
+  '5':{open:true,start:'09:00',end:'19:00',pause:['','']},
+  '6':{open:true,start:'09:00',end:'18:00',pause:['','']}
+}};
+var agProfil=null, collabState=[], PRESTA_NOMS=[], fermeturesState=[];
+function clone(x){return JSON.parse(JSON.stringify(x));}
+
+// ── Helpers durées (à la minute près) ────────────────────────
+function hm(s){var m=String(s||'').match(/^(\d{1,2}):(\d{2})/);return m?(+m[1])*60+(+m[2]):null;}
+// Contrat hebdo : on accepte « 35 », « 35:30 » ou « 35h30 ». Stocké en minutes.
+function parseDur(s){
+  s=String(s==null?'':s).trim().replace('h',':').replace(/:$/,':00');
+  var m=s.match(/^(\d{1,3})(?::(\d{1,2}))?$/);
+  if(!m)return 0;
+  return (+m[1])*60+(m[2]?(+m[2]):0);
+}
+function fmtDur(min){min=Math.round(min||0);var sg=min<0?'-':'';min=Math.abs(min);var h=Math.floor(min/60),m=min%60;return sg+h+':'+(m<10?'0':'')+m;}
+// Minutes travaillées un jour donné (matin + après-midi, hors pause).
+function dayMinutes(j){
+  if(!j||!j.open)return 0;
+  var s=hm(j.start),e=hm(j.end);if(s==null||e==null||e<=s)return 0;
+  var pa=Array.isArray(j.pause)?j.pause:['',''];var pd=hm(pa[0]),pf=hm(pa[1]);
+  var tot=e-s;
+  if(pd!=null&&pf!=null&&pf>pd&&pd>=s&&pf<=e)tot-=(pf-pd);
+  return tot;
+}
+function weekMinutes(jours){var t=0;DAYS.forEach(function(d){t+=dayMinutes(jours&&jours[d[0]]);});return t;}
+
+// ── Chargement ───────────────────────────────────────────────
+function loadPlanning(){
+  var url=su();
+  if(!url){document.getElementById('notConfigured').style.display='';return;}
+  document.getElementById('editor').style.display='';
+  setSt('','⏳ Chargement…');
+  jsonp(url,{action:'load'},function(r){
+    agProfil={};
+    if(r&&r.ok&&r.data){try{agProfil=JSON.parse(r.data)||{};}catch(e){agProfil={};}}
+    var ag=agProfil.agenda||AG_DEF;
+    PRESTA_NOMS=(Array.isArray(agProfil.prestations)?agProfil.prestations:[]).map(function(p){return String(p.nom||'').trim();}).filter(Boolean);
+    document.getElementById('agMode').value=(ag.mode==='collaborateurs')?'collaborateurs':'capacite';
+    document.getElementById('agMailConfirm').checked=(ag.mailConfirm!==false);
+    document.getElementById('agMailRappel').checked=(ag.mailRappel!==false);
+    document.getElementById('agCap').value=ag.capacite||1;
+    document.getElementById('agGran').value=String(ag.granularite||15);
+    document.getElementById('agDelai').value=(ag.delaiMin!=null?ag.delaiMin:60);
+    document.getElementById('agHorizon').value=ag.horizonJours||30;
+    document.getElementById('daysBox').innerHTML=dayRows('g',ag.jours||AG_DEF.jours);
+    collabState=Array.isArray(ag.collaborateurs)?clone(ag.collaborateurs):[];
+    fermeturesState=Array.isArray(ag.fermetures)?clone(ag.fermetures):[];
+    renderFermetures();
+    renderCollabs();
+    toggleMode();
+    setSt('','');
+  });
+}
+
+function toggleMode(){
+  var collab=document.getElementById('agMode').value==='collaborateurs';
+  document.getElementById('capField').style.display=collab?'none':'';
+  // Les horaires d'ouverture du salon restent visibles dans les deux modes : en mode
+  // collaborateurs ils servent de borne globale aux plannings individuels.
+  document.getElementById('collabSection').style.display=collab?'':'none';
+  refreshGrid();
+}
+
+// Génère les 7 lignes d'horaires (ids préfixés) pour un planning hebdomadaire (à la minute près).
+function dayRows(prefix,jours){
+  return '<div class="dayhead"><span>Jour</span><span>Ouv.</span><span>Ferm.</span><span>Pause d…</span><span>…à</span></div>'+
+  DAYS.map(function(d){
+    var j=(jours&&jours[d[0]])||{open:false,start:'09:00',end:'19:00',pause:['','']};
+    var pa=Array.isArray(j.pause)?j.pause:['',''];var id=prefix+d[0];
+    return '<div class="dayrow">'+
+      '<span class="dn"><input type="checkbox" id="'+id+'_o" onchange="refreshGrid()"'+(j.open?' checked':'')+'> '+d[1]+'</span>'+
+      '<input type="time" id="'+id+'_s" value="'+esc(j.start||'09:00')+'" onchange="refreshGrid()">'+
+      '<input type="time" id="'+id+'_e" value="'+esc(j.end||'19:00')+'" onchange="refreshGrid()">'+
+      '<input type="time" id="'+id+'_pa" value="'+esc(pa[0]||'')+'" onchange="refreshGrid()">'+
+      '<input type="time" id="'+id+'_pb" value="'+esc(pa[1]||'')+'" onchange="refreshGrid()">'+
+    '</div>';
+  }).join('');
+}
+function readDays(prefix){
+  var jours={};
+  DAYS.forEach(function(d){var id=prefix+d[0];
+    jours[d[0]]={open:document.getElementById(id+'_o').checked,
+      start:document.getElementById(id+'_s').value||'09:00',
+      end:document.getElementById(id+'_e').value||'19:00',
+      pause:[document.getElementById(id+'_pa').value||'',document.getElementById(id+'_pb').value||'']};
+  });
+  return jours;
+}
+
+function prestaChecks(i,selected){
+  if(!PRESTA_NOMS.length) return '<div class="hint">Renseignez d\'abord vos prestations (page Prestations) pour les attribuer.</div>';
+  var sel={};(selected||[]).forEach(function(n){sel[String(n).trim()]=1;});
+  return '<div class="hint" style="margin:.3rem 0 .2rem">Prestations réalisées (aucune cochée = toutes) :</div>'+
+    '<div style="display:flex;flex-wrap:wrap;gap:.3rem .8rem">'+PRESTA_NOMS.map(function(nom,j){
+      return '<label style="display:flex;gap:.3rem;align-items:center;font-size:.8rem;font-weight:400"><input type="checkbox" id="cp'+i+'_'+j+'" style="width:auto"'+(sel[nom]?' checked':'')+'> '+esc(nom)+'</label>';
+    }).join('')+'</div>';
+}
+function renderCollabs(){
+  var box=document.getElementById('collabBox');
+  box.innerHTML=collabState.map(function(c,i){
+    return '<div class="collab">'+
+      '<div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.4rem">'+
+        IC_USER+
+        '<input id="cn'+i+'" value="'+esc(c.nom||'')+'" placeholder="Nom du collaborateur" style="flex:1;padding:.45rem .6rem;border:1.5px solid #c8d4da;border-radius:9px;font:inherit">'+
+        '<button class="btn btn-del" onclick="removeCollab('+i+')">Suppr.</button>'+
+      '</div>'+
+      '<label style="display:flex;gap:.45rem;align-items:center;font-weight:400;font-size:.82rem;margin:.2rem 0 .4rem"><input type="checkbox" id="ck'+i+'" onchange="refreshGrid()" style="width:auto;flex:none"'+(c.cles?' checked':'')+'> '+IC_KEY+' A les clés du salon <span style="color:#5E6572">(ouverture / fermeture)</span></label>'+
+      '<div class="fld" style="margin:.3rem 0"><label style="font-size:.78rem">Temps de travail hebdomadaire (contrat)</label>'+
+        '<input type="text" id="cc'+i+'" value="'+esc(c.contratHebdo?fmtDur(c.contratHebdo):'')+'" placeholder="ex. 35:00" onchange="refreshGrid()" style="max-width:140px">'+
+        '<span id="ce'+i+'" class="hint" style="margin-left:.5rem"></span>'+
+        '<div class="hint">Format heures:minutes (ex. 35:00). Laissez vide si pas de contrat à suivre.</div></div>'+
+      prestaChecks(i, c.prestations)+
+      '<div class="hint" style="margin:.5rem 0 .2rem">Présence hebdomadaire (à la minute près) :</div>'+
+      '<div class="days">'+dayRows('c'+i+'_', c.jours||AG_DEF.jours)+'</div>'+
+      absenceSection(i, c.absences)+
+    '</div>';
+  }).join('')||'<div class="hint">Aucun collaborateur. Ajoutez-en au moins un.</div>';
+  refreshGrid();
+}
+// Absences / congés ponctuels d'un collaborateur (plages de dates où il n'est pas réservable).
+function absenceSection(i,list){
+  list=Array.isArray(list)?list:[];
+  return '<div class="hint" style="margin:.5rem 0 .2rem">Absences / congés (aucun RDV possible) :</div>'+
+    list.map(function(a,j){
+      return '<div style="display:flex;gap:.4rem;align-items:center;margin:.2rem 0">'+
+        '<input type="date" id="ca'+i+'_d'+j+'" value="'+esc((a&&a.debut)||'')+'" style="flex:1;padding:.4rem;border:1.5px solid #c8d4da;border-radius:8px;font:inherit">'+
+        '<span style="color:#5E6572">→</span>'+
+        '<input type="date" id="ca'+i+'_f'+j+'" value="'+esc((a&&a.fin)||'')+'" style="flex:1;padding:.4rem;border:1.5px solid #c8d4da;border-radius:8px;font:inherit">'+
+        '<button type="button" class="btn btn-del" onclick="removeAbsence('+i+','+j+')">✕</button>'+
+      '</div>';
+    }).join('')+
+    '<button type="button" class="btn" onclick="addAbsence('+i+')" style="margin-top:.2rem">+ Absence</button>';
+}
+function readAbsences(i){
+  var list=(collabState[i]&&Array.isArray(collabState[i].absences))?collabState[i].absences:[];
+  var out=[];
+  for(var j=0;j<list.length;j++){
+    var d=document.getElementById('ca'+i+'_d'+j), f=document.getElementById('ca'+i+'_f'+j);
+    out.push({debut:d?d.value:'', fin:f?f.value:''});   // on conserve les lignes vides pendant l'édition
+  }
+  return out;
+}
+function addAbsence(i){ syncCollabState(); collabState[i].absences=(collabState[i].absences||[]).concat([{debut:'',fin:''}]); renderCollabs(); }
+function removeAbsence(i,j){ syncCollabState(); (collabState[i].absences||[]).splice(j,1); renderCollabs(); }
+function readPrestas(i){
+  var out=[];PRESTA_NOMS.forEach(function(nom,j){var el=document.getElementById('cp'+i+'_'+j);if(el&&el.checked)out.push(nom);});
+  return out;
+}
+function syncCollabState(){
+  collabState=collabState.map(function(c,i){
+    var nEl=document.getElementById('cn'+i);
+    var clEl=document.getElementById('ck'+i);
+    var ccEl=document.getElementById('cc'+i);
+    var contrat=ccEl?parseDur(ccEl.value):(c.contratHebdo||0);
+    return { nom:(nEl?nEl.value:c.nom)||'', jours:readDays('c'+i+'_'), prestations:readPrestas(i), absences:readAbsences(i), cles:clEl?clEl.checked:!!c.cles, contratHebdo:contrat };
+  });
+}
+function addCollab(){
+  syncCollabState();
+  var tmpl=document.getElementById('daysBox')?readDays('g'):clone(AG_DEF.jours);
+  collabState.push({nom:'',jours:tmpl});
+  renderCollabs();
+}
+function removeCollab(i){ syncCollabState(); collabState.splice(i,1); renderCollabs(); }
+
+// ── Fermetures exceptionnelles du salon (jours fériés, congés annuels…) ──
+function renderFermetures(){
+  var box=document.getElementById('fermBox');
+  box.innerHTML=fermeturesState.map(function(a,j){
+    return '<div style="display:flex;gap:.4rem;align-items:center;margin:.2rem 0">'+
+      '<input type="date" id="fm_d'+j+'" value="'+esc((a&&a.debut)||'')+'" style="flex:1;padding:.4rem;border:1.5px solid #c8d4da;border-radius:8px;font:inherit">'+
+      '<span style="color:#5E6572">→</span>'+
+      '<input type="date" id="fm_f'+j+'" value="'+esc((a&&a.fin)||'')+'" style="flex:1;padding:.4rem;border:1.5px solid #c8d4da;border-radius:8px;font:inherit">'+
+      '<button type="button" class="btn btn-del" onclick="removeFerm('+j+')">✕</button>'+
+    '</div>';
+  }).join('')||'<div class="hint">Aucune fermeture exceptionnelle.</div>';
+}
+function readFerm(){
+  var out=[];
+  for(var j=0;j<fermeturesState.length;j++){
+    var d=document.getElementById('fm_d'+j), f=document.getElementById('fm_f'+j);
+    out.push({debut:d?d.value:'', fin:f?f.value:''});
+  }
+  return out;
+}
+function addFerm(){ fermeturesState=readFerm(); fermeturesState.push({debut:'',fin:''}); renderFermetures(); }
+function removeFerm(j){ fermeturesState=readFerm(); fermeturesState.splice(j,1); renderFermetures(); }
+
+// ── Vue globale + heures + alertes clés ──────────────────────
+function cellTimes(j){
+  // 4 marqueurs : début matin, fin matin (pause d.), début après-midi (pause f.), fin.
+  if(!j||!j.open)return null;
+  var pa=Array.isArray(j.pause)?j.pause:['',''];
+  return [j.start||'', pa[0]||'', pa[1]||'', j.end||''];
+}
+function dayCells(j,cls){
+  var t=cellTimes(j);
+  if(!t)return '<td class="off"></td><td class="off"></td><td class="off"></td><td class="off"></td>';
+  return t.map(function(v){return '<td class="'+cls+'">'+(v?esc(v):'·')+'</td>';}).join('');
+}
+function renderGrid(salonJours){
+  var head1='<tr><th class="corner" rowspan="2">Magasin / équipe</th>';
+  var head2='<tr>';
+  DAYS.forEach(function(d){
+    var sj=salonJours[d[0]], open=sj&&sj.open;
+    head1+='<th class="dayhd'+(open?'':' closed')+'" colspan="4">'+d[1]+'</th>';
+    var t=cellTimes(sj);
+    var mk=t?t.map(function(v){return v||'·';}):['—','—','—','—'];
+    head2+=mk.map(function(v){return '<th class="mk'+(open?'':' closed')+'">'+esc(v)+'</th>';}).join('');
+  });
+  head1+='<th class="tot" rowspan="2">Total<br>hebdo</th><th class="tot" rowspan="2">Suppl. /<br>manquantes</th></tr>';
+  head2+='</tr>';
+
+  // Ligne Magasin (horaires d'ouverture)
+  var rows='<tr class="magasin"><td class="who">Magasin</td>';
+  DAYS.forEach(function(d){rows+=dayCells(salonJours[d[0]],'work');});
+  rows+='<td class="tot">'+fmtDur(weekMinutes(salonJours))+'</td><td class="ecart zero">—</td></tr>';
+
+  // Lignes collaborateurs
+  if(!collabState.length){
+    rows+='<tr><td class="who" colspan="'+(1+DAYS.length*4+2)+'" style="color:#5E6572;font-weight:400">Aucun collaborateur (mode « collaborateurs » requis pour la vue équipe).</td></tr>';
+  }
+  collabState.forEach(function(c){
+    var jours=c.jours||{};
+    rows+='<tr><td class="who">'+(c.cles?IC_KEY:'')+' '+esc(c.nom||'(sans nom)')+'</td>';
+    DAYS.forEach(function(d){rows+=dayCells(jours[d[0]],'work');});
+    var tot=weekMinutes(jours), contrat=c.contratHebdo||0;
+    var ec=tot-contrat, cls=!contrat?'zero':(ec<0?'neg':(ec>0?'pos':'zero'));
+    rows+='<td class="tot">'+fmtDur(tot)+'</td><td class="ecart '+cls+'">'+(contrat?(ec>=0?'+':'')+fmtDur(ec):'—')+'</td></tr>';
+  });
+  document.getElementById('gridTable').innerHTML='<thead>'+head1+head2+'</thead><tbody>'+rows+'</tbody>';
+}
+// Alerte « clés » : pour chaque jour ouvert, quelqu'un avec les clés doit couvrir l'ouverture ET la fermeture.
+function renderKeyAlerts(salonJours){
+  var box=document.getElementById('keyAlert');
+  var mode=document.getElementById('agMode').value;
+  if(mode!=='collaborateurs'){box.innerHTML='';return;}
+  var anyKey=collabState.some(function(c){return c.cles;});
+  if(!anyKey){box.innerHTML='<div class="alert">🔑 Aucun collaborateur n\'a les clés du salon. Cochez « A les clés du salon » pour au moins une personne afin de sécuriser ouvertures et fermetures.</div>';return;}
+  var pbs=[];
+  DAYS.forEach(function(d){
+    var sj=salonJours[d[0]];if(!sj||!sj.open)return;
+    var so=hm(sj.start),sc=hm(sj.end);
+    var openCov=false,closeCov=false;
+    collabState.forEach(function(c){
+      if(!c.cles)return;var j=c.jours&&c.jours[d[0]];if(!j||!j.open)return;
+      var cs=hm(j.start),ce=hm(j.end);
+      if(cs!=null&&so!=null&&cs<=so)openCov=true;
+      if(ce!=null&&sc!=null&&ce>=sc)closeCov=true;
+    });
+    if(!openCov||!closeCov){
+      var manque=[];if(!openCov)manque.push('ouverture');if(!closeCov)manque.push('fermeture');
+      pbs.push(d[1]+' : aucun porteur de clés à l\''+manque.join(' / la '));
+    }
+  });
+  box.innerHTML=pbs.length
+    ? '<div class="alert">⚠️ Dysfonctionnement de planning (clés) :<ul>'+pbs.map(function(m){return '<li>'+esc(m)+'</li>';}).join('')+'</ul></div>'
+    : '<div class="alert ok">🔑 Ouvertures et fermetures couvertes par un porteur de clés chaque jour ouvré.</div>';
+}
+function refreshGrid(){
+  if(document.getElementById('editor').style.display==='none')return;
+  syncCollabState();
+  var salonJours=readDays('g');
+  renderGrid(salonJours);
+  renderKeyAlerts(salonJours);
+  // Met à jour le résumé d'écart sous chaque collaborateur.
+  collabState.forEach(function(c,i){
+    var el=document.getElementById('ce'+i);if(!el)return;
+    var tot=weekMinutes(c.jours||{}),contrat=c.contratHebdo||0;
+    if(!contrat){el.textContent='Total : '+fmtDur(tot);el.style.color='';return;}
+    var ec=tot-contrat;
+    el.textContent='Total : '+fmtDur(tot)+' · écart '+(ec>=0?'+':'')+fmtDur(ec);
+    el.style.color=ec<0?'#A22C29':(ec>0?'#1f7a44':'');
+  });
+}
+
+// ── Enregistrement ───────────────────────────────────────────
+function savePlanning(){
+  var url=su();if(!url){setSt('err','Configurez la synchro dans « Mon salon ».');return;}
+  var mode=document.getElementById('agMode').value==='collaborateurs'?'collaborateurs':'capacite';
+  syncCollabState();
+  // Ne garde que les plages avec une date de début ; borne la fin par défaut sur le début.
+  function cleanPlages(list){
+    return (Array.isArray(list)?list:[]).filter(function(a){return a&&a.debut;})
+      .map(function(a){return {debut:a.debut, fin:(a.fin&&a.fin>=a.debut)?a.fin:a.debut};});
+  }
+  var collaborateurs=collabState.filter(function(c){return String(c.nom||'').trim();})
+    .map(function(c){return {nom:String(c.nom).trim(),jours:c.jours,prestations:(c.prestations||[]),absences:cleanPlages(c.absences),cles:!!c.cles,contratHebdo:c.contratHebdo||0};});
+  if(mode==='collaborateurs'){
+    if(!collaborateurs.length){setSt('err','Ajoutez au moins un collaborateur.');return;}
+    var noms={},dup=false;
+    collaborateurs.forEach(function(c){var k=c.nom.toLowerCase();if(noms[k])dup=true;noms[k]=1;});
+    if(dup){setSt('err','Deux collaborateurs portent le même nom.');return;}
+  }
+  var ag={
+    mode:mode,
+    formUrl:location.href.split('?')[0].replace(/[^/]*$/,'')+'reservation.html',  // base du formulaire (liens emails)
+    mailConfirm:document.getElementById('agMailConfirm').checked,
+    mailRappel:document.getElementById('agMailRappel').checked,
+    capacite:Math.max(1,parseInt(document.getElementById('agCap').value,10)||1),
+    granularite:parseInt(document.getElementById('agGran').value,10)||15,
+    delaiMin:Math.max(0,parseInt(document.getElementById('agDelai').value,10)||0),
+    horizonJours:Math.max(1,parseInt(document.getElementById('agHorizon').value,10)||30),
+    jours:readDays('g'),
+    collaborateurs:collaborateurs,
+    fermetures:cleanPlages(readFerm())
+  };
+  if(!agProfil||typeof agProfil!=='object')agProfil={};
+  agProfil.agenda=ag;
+  setSt('','⏳ Enregistrement…');
+  jsonp(url,{action:'save',data:JSON.stringify(agProfil)},function(r){
+    if(r&&r.ok){setSt('','✓ Planning enregistré');}
+    else setSt('err','Échec : '+((r&&r.error)||'inconnue'));
+  });
+}
+
+loadPlanning();
+</script>
+<script>
+(function(){
+  var K="kut-theme";
+  function cur(){try{return localStorage.getItem(K)==="dark"?"dark":"light";}catch(e){return "light";}}
+  function apply(t){if(t==="dark")document.documentElement.setAttribute("data-theme","dark");else document.documentElement.removeAttribute("data-theme");}
+  var SUN='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 7a5 5 0 1 0 5 5 5 5 0 0 0-5-5Zm0 8a3 3 0 1 1 3-3 3 3 0 0 1-3 3Zm0-9a1 1 0 0 0 1-1V3a1 1 0 0 0-2 0v2a1 1 0 0 0 1 1Zm0 12a1 1 0 0 0-1 1v2a1 1 0 0 0 2 0v-2a1 1 0 0 0-1-1ZM5.99 7.41a1 1 0 0 0 1.42-1.41l-1-1a1 1 0 0 0-1.42 1.41Zm11.6 9.18a1 1 0 0 0-1.42 1.42l1 1a1 1 0 0 0 1.42-1.42ZM21 11h-2a1 1 0 0 0 0 2h2a1 1 0 0 0 0-2ZM5 12a1 1 0 0 0-1-1H2a1 1 0 0 0 0 2h2a1 1 0 0 0 1-1Zm11.59-4.59a1 1 0 0 0 .7-.29l1-1a1 1 0 1 0-1.42-1.42l-1 1a1 1 0 0 0 .72 1.71ZM5.99 16.59l-1 1a1 1 0 1 0 1.42 1.42l1-1a1 1 0 0 0-1.42-1.42Z"/></svg>';
+  var MOON='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M21.64 13a1 1 0 0 0-1.05-.14 8.05 8.05 0 0 1-3.37.73A8.15 8.15 0 0 1 9.08 5.49a8.59 8.59 0 0 1 .25-2A1 1 0 0 0 8 2.36 10.14 10.14 0 1 0 22 14.05a1 1 0 0 0-.36-1.05Zm-9.5 6.69A8.14 8.14 0 0 1 7.08 5.22v.27A10.15 10.15 0 0 0 17.19 15.6a9.79 9.79 0 0 0 2.1-.22 8.11 8.11 0 0 1-7.15 4.31Z"/></svg>';
+  var b=document.createElement("button");b.id="themeToggle";b.type="button";b.className="theme-toggle";
+  function refresh(){var d=cur()==="dark";b.innerHTML=d?SUN:MOON;var l=d?"Passer en mode clair":"Passer en mode sombre";b.setAttribute("aria-label",l);b.title=l;}
+  b.addEventListener("click",function(){var t=cur()==="dark"?"light":"dark";try{localStorage.setItem(K,t);}catch(e){}apply(t);refresh();});
+  apply(cur());refresh();var H=document.querySelector("header");(H||document.body).appendChild(b);
+})();
+</script>
+</body>
+</html>

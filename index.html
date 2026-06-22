@@ -21,7 +21,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:"Manrope",-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#EEF1EF;color:#1C2321;min-height:100vh}
+body{font-family:"Manrope",-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#EEF1EF;color:#1C2321;min-height:100vh;display:flex;flex-direction:column}
 header{background:#1C2321;color:#fff;padding:1.2rem 1.5rem;display:flex;align-items:center;gap:.7rem}
 header>div:first-child{margin-right:auto}
 .logo{display:flex;align-items:center;gap:.6rem}
@@ -29,7 +29,7 @@ header>div:first-child{margin-right:auto}
 .salon-name{font-size:.82rem;opacity:.8;margin-top:.1rem}
 .btn-config{background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.3);color:#fff;padding:.5rem 1rem;border-radius:20px;cursor:pointer;font-size:.83rem;font-weight:600;display:flex;align-items:center;gap:.4rem;font-family:inherit}
 .btn-config:hover{background:rgba(255,255,255,.28)}
-main{padding:1.2rem;max-width:600px;margin:0 auto}
+main{padding:1.2rem;max-width:600px;margin:0 auto;width:100%;flex:1;display:flex;flex-direction:column;justify-content:center}
 .sync-bar{text-align:center;font-size:.78rem;color:#5E6572;min-height:1.4em;margin-bottom:1rem;transition:color .3s}
 .sync-bar.ok{color:#5E6572}
 .sync-bar.err{color:#A22C29}
@@ -90,7 +90,7 @@ main{padding:1.2rem;max-width:600px;margin:0 auto}
 .ms-opt:hover{background:#f5f8fa}
 .ms-opt input{width:17px;height:17px;flex-shrink:0;accent-color:#A22C29;cursor:pointer}
 /* Footer « faites-moi un retour » */
-.hub-footer{max-width:600px;margin:.5rem auto 2.5rem;padding:1.3rem 1.2rem 0;text-align:center;font-size:.85rem;color:#5E6572;line-height:1.55;border-top:1px solid #dde4e8}
+.hub-footer{width:100%;max-width:600px;margin:0 auto;padding:1rem 1.2rem 1.1rem;text-align:center;font-size:.85rem;color:#5E6572;line-height:1.55;border-top:1px solid #dde4e8}
 .footer-link{background:none;border:none;color:#A22C29;font-weight:700;font-family:inherit;font-size:inherit;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px}
 .footer-link:hover{color:#8a2422}
 @media(min-width:580px){.overlay{align-items:center}.modal{border-radius:22px;margin:1rem}}
@@ -430,12 +430,12 @@ html[data-theme="dark"] .ms-opt:hover{background:#272F33!important}
       <div class="desc">Horaires, équipe, prestations &amp; absences</div>
     </a>
   </div>
-
-  <footer class="hub-footer">
-    Un bug, une idée d'amélioration ou une remarque&nbsp;?<br>
-    <button type="button" class="footer-link" onclick="openContact()">Faites-moi un retour</button> — ça m'aide à améliorer KuT.
-  </footer>
 </main>
+
+<footer class="hub-footer">
+  Un bug, une idée d'amélioration ou une remarque&nbsp;?<br>
+  <button type="button" class="footer-link" onclick="openContact()">Faites-moi un retour</button> — ça m'aide à améliorer KuT.
+</footer>
 
 <!-- Modal Mon Salon -->
 <div class="overlay" id="overlay" onclick="backdropClose(event)">

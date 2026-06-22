@@ -477,7 +477,7 @@ function countChars(){
   var n=val('body').length;
   var el=document.getElementById('counter');
   el.textContent=n+' caractère'+(n>1?'s':'');
-  el.className='counter'+(n>1500?' warn':'');
+  el.className='counter'+(n>1700?' warn':''); // alerte à l'approche de la limite d'envoi (1800)
 }
 function recapClear(){document.getElementById('recap').textContent='';}
 
@@ -549,7 +549,7 @@ function filtrer(arr){
     if(seg==='reward')return hasReward(c,rules);
     if(seg==='winback')return isWinback(c,mult);
     if(seg==='freq')return passCount(c)>=minVisitsVal();
-    if(seg==='vip')return basketAvg(c)>=minBasketVal();
+    if(seg==='vip')return basketAvg(c)>0&&basketAvg(c)>=minBasketVal();
     if(seg==='presta')return tookPresta(c,prestaVal());
     if(seg==='profil')return isProfil(c,profilVal());
     return true;
@@ -639,9 +639,15 @@ function segKeyForTpl(){
 }
 function bestTplForSeg(){
   var key=segKeyForTpl();if(!key)return null;
-  var tpls=loadTpls();
-  for(var i=0;i<tpls.length;i++){if(String(tpls[i].segment||'')===key)return tpls[i];}
-  return null;
+  var cands=loadTpls().filter(function(t){return String(t.segment||'')===key;});
+  if(!cands.length)return null;
+  // Priorité : modèles personnalisés (non-seed) d'abord, puis le plus récent (createdAt).
+  cands.sort(function(a,b){
+    var sa=/^t_seed_/.test(a.id||'')?1:0, sb=/^t_seed_/.test(b.id||'')?1:0;
+    if(sa!==sb)return sa-sb;
+    return String(b.createdAt||'').localeCompare(String(a.createdAt||''));
+  });
+  return cands[0];
 }
 function updateTplSuggest(){
   var box=document.getElementById('tplSuggest');if(!box)return;
@@ -695,6 +701,9 @@ function clearTpl(){
   document.getElementById('tplBanner').style.display='none';
   document.getElementById('tplBannerTxt').textContent='';
   document.getElementById('logoUrl').value='';
+  // Réarme la présélection auto : un changement de segment pourra de nouveau suggérer/pré-remplir.
+  tplManual=false;tplAuto=false;
+  updateTplSuggest();
 }
 
 // Auto-load from templates.html redirect
@@ -707,7 +716,16 @@ function clearTpl(){
     if(t.sujet)document.getElementById('subject').value=t.sujet;
     if(t.body)document.getElementById('body').value=t.body;
     if(t.logoUrl)document.getElementById('logoUrl').value=t.logoUrl;
+    // Reporte le segment du modèle sur le sélecteur de destinataires (évite d'envoyer
+    // un modèle ciblé — ex. profil:enfant — au segment « Tous » par défaut).
+    if(t.segment){
+      var seg=String(t.segment), prof='';
+      if(seg.indexOf('profil:')===0){prof=seg.slice(7);seg='profil';}
+      var segSel=document.getElementById('seg');if(segSel)segSel.value=seg;
+      if(prof){var ps=document.getElementById('profilSel');if(ps)ps.value=prof;}
+    }
     if(t.sujet||t.body){
+      tplManual=true; // contenu choisi explicitement : la présélection auto ne doit pas l'écraser
       var banner=document.getElementById('tplBanner');
       document.getElementById('tplBannerTxt').textContent='Modèle chargé depuis Templates';
       banner.style.display='';

@@ -343,7 +343,7 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
         <h3>Informations</h3>
         <div class="field"><label>Nom du template ✱</label><input id="fNomTpl" type="text" placeholder="Ex : Promo printemps" oninput="livePreview()"></div>
         <div class="field"><label>Objet de l'email</label><input id="fSujet" type="text" placeholder="Ex : Offre spéciale !" oninput="livePreview()"></div>
-        <div class="field"><label>Segment ciblé <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#A9B4C2">(présélection auto dans Campagnes)</span></label><select id="fSeg"><option value="">Aucun / tous les clients</option><option value="winback">Clients à relancer (habitués absents)</option><option value="reward">Récompense disponible</option><option value="freq">Clients fidèles (nombre de passages)</option><option value="vip">Très bons clients (panier élevé)</option><option value="presta">Selon une prestation</option><option value="profil:homme">Profil — Homme</option><option value="profil:femme">Profil — Femme</option><option value="profil:enfant">Profil — Enfant</option></select><div class="hint">Quand ce segment est choisi dans Campagnes, ce modèle est proposé automatiquement.</div></div>
+        <div class="field"><label>Segment ciblé <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#A9B4C2">(présélection auto dans Campagnes)</span></label><select id="fSeg"><option value="">Aucun / tous les clients</option><option value="winback">Clients à relancer (habitués absents)</option><option value="reward">Récompense disponible</option><option value="freq">Clients fidèles (nombre de passages)</option><option value="vip">Très bons clients (panier élevé)</option><option value="presta">Selon une prestation</option><option value="profil:homme">Profil — Homme</option><option value="profil:femme">Profil — Femme</option><option value="profil:enfant">Profil — Enfant</option><option value="profil:none">Profil — Non précisé</option></select><div class="hint">Quand ce segment est choisi dans Campagnes, ce modèle est proposé automatiquement.</div></div>
       </div>
 
       <div class="card">
@@ -632,7 +632,7 @@ function utiliserDansCampagne(){
   var sujet=v('fSujet');
   var body=genBody();
   var logoUrl=v('fLogoUrl');
-  localStorage.setItem('template-en-cours',JSON.stringify({sujet:sujet,body:body,logoUrl:logoUrl}));
+  localStorage.setItem('template-en-cours',JSON.stringify({sujet:sujet,body:body,logoUrl:logoUrl,segment:v('fSeg')}));
   window.location.href='campagnes.html';
 }
 

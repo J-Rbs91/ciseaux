@@ -65,6 +65,15 @@ html[data-theme="dark"] table.grid td.work{background:#1d2c38}
 html[data-theme="dark"] table.grid .magasin td.work{background:#22301f}
 html[data-theme="dark"] table.grid .mk{background:#232a2e;color:#9AA6AE}
 .savebar{position:sticky;bottom:0;background:#EEF1EF;padding:.8rem 0;display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+details.card summary{list-style:revert}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-start;justify-content:center;z-index:50;padding:1.2rem;overflow:auto}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;max-width:520px;width:100%;padding:1.2rem 1.3rem 1.4rem;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.modal h2{font-size:1.05rem;margin:0}
+.modal .mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem}
+.modal .xbtn{background:none;border:none;font-size:1.4rem;cursor:pointer;color:#5E6572;line-height:1}
+html[data-theme="dark"] .modal{background:#1F2528;color:#E7ECEE}
+html[data-theme="dark"] .modal .xbtn{color:#9AA6AE}
 .theme-toggle{width:38px;height:38px;border-radius:50%;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.18);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;transition:background .15s}
 .theme-toggle:hover{background:rgba(255,255,255,.28)}
 html[data-theme="dark"] body{background:#14181A;color:#E7ECEE}
@@ -94,27 +103,47 @@ html[data-theme="dark"] .savebar{background:#14181A}
   </div>
 
   <div id="editor" style="display:none">
-    <!-- Vue globale de la semaine -->
+    <!-- 1. Horaires du magasin -->
     <div class="card">
-      <h2>Vue globale de la semaine</h2>
-      <p class="sub">Présence de l'équipe sur une semaine type (matin / après-midi, à la minute près), total hebdomadaire et écart au contrat. Modifiez les plannings plus bas, puis rafraîchissez.</p>
+      <h2>🕘 Horaires du magasin</h2>
+      <p class="sub">Heures d'ouverture / fermeture et pause éventuelle, pour chaque jour de la semaine (à la minute près). Décochez un jour pour fermer le salon ce jour-là.</p>
+      <div class="days">
+        <div class="dayhead"><span>Jour</span><span>Ouv.</span><span>Ferm.</span><span>Pause d…</span><span>…à</span></div>
+        <div id="daysBox"></div>
+      </div>
+      <button class="btn" onclick="openFerm()" style="margin-top:.8rem">🗓 Jours de fermeture exceptionnelle…</button>
+      <span class="hint" id="fermResume" style="margin-left:.5rem"></span>
+    </div>
+
+    <!-- 2. Collaborateurs -->
+    <div class="card" id="collabSection">
+      <h2>👥 Collaborateurs</h2>
+      <p class="sub">Prénom &amp; nom, durée de travail hebdomadaire (contrat), prestations réalisées, clés du salon, présence hebdomadaire et absences. Un seul RDV à la fois par personne.</p>
+      <div id="collabBox"></div>
+      <button class="btn" onclick="addCollab()">＋ Ajouter un collaborateur</button>
+    </div>
+
+    <!-- 3. Vue globale de la semaine -->
+    <div class="card">
+      <h2>📅 Vue globale de la semaine</h2>
+      <p class="sub">Planning de l'équipe : présence matin / après-midi (à la minute près), total hebdomadaire et écart au contrat (heures supplémentaires ou manquantes).</p>
       <div id="keyAlert"></div>
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table id="gridTable" class="grid"></table></div>
       <button class="btn" onclick="refreshGrid()" style="margin-top:.6rem">↻ Rafraîchir la vue</button>
     </div>
 
-    <!-- Organisation & créneaux -->
-    <div class="card">
-      <h2>Organisation</h2>
-      <div class="fld"><label>Mode</label>
+    <!-- 4. Réglages avancés (réservation en ligne) -->
+    <details class="card">
+      <summary style="font-weight:800;cursor:pointer">⚙ Réglages avancés (réservation en ligne)</summary>
+      <div class="fld" style="margin-top:.7rem"><label>Mode de réservation</label>
         <select id="agMode" onchange="toggleMode()">
           <option value="capacite">Postes anonymes (capacité)</option>
-          <option value="collaborateurs">Collaborateurs nommés (plannings séparés)</option>
+          <option value="collaborateurs">Collaborateurs nommés (le client choisit avec qui)</option>
         </select>
-        <div class="hint">« Collaborateurs » : le client peut choisir avec qui (ou « sans préférence »), chacun a ses horaires, ses prestations et ses absences.</div>
+        <div class="hint">« Collaborateurs » : le client choisit son coiffeur (ou « sans préférence »). Les horaires, prestations et absences ci-dessus sont alors appliqués au formulaire de réservation.</div>
       </div>
       <div class="grid2">
-        <div class="fld" id="capField"><label>Postes en parallèle</label><input id="agCap" type="number" min="1" step="1"><div class="hint">RDV simultanés</div></div>
+        <div class="fld" id="capField"><label>Postes en parallèle</label><input id="agCap" type="number" min="1" step="1"><div class="hint">RDV simultanés (mode capacité)</div></div>
         <div class="fld"><label>Pas des créneaux</label><select id="agGran"><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="60">60 min</option></select></div>
         <div class="fld"><label>Délai mini (min)</label><input id="agDelai" type="number" min="0" step="5"><div class="hint">Avant un RDV</div></div>
         <div class="fld"><label>Horizon (jours)</label><input id="agHorizon" type="number" min="1" step="1"><div class="hint">Réservable à l'avance</div></div>
@@ -124,37 +153,24 @@ html[data-theme="dark"] .savebar{background:#14181A}
         <label style="display:flex;gap:.45rem;align-items:center;font-weight:400"><input type="checkbox" id="agMailRappel" style="width:auto"> Email de rappel la veille (vers 7h)</label>
         <div class="hint">Nécessite l'autorisation Gmail du script (et, pour le rappel, le déclencheur <code>creerDeclencheurRappels</code>).</div>
       </div>
-    </div>
-
-    <!-- Horaires habituels du salon -->
-    <div class="card" id="capSection">
-      <h2>Horaires habituels du salon</h2>
-      <p class="sub">Heure d'ouverture / fermeture et pause éventuelle, à la minute près. Décochez un jour pour le fermer. En mode collaborateurs, ces horaires bornent l'ensemble des plannings.</p>
-      <div class="days">
-        <div class="dayhead"><span>Jour</span><span>Ouv.</span><span>Ferm.</span><span>Pause d…</span><span>…à</span></div>
-        <div id="daysBox"></div>
-      </div>
-    </div>
-
-    <!-- Fermetures exceptionnelles -->
-    <div class="card">
-      <h2>Fermetures exceptionnelles</h2>
-      <p class="sub">Jours fériés, congés annuels… Aucune réservation possible sur ces dates (laissez la 2ᵉ date vide pour une seule journée).</p>
-      <div id="fermBox"></div>
-      <button class="btn" onclick="addFerm()" style="margin-top:.5rem">+ Ajouter une fermeture</button>
-    </div>
-
-    <!-- Équipe & plannings -->
-    <div class="card" id="collabSection" style="display:none">
-      <h2>Équipe &amp; plannings</h2>
-      <p class="sub">Pour chaque collaborateur : ses prestations, sa présence hebdomadaire (à la minute près) et ses absences/congés. Un seul RDV à la fois par personne.</p>
-      <div id="collabBox"></div>
-      <button class="btn" onclick="addCollab()">+ Ajouter un collaborateur</button>
-    </div>
+    </details>
 
     <div class="savebar">
-      <button class="btn primary" onclick="savePlanning()">Enregistrer le planning</button>
+      <button class="btn primary" onclick="savePlanning()">Enregistrer</button>
       <span class="st" id="agSt"></span>
+    </div>
+  </div>
+</div>
+
+<!-- Sous-écran : jours de fermeture exceptionnelle -->
+<div class="overlay" id="ovFerm" onclick="bkFerm(event)">
+  <div class="modal">
+    <div class="mh"><h2>Jours de fermeture exceptionnelle</h2><button class="xbtn" onclick="closeFerm()">&times;</button></div>
+    <p class="sub">Jours fériés, congés annuels… Aucune réservation possible sur ces dates (laissez la 2ᵉ date vide pour une seule journée).</p>
+    <div id="fermBox"></div>
+    <button class="btn" onclick="addFerm()" style="margin-top:.6rem">+ Ajouter une fermeture</button>
+    <div class="row" style="display:flex;gap:.5rem;margin-top:1.1rem">
+      <button class="btn primary" onclick="closeFerm()">OK</button>
     </div>
   </div>
 </div>
@@ -252,6 +268,7 @@ function loadPlanning(){
     collabState=Array.isArray(ag.collaborateurs)?clone(ag.collaborateurs):[];
     fermeturesState=Array.isArray(ag.fermetures)?clone(ag.fermetures):[];
     renderFermetures();
+    updateFermResume();
     renderCollabs();
     toggleMode();
     setSt('','');
@@ -260,11 +277,18 @@ function loadPlanning(){
 
 function toggleMode(){
   var collab=document.getElementById('agMode').value==='collaborateurs';
+  // « Postes en parallèle » ne concerne que le mode capacité.
   document.getElementById('capField').style.display=collab?'none':'';
-  // Les horaires d'ouverture du salon restent visibles dans les deux modes : en mode
-  // collaborateurs ils servent de borne globale aux plannings individuels.
-  document.getElementById('collabSection').style.display=collab?'':'none';
   refreshGrid();
+}
+
+// ── Sous-écran : fermetures exceptionnelles ──────────────────
+function openFerm(){ document.getElementById('ovFerm').classList.add('open'); }
+function closeFerm(){ fermeturesState=readFerm(); document.getElementById('ovFerm').classList.remove('open'); updateFermResume(); }
+function bkFerm(e){ if(e.target===document.getElementById('ovFerm')) closeFerm(); }
+function updateFermResume(){
+  var n=readFerm().filter(function(a){return a&&a.debut;}).length;
+  document.getElementById('fermResume').textContent = n ? (n+' période'+(n>1?'s':'')+' de fermeture programmée'+(n>1?'s':'')) : 'aucune fermeture exceptionnelle';
 }
 
 // Génère les 7 lignes d'horaires (ids préfixés) pour un planning hebdomadaire (à la minute près).
@@ -304,10 +328,15 @@ function prestaChecks(i,selected){
 function renderCollabs(){
   var box=document.getElementById('collabBox');
   box.innerHTML=collabState.map(function(c,i){
+    // Prénom / nom : on récupère les champs dédiés, à défaut on découpe l'ancien « nom » complet.
+    var pre=c.prenom, nf=c.nomFamille;
+    if(pre==null&&nf==null){var parts=String(c.nom||'').trim().split(/\s+/);pre=parts.shift()||'';nf=parts.join(' ');}
+    var inp='padding:.45rem .6rem;border:1.5px solid #c8d4da;border-radius:9px;font:inherit;min-width:90px';
     return '<div class="collab">'+
-      '<div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.4rem">'+
+      '<div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.4rem;flex-wrap:wrap">'+
         IC_USER+
-        '<input id="cn'+i+'" value="'+esc(c.nom||'')+'" placeholder="Nom du collaborateur" style="flex:1;padding:.45rem .6rem;border:1.5px solid #c8d4da;border-radius:9px;font:inherit">'+
+        '<input id="cpr'+i+'" value="'+esc(pre)+'" placeholder="Prénom" onchange="refreshGrid()" style="flex:1;'+inp+'">'+
+        '<input id="cnm'+i+'" value="'+esc(nf)+'" placeholder="Nom" onchange="refreshGrid()" style="flex:1;'+inp+'">'+
         '<button class="btn btn-del" onclick="removeCollab('+i+')">Suppr.</button>'+
       '</div>'+
       '<label style="display:flex;gap:.45rem;align-items:center;font-weight:400;font-size:.82rem;margin:.2rem 0 .4rem"><input type="checkbox" id="ck'+i+'" onchange="refreshGrid()" style="width:auto;flex:none"'+(c.cles?' checked':'')+'> '+IC_KEY+' A les clés du salon <span style="color:#5E6572">(ouverture / fermeture)</span></label>'+
@@ -354,11 +383,14 @@ function readPrestas(i){
 }
 function syncCollabState(){
   collabState=collabState.map(function(c,i){
-    var nEl=document.getElementById('cn'+i);
+    var preEl=document.getElementById('cpr'+i), nfEl=document.getElementById('cnm'+i);
     var clEl=document.getElementById('ck'+i);
     var ccEl=document.getElementById('cc'+i);
+    var prenom=preEl?preEl.value.trim():(c.prenom||'');
+    var nomFamille=nfEl?nfEl.value.trim():(c.nomFamille||'');
+    var nom=(prenom+' '+nomFamille).trim()||String(c.nom||'').trim();   // identité (clé de rattachement des RDV)
     var contrat=ccEl?parseDur(ccEl.value):(c.contratHebdo||0);
-    return { nom:(nEl?nEl.value:c.nom)||'', jours:readDays('c'+i+'_'), prestations:readPrestas(i), absences:readAbsences(i), cles:clEl?clEl.checked:!!c.cles, contratHebdo:contrat };
+    return { nom:nom, prenom:prenom, nomFamille:nomFamille, jours:readDays('c'+i+'_'), prestations:readPrestas(i), absences:readAbsences(i), cles:clEl?clEl.checked:!!c.cles, contratHebdo:contrat };
   });
 }
 function addCollab(){
@@ -439,8 +471,7 @@ function renderGrid(salonJours){
 // Alerte « clés » : pour chaque jour ouvert, quelqu'un avec les clés doit couvrir l'ouverture ET la fermeture.
 function renderKeyAlerts(salonJours){
   var box=document.getElementById('keyAlert');
-  var mode=document.getElementById('agMode').value;
-  if(mode!=='collaborateurs'){box.innerHTML='';return;}
+  if(!collabState.length){box.innerHTML='';return;}
   var anyKey=collabState.some(function(c){return c.cles;});
   if(!anyKey){box.innerHTML='<div class="alert">🔑 Aucun collaborateur n\'a les clés du salon. Cochez « A les clés du salon » pour au moins une personne afin de sécuriser ouvertures et fermetures.</div>';return;}
   var pbs=[];
@@ -491,7 +522,7 @@ function savePlanning(){
       .map(function(a){return {debut:a.debut, fin:(a.fin&&a.fin>=a.debut)?a.fin:a.debut};});
   }
   var collaborateurs=collabState.filter(function(c){return String(c.nom||'').trim();})
-    .map(function(c){return {nom:String(c.nom).trim(),jours:c.jours,prestations:(c.prestations||[]),absences:cleanPlages(c.absences),cles:!!c.cles,contratHebdo:c.contratHebdo||0};});
+    .map(function(c){return {nom:String(c.nom).trim(),prenom:String(c.prenom||'').trim(),nomFamille:String(c.nomFamille||'').trim(),jours:c.jours,prestations:(c.prestations||[]),absences:cleanPlages(c.absences),cles:!!c.cles,contratHebdo:c.contratHebdo||0};});
   if(mode==='collaborateurs'){
     if(!collaborateurs.length){setSt('err','Ajoutez au moins un collaborateur.');return;}
     var noms={},dup=false;

@@ -15,6 +15,7 @@
 <meta name="apple-mobile-web-app-title" content="KuT">
 <script defer src="pwa.js"></script>
 <script defer src="onboarding.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/dist/email.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -73,6 +74,13 @@ main{padding:1.2rem;max-width:600px;margin:0 auto}
 .presta-row .p-del{background:#fef2f2;color:#A22C29;border:none;border-radius:9px;width:38px;height:38px;flex-shrink:0;cursor:pointer;font-size:1rem}
 .presta-row .p-del:hover{background:#fce0e0}
 .presta-empty{font-size:.82rem;color:#5E6572;padding:.2rem 0 .5rem}
+.field textarea{width:100%;border:1.5px solid #c8d4da;border-radius:10px;padding:.65rem .95rem;font-size:.95rem;color:#1C2321;outline:none;background:#fff;font-family:inherit;resize:vertical;min-height:90px;transition:border-color .15s}
+.field textarea:focus{border-color:#A22C29;box-shadow:0 0 0 3px rgba(94,101,114,.18)}
+/* Footer « faites-moi un retour » */
+.hub-footer{max-width:600px;margin:.5rem auto 2.5rem;padding:1.3rem 1.2rem 0;text-align:center;font-size:.85rem;color:#5E6572;line-height:1.55;border-top:1px solid #dde4e8}
+.hub-footer .footer-emoji{font-size:1.3rem;display:block;margin-bottom:.35rem}
+.footer-link{background:none;border:none;color:#A22C29;font-weight:700;font-family:inherit;font-size:inherit;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px}
+.footer-link:hover{color:#8a2422}
 @media(min-width:580px){.overlay{align-items:center}.modal{border-radius:22px;margin:1rem}}
 
 
@@ -305,6 +313,9 @@ html[data-theme="dark"] .toggle.on{background:#5E6572!important}
 html[data-theme="dark"] .toggle.off{background:#313A3F!important}
 html[data-theme="dark"] .toast{background:#0E1214!important;color:#E7ECEE!important}
 html[data-theme="dark"] .logo span{color:#E0635D!important}
+html[data-theme="dark"] .hub-footer{color:#9AA6AE!important;border-top-color:#313A3F!important}
+html[data-theme="dark"] .footer-link{color:#E0635D!important}
+html[data-theme="dark"] .footer-link:hover{color:#f07c76!important}
 </style>
 <script>(function(){try{if(localStorage.getItem("kut-theme")==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();</script>
 </head>
@@ -376,6 +387,12 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
       <div class="desc">Horaires, équipe, prestations &amp; absences</div>
     </a>
   </div>
+
+  <footer class="hub-footer">
+    <span class="footer-emoji" aria-hidden="true">💬</span>
+    Un bug, une idée d'amélioration ou une remarque&nbsp;?<br>
+    <button type="button" class="footer-link" onclick="openContact()">Faites-moi un retour</button> — ça m'aide à améliorer KuT.
+  </footer>
 </main>
 
 <!-- Modal Mon Salon -->
@@ -423,6 +440,24 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
       <button class="btn btn-primary btn-full" onclick="saveProfil()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M18.71,7.21a1,1,0,0,0-1.42,0L9.84,14.67,6.71,11.53A1,1,0,1,0,5.29,13l3.84,3.84a1,1,0,0,0,1.42,0l8.16-8.16A1,1,0,0,0,18.71,7.21Z"></path></svg> Enregistrer</button>
       <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
     </div>
+  </div>
+</div>
+
+<!-- Modal Retour / Contact -->
+<div class="overlay" id="contactOverlay" onclick="contactBackdrop(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h2><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M20,2H4A2,2,0,0,0,2,4V22l4-4H20a2,2,0,0,0,2-2V4A2,2,0,0,0,20,2Zm0,14H5.17L4,17.17V4H20ZM7,9h10a1,1,0,0,0,0-2H7A1,1,0,0,0,7,9Zm0,4h7a1,1,0,0,0,0-2H7a1,1,0,0,0,0,2Z"></path></svg> Votre retour</h2>
+      <button class="btn-close" onclick="closeContact()">✕</button>
+    </div>
+    <div class="hint" style="margin-bottom:1.1rem">Un bug, une idée, une remarque&nbsp;? Dites-moi tout — chaque message m'aide à améliorer KuT.</div>
+    <form id="contactForm" onsubmit="return sendContact(event)">
+      <div class="field"><label>Nom ✱</label><input id="cName" type="text" required minlength="2" maxlength="100" autocomplete="name" placeholder="Votre nom"></div>
+      <div class="field"><label>Email ✱</label><input id="cMail" type="email" required maxlength="150" autocomplete="email" placeholder="vous@exemple.fr"></div>
+      <div class="field"><label>Message ✱</label><textarea id="cMsg" required minlength="10" maxlength="2000" placeholder="Votre retour…"></textarea></div>
+      <button type="submit" class="btn btn-primary btn-full" id="cSubmit"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M21.66,11.06,3.66,2.06a1,1,0,0,0-1.32,1.3l3.13,7.64L2.34,18.64a1,1,0,0,0,.92,1.36,1,1,0,0,0,.4-.08l18-9a1,1,0,0,0,0-1.86ZM5.92,16.2l1.74-4.2h4.59a1,1,0,0,0,0-2H7.66L5.92,5.8,18.76,11Z"></path></svg> Envoyer</button>
+      <div class="status" id="cSt" role="status" aria-live="polite"></div>
+    </form>
   </div>
 </div>
 
@@ -597,6 +632,38 @@ function majBadgeResa(){
     if(b&&n>0){b.textContent=n;b.style.display='block';b.title=n+' rendez-vous aujourd\'hui';}
   });
 }
+</script>
+<script>
+// ── Formulaire de retour / contact (EmailJS) ──
+(function(){
+  var SERVICE_ID="service_tpynp8t", TEMPLATE_ID="template_k8zwk94", PUBLIC_KEY="XaKCNJspsS14ZNmOl";
+  var inited=false;
+  function ensureInit(){if(inited||typeof emailjs==="undefined")return;try{emailjs.init(PUBLIC_KEY);inited=true;}catch(e){}}
+  function ov(){return document.getElementById('contactOverlay');}
+  window.openContact=function(){ensureInit();ov().classList.add('open');setTimeout(function(){var n=document.getElementById('cName');if(n)n.focus();},60);};
+  window.closeContact=function(){ov().classList.remove('open');};
+  window.contactBackdrop=function(e){if(e.target===ov())closeContact();};
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&ov().classList.contains('open'))closeContact();});
+  window.sendContact=function(e){
+    e.preventDefault();
+    var btn=document.getElementById('cSubmit'), st=document.getElementById('cSt');
+    var name=(document.getElementById('cName').value||'').trim();
+    var mail=(document.getElementById('cMail').value||'').trim();
+    var msg=(document.getElementById('cMsg').value||'').trim();
+    if(!name||!mail||!msg)return false;
+    ensureInit();
+    if(typeof emailjs==="undefined"){st.className='status err';st.textContent='Service indisponible — vérifiez votre connexion et réessayez.';return false;}
+    btn.disabled=true;btn.textContent='Envoi…';st.className='status';st.textContent='';
+    emailjs.send(SERVICE_ID,TEMPLATE_ID,{from_name:name,from_email:mail,message:'[Retour KuT]\n\n'+msg}).then(function(){
+      st.className='status ok';st.textContent='✓ Merci ! Votre retour a bien été envoyé.';
+      document.getElementById('contactForm').reset();
+      setTimeout(closeContact,1800);
+    }).catch(function(){
+      st.className='status err';st.textContent='Erreur lors de l\'envoi. Réessayez plus tard.';
+    }).then(function(){btn.disabled=false;btn.textContent='Envoyer';});
+    return false;
+  };
+})();
 </script>
 <script>
 (function(){

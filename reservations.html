@@ -138,7 +138,7 @@ html[data-theme="dark"] .share-url{background:#14181A;color:#E7ECEE;border-color
     </div>
     <div id="collabSection" style="display:none">
       <div id="collabBox"></div>
-      <button class="btn" onclick="addCollab()">+ Ajouter un collaborateur</button>
+      <button class="btn" onclick="addCollab()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:-.18em;margin-right:.3rem" aria-hidden="true"><path d="M21,10.5H20v-1a1,1,0,0,0-2,0v1H17a1,1,0,0,0,0,2h1v1a1,1,0,0,0,2,0v-1h1a1,1,0,0,0,0-2Zm-7.7,1.72A4.92,4.92,0,0,0,15,8.5a5,5,0,0,0-10,0,4.92,4.92,0,0,0,1.7,3.72A8,8,0,0,0,2,19.5a1,1,0,0,0,2,0,6,6,0,0,1,12,0,1,1,0,0,0,2,0A8,8,0,0,0,13.3,12.22ZM10,11.5a3,3,0,1,1,3-3A3,3,0,0,1,10,11.5Z"/></svg>Ajouter un collaborateur</button>
       <div class="hint" style="margin-top:.4rem">Chaque collaborateur a ses propres horaires (un seul RDV à la fois par personne) et ses absences/congés. Évitez de renommer un collaborateur ayant des RDV à venir.</div>
     </div>
     <div class="row" style="display:flex;gap:.5rem;margin-top:1rem">
@@ -299,6 +299,10 @@ function checkNotice(){
 
 // ── Réglages agenda ──────────────────────────────────────────
 var DAYS=[['1','Lundi'],['2','Mardi'],['3','Mercredi'],['4','Jeudi'],['5','Vendredi'],['6','Samedi'],['0','Dimanche']];
+// Icônes Unicons (line) — raccord avec la DA du hub (cartes d'accueil).
+var IC_USER='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="#A22C29" style="flex:none" aria-hidden="true"><path d="M15.71,12.71a6,6,0,1,0-7.42,0,10,10,0,0,0-6.22,8.18,1,1,0,0,0,2,.22,8,8,0,0,1,15.9,0,1,1,0,0,0,1,.89h.11a1,1,0,0,0,.88-1.1A10,10,0,0,0,15.71,12.71ZM12,12a4,4,0,1,1,4-4A4,4,0,0,1,12,12Z"/></svg>';
+var IC_USERPLUS='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M21,10.5H20v-1a1,1,0,0,0-2,0v1H17a1,1,0,0,0,0,2h1v1a1,1,0,0,0,2,0v-1h1a1,1,0,0,0,0-2Zm-7.7,1.72A4.92,4.92,0,0,0,15,8.5a5,5,0,0,0-10,0,4.92,4.92,0,0,0,1.7,3.72A8,8,0,0,0,2,19.5a1,1,0,0,0,2,0,6,6,0,0,1,12,0,1,1,0,0,0,2,0A8,8,0,0,0,13.3,12.22ZM10,11.5a3,3,0,1,1,3-3A3,3,0,0,1,10,11.5Z"/></svg>';
+var IC_KEY='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="#A22C29" style="flex:none" aria-hidden="true"><path d="M21.71,6.53,20.29,5.12l1.42-1.41a1,1,0,1,0-1.42-1.42L9.75,12.83a5,5,0,1,0,1.42,1.42l4.88-4.89,1.41,1.42a1,1,0,0,0,.71.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.42L17.46,8l1.42-1.42L20.29,8a1,1,0,0,0,.71.29A1,1,0,0,0,21.71,8,1,1,0,0,0,21.71,6.53ZM7,20a3,3,0,1,1,3-3A3,3,0,0,1,7,20Z"/></svg>';
 var AG_DEF={capacite:1,granularite:15,delaiMin:60,horizonJours:30,jours:{
   '0':{open:false,start:'09:00',end:'19:00',pause:['','']},
   '1':{open:true,start:'09:00',end:'19:00',pause:['','']},
@@ -385,9 +389,12 @@ function renderCollabs(){
   box.innerHTML=collabState.map(function(c,i){
     return '<div style="border:1px solid var(--line,#e1e8e6);border-radius:10px;padding:.6rem;margin-bottom:.6rem">'+
       '<div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.4rem">'+
+        IC_USER+
         '<input id="cn'+i+'" value="'+esc(c.nom||'')+'" placeholder="Nom du collaborateur" style="flex:1;padding:.45rem .6rem;border:1.5px solid #c8d4da;border-radius:9px;font:inherit">'+
         '<button class="btn btn-del" onclick="removeCollab('+i+')">Suppr.</button>'+
-      '</div>'+ prestaChecks(i, c.prestations) + dayRows('c'+i+'_', c.jours||AG_DEF.jours) + absenceSection(i, c.absences)+
+      '</div>'+
+      '<label style="display:flex;gap:.45rem;align-items:center;font-weight:400;font-size:.82rem;margin:.2rem 0 .4rem"><input type="checkbox" id="ck'+i+'" style="width:auto;flex:none"'+(c.cles?' checked':'')+'> '+IC_KEY+' A les clés du salon <span style="color:var(--muted,#5E6572)">(ouverture / fermeture)</span></label>'+
+      prestaChecks(i, c.prestations) + dayRows('c'+i+'_', c.jours||AG_DEF.jours) + absenceSection(i, c.absences)+
     '</div>';
   }).join('')||'<div class="hint">Aucun collaborateur. Ajoutez-en au moins un.</div>';
 }
@@ -423,7 +430,8 @@ function readPrestas(i){
 function syncCollabState(){
   collabState=collabState.map(function(c,i){
     var nEl=document.getElementById('cn'+i);
-    return { nom:(nEl?nEl.value:c.nom)||'', jours:readDays('c'+i+'_'), prestations:readPrestas(i), absences:readAbsences(i) };
+    var clEl=document.getElementById('ck'+i);
+    return { nom:(nEl?nEl.value:c.nom)||'', jours:readDays('c'+i+'_'), prestations:readPrestas(i), absences:readAbsences(i), cles:clEl?clEl.checked:!!c.cles };
   });
 }
 function addCollab(){
@@ -467,7 +475,7 @@ function saveAgenda(){
       .map(function(a){return {debut:a.debut, fin:(a.fin&&a.fin>=a.debut)?a.fin:a.debut};});
   }
   var collaborateurs=collabState.filter(function(c){return String(c.nom||'').trim();})
-    .map(function(c){return {nom:String(c.nom).trim(),jours:c.jours,prestations:(c.prestations||[]),absences:cleanPlages(c.absences)};});
+    .map(function(c){return {nom:String(c.nom).trim(),jours:c.jours,prestations:(c.prestations||[]),absences:cleanPlages(c.absences),cles:!!c.cles};});
   if(mode==='collaborateurs'){
     if(!collaborateurs.length){document.getElementById('agSt').textContent='Ajoutez au moins un collaborateur.';return;}
     var noms={},dup=false;

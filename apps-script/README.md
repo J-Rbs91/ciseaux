@@ -152,6 +152,10 @@ collaborateur, des **absences/congés ponctuels** (`collaborateur.absences`) : s
 réservation n'est proposée (ni acceptée côté serveur). Chaque plage est un couple
 `{debut, fin}` au format `YYYY-MM-DD` (fin incluse ; égale au début pour une seule journée).
 
+On peut aussi cocher, par collaborateur, qu'il **a les clés du salon** (`collaborateur.cles`) :
+information interne (jamais exposée au public) pratique pour gérer les ouvertures/fermetures
+dans les grosses équipes.
+
 Ces réglages sont accessibles depuis le **hub d'accueil** (carte **« Planning équipe »**) comme
 depuis la page **Réservations → ⚙ Réglages agenda**.
 

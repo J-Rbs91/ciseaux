@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Statistiques — KuT (MOCKUP données fictives)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Manrope",-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#EEF1EF;color:#1C2321;min-height:100vh;padding-bottom:3rem}
+header{background:#1C2321;color:#fff;padding:1rem 1.2rem;display:flex;align-items:center;gap:.8rem;position:sticky;top:0;z-index:20}
+.back{color:#fff;text-decoration:none;font-size:1.3rem;opacity:.85;line-height:1;padding:.2rem}
+h1{font-size:1.08rem;font-weight:800;flex:1}
+.count{font-size:.74rem;opacity:.75;white-space:nowrap}
+main{max-width:620px;margin:0 auto;padding:1rem 1.1rem 0}
+.demo-banner{max-width:620px;margin:.8rem auto 0;padding:0 1.1rem}
+.demo-banner div{background:#fff3cd;border:1.5px solid #e8d48a;color:#7a5d00;border-radius:11px;padding:.6rem .8rem;font-size:.78rem;font-weight:700;text-align:center}
+.period-bar{display:flex;gap:.4rem;margin-bottom:1.1rem;flex-wrap:wrap}
+.pbtn{flex:1;min-width:72px;background:#fff;border:1.5px solid #c8d4da;color:#5E6572;border-radius:11px;padding:.5rem .4rem;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+.pbtn:hover{border-color:#A9B4C2}
+.pbtn.on{background:#A22C29;border-color:#A22C29;color:#fff}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1.1rem}
+.kpi{background:#fff;border-radius:16px;padding:1rem 1.1rem;box-shadow:0 2px 10px rgba(28,35,33,.1);border:1.5px solid transparent}
+.kpi .k{font-size:.72rem;font-weight:700;color:#A9B4C2;text-transform:uppercase;letter-spacing:.05em}
+.kpi .v{font-size:1.5rem;font-weight:800;margin-top:.25rem;line-height:1.1}
+.kpi .d{font-size:.74rem;font-weight:700;margin-top:.3rem}
+.kpi .d.pos{color:#3E7C4F}
+.kpi .d.neg{color:#A22C29}
+.kpi .d.flat{color:#A9B4C2}
+.panel{background:#fff;border-radius:16px;padding:1.1rem 1.1rem 1.2rem;box-shadow:0 2px 10px rgba(28,35,33,.1);margin-bottom:1.1rem}
+.panel-title{font-size:.78rem;font-weight:800;color:#5E6572;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.9rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.panel-title .pt-sub{font-size:.7rem;font-weight:700;color:#A9B4C2;text-transform:none;letter-spacing:0}
+.chart{display:flex;align-items:flex-end;gap:3px;height:148px;padding-top:1.2rem}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:.3rem;min-width:0}
+.bar{width:100%;max-width:22px;min-height:2px;background:linear-gradient(180deg,#c0413e,#A22C29);border-radius:5px 5px 0 0;transition:height .3s}
+.bar-col.cur .bar{background:linear-gradient(180deg,#1C2321,#3a4540)}
+.bar-lbl{font-size:.62rem;font-weight:700;color:#A9B4C2;text-transform:uppercase}
+.bar-col.cur .bar-lbl{color:#A22C29}
+.rank-item{padding:.55rem 0;border-bottom:1px solid #f0f3f2}
+.rank-item:last-child{border-bottom:none}
+.rank-head{display:flex;align-items:baseline;gap:.6rem;margin-bottom:.35rem}
+.rank-rk{font-size:.8rem;font-weight:800;color:#A9B4C2;width:1.3rem;flex-shrink:0}
+.rank-name{flex:1;font-size:.92rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank-val{font-size:.88rem;font-weight:800;white-space:nowrap}
+.rank-sub{font-size:.74rem;font-weight:600;color:#A9B4C2;white-space:nowrap;margin-left:.4rem}
+.rank-track{height:7px;background:#EEF1EF;border-radius:4px;overflow:hidden}
+.rank-fill{height:100%;background:linear-gradient(90deg,#A22C29,#c97e7c);border-radius:4px;min-width:3px}
+.muted{font-size:.86rem;color:#A9B4C2;text-align:center;padding:1rem .5rem}
+@media(min-width:768px){ main{max-width:980px} .kpi-grid{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))} }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="#" class="back">‹</a>
+  <h1>📊 Statistiques</h1>
+  <span class="count" id="syncSt">✓ Démo</span>
+</header>
+
+<div class="demo-banner"><div>⚠️ MOCKUP — données 100 % fictives générées pour illustration (salon de coiffure). Mois en cours simulé : juin 2026.</div></div>
+
+<main id="main">
+  <div class="period-bar" id="periodBar">
+    <button class="pbtn on" data-p="month">Ce mois</button>
+    <button class="pbtn" data-p="prev">Mois dernier</button>
+    <button class="pbtn" data-p="y12">12 mois</button>
+    <button class="pbtn" data-p="all">Tout</button>
+  </div>
+  <div id="content"></div>
+</main>
+
+<script>
+/* ──────────────────────────────────────────────────────────────
+   MOCKUP — Données fictives + logique de rendu copiée de stats.html
+   "Aujourd'hui" est figé au 22 juin 2026 pour un rendu stable.
+   ────────────────────────────────────────────────────────────── */
+var NOW = new Date(2026,5,22);            // 22 juin 2026 (mois 5 = juin)
+function today(){ return new Date(NOW); } // remplace new Date() sans argument
+
+var MOIS=['J','F','M','A','M','J','J','A','S','O','N','D'];
+var MOIS_LONG=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+var period='month';
+
+/* ── Générateur déterministe de données fictives ── */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+var rng=mulberry32(20260622);
+function pick(arr){return arr[Math.floor(rng()*arr.length)];}
+
+var PRENOMS_F=['Sophie','Camille','Léa','Emma','Chloé','Manon','Inès','Sarah','Julie','Alice','Clara','Océane','Élodie','Marine','Pauline','Laura','Justine','Charlotte','Amélie','Mélanie','Anaïs','Nathalie','Caroline','Aurélie','Céline','Sandrine','Valérie','Audrey','Lucie','Margaux'];
+var PRENOMS_H=['Julien','Thomas','Nicolas','Antoine','Lucas','Hugo','Maxime','Paul','Romain','Nathan','Quentin','Adrien','Florian','Mathieu','Benjamin','Théo','Kevin','Damien','Guillaume','Pierre','Alexandre','Sébastien','David','Jérôme','Vincent','Olivier','Fabien','Cédric','Raphaël','Gabriel'];
+var NOMS=['Martin','Bernard','Dubois','Moreau','Petit','Laurent','Garcia','Roux','Fournier','Girard','Mercier','Bonnet','Lambert','Fontaine','Rousseau','Vincent','Henry','Muller','Faure','Blanc','Robin','Lopez','Morel','Simon','Gauthier','Perrin','Roy','Noël','André','Mathieu','Renard','Colin','Aubert','Da Silva','Leroy','Picard','Roche','Vidal','Carré','Marchand','Lefebvre','Leroux','Guérin','Boyer','Garnier','Chevalier','Masson','Denis','Dumas','Pena'];
+function makeNames(n){var seen={},out=[],guard=0;while(out.length<n&&guard++<5000){var f=rng()<0.62;var pre=f?pick(PRENOMS_F):pick(PRENOMS_H);var nm=pre+' '+pick(NOMS);if(seen[nm])continue;seen[nm]=1;out.push({nom:nm,f:f});}return out;}
+var PRENOMS=makeNames(220);
+
+var PRESTATIONS=[
+  {nom:'Coupe femme',prix:35},
+  {nom:'Coupe homme',prix:22},
+  {nom:'Coloration',prix:48},
+  {nom:'Balayage / Mèches',prix:75},
+  {nom:'Brushing',prix:25},
+  {nom:'Coupe + Barbe',prix:30},
+  {nom:'Soin profond',prix:18},
+  {nom:'Shampoing',prix:8},
+  {nom:'Coupe enfant',prix:16}
+];
+/* Panier-types réalistes (combinaisons de prestations), séparés par profil */
+var PANIERS_F=[[0],[0],[0,4],[0,4],[0,6],[2,4],[3,4],[3,4,6],[0,2],[0,7],[4],[8]];
+var PANIERS_H=[[1],[1],[1],[5],[5],[1,7],[8],[1,6]];
+
+function buildClients(){
+  var clients=[];
+  for(var i=0;i<PRENOMS.length;i++){
+    var c={id:'c'+i,nom:PRENOMS[i].nom,visites:[]};
+    // fréquence de visite du client : tous les ~28 à ~70 jours
+    var freq=28+Math.floor(rng()*42);
+    // certains clients « dorment » : on arrête leurs visites il y a >60 j
+    var dormant = rng()<0.15;
+    var lastOffset = dormant ? (65+Math.floor(rng()*150)) : Math.floor(rng()*32);
+    // on remonte ~13 mois en arrière
+    for(var dayBack=lastOffset; dayBack<400; dayBack+=freq+Math.floor(rng()*16-8)){
+      var d=new Date(NOW); d.setDate(d.getDate()-dayBack);
+      var combo=pick(PRENOMS[i].f?PANIERS_F:PANIERS_H);
+      var items=combo.map(function(idx){var p=PRESTATIONS[idx];return {nom:p.nom,prix:p.prix};});
+      var montant=items.reduce(function(s,it){return s+it.prix;},0);
+      c.visites.push({date:d.toISOString(),montant:montant,items:items});
+    }
+    if(c.visites.length) clients.push(c);
+  }
+  return clients;
+}
+var CLIENTS=buildClients();
+function lc(){return CLIENTS;}
+
+/* ── Helpers (identiques à stats.html) ── */
+function eur(n){return (Math.round(n*100)/100).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';}
+function eur0(n){return Math.round(n).toLocaleString('fr-FR')+' €';}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+function allPassages(){
+  var out=[];
+  lc().forEach(function(c){
+    (c.visites||[]).forEach(function(v){
+      var d=new Date(v.date); if(isNaN(d.getTime())) return;
+      out.push({d:d, montant:+v.montant||0, items:Array.isArray(v.items)?v.items:[], cid:c.id, cnom:c.nom||'Client'});
+    });
+  });
+  return out;
+}
+function inPeriod(d){
+  var now=today();
+  if(period==='all') return true;
+  if(period==='month') return d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth();
+  if(period==='prev'){ var m=now.getMonth()-1, y=now.getFullYear(); if(m<0){m=11;y--;} return d.getFullYear()===y && d.getMonth()===m; }
+  if(period==='y12'){ var lim=new Date(now.getFullYear(),now.getMonth()-11,1); return d>=lim; }
+  return true;
+}
+function kpis(ps){
+  var ca=0, set={};
+  ps.forEach(function(p){ ca+=p.montant; set[p.cid]=1; });
+  return { ca:ca, n:ps.length, panier:ps.length?ca/ps.length:0, clients:Object.keys(set).length };
+}
+function caMois(offset){
+  var now=today(); var m=now.getMonth()-offset, y=now.getFullYear();
+  while(m<0){m+=12;y--;}
+  var ca=0;
+  allPassages().forEach(function(p){ if(p.d.getFullYear()===y && p.d.getMonth()===m) ca+=p.montant; });
+  return ca;
+}
+function topPrestations(ps){
+  var map={};
+  ps.forEach(function(p){ p.items.forEach(function(it){
+    var k=String(it.nom||'—').trim()||'—';
+    var m=map[k]||(map[k]={nom:k,count:0,ca:0}); m.count++; m.ca+=(+it.prix||0);
+  }); });
+  return Object.keys(map).map(function(k){return map[k];}).sort(function(a,b){return b.ca-a.ca;});
+}
+function topClients(ps){
+  var map={};
+  ps.forEach(function(p){ var m=map[p.cid]||(map[p.cid]={nom:p.cnom,count:0,ca:0}); m.count++; m.ca+=p.montant; });
+  return Object.keys(map).map(function(k){return map[k];}).sort(function(a,b){return b.ca-a.ca;});
+}
+function monthly(){
+  var now=today(), keys=[], labels=[], vals=[];
+  for(var i=11;i>=0;i--){ var d=new Date(now.getFullYear(),now.getMonth()-i,1); keys.push(d.getFullYear()+'-'+d.getMonth()); labels.push(MOIS[d.getMonth()]); vals.push(0); }
+  var curKey=now.getFullYear()+'-'+now.getMonth();
+  allPassages().forEach(function(p){ var k=p.d.getFullYear()+'-'+p.d.getMonth(); var idx=keys.indexOf(k); if(idx>=0) vals[idx]+=p.montant; });
+  return { labels:labels, vals:vals, keys:keys, curKey:curKey };
+}
+function dormants(days){
+  var lim=today().getTime()-days*86400000, n=0;
+  lc().forEach(function(c){
+    var vs=Array.isArray(c.visites)?c.visites:[]; if(!vs.length) return;
+    var last=0; vs.forEach(function(v){ var t=new Date(v.date).getTime(); if(t>last) last=t; });
+    if(last && last<lim) n++;
+  });
+  return n;
+}
+function bars(m){
+  var max=Math.max.apply(null, m.vals.concat([1]));
+  var H=104;
+  return '<div class="chart">'+m.labels.map(function(lb,i){
+    var h=Math.max(2, Math.round(m.vals[i]/max*H));
+    var cur=m.keys[i]===m.curKey?' cur':'';
+    var tip=MOIS_LONG[(today().getMonth()-11+i+24)%12]+' : '+eur0(m.vals[i]);
+    return '<div class="bar-col'+cur+'" title="'+esc(tip)+'"><div class="bar" style="height:'+h+'px"></div><div class="bar-lbl">'+lb+'</div></div>';
+  }).join('')+'</div>';
+}
+function rankList(rows, valFn, subFn){
+  if(!rows.length) return '<div class="muted">Aucune donnée sur la période.</div>';
+  var max=rows[0]._v||1;
+  return rows.slice(0,5).map(function(r,i){
+    var v=r._v, pct=Math.max(3, Math.round(v/max*100));
+    return '<div class="rank-item">'+
+      '<div class="rank-head"><span class="rank-rk">'+(i+1)+'</span>'+
+      '<span class="rank-name">'+esc(r.nom)+'</span>'+
+      '<span class="rank-val">'+valFn(r)+'</span><span class="rank-sub">'+subFn(r)+'</span></div>'+
+      '<div class="rank-track"><div class="rank-fill" style="width:'+pct+'%"></div></div></div>';
+  }).join('');
+}
+function render(){
+  var all=allPassages();
+  var content=document.getElementById('content');
+  var ps=all.filter(function(p){return inPeriod(p.d);});
+  var k=kpis(ps);
+  var deltaHtml='';
+  if(period==='month'){
+    var prev=caMois(1), curr=caMois(0);
+    if(prev>0){ var pct=Math.round((curr-prev)/prev*100); var cls=pct>0?'pos':(pct<0?'neg':'flat'); var arr=pct>0?'▲':(pct<0?'▼':'=');
+      deltaHtml='<div class="d '+cls+'">'+arr+' '+Math.abs(pct)+'% vs mois dernier</div>'; }
+    else { deltaHtml='<div class="d flat">— vs mois dernier</div>'; }
+  }
+  var prest=topPrestations(ps), cli=topClients(ps), m=monthly(), dorm=dormants(60);
+  var html='';
+  html+='<div class="kpi-grid">'+
+    '<div class="kpi"><div class="k">Chiffre d\'affaires</div><div class="v">'+eur0(k.ca)+'</div>'+deltaHtml+'</div>'+
+    '<div class="kpi"><div class="k">Passages</div><div class="v">'+k.n+'</div></div>'+
+    '<div class="kpi"><div class="k">Panier moyen</div><div class="v">'+eur(k.panier)+'</div></div>'+
+    '<div class="kpi"><div class="k">Clients servis</div><div class="v">'+k.clients+'</div></div>'+
+    '</div>';
+  html+='<div class="panel"><div class="panel-title">Chiffre d\'affaires<span class="pt-sub">12 derniers mois</span></div>'+bars(m)+'</div>';
+  prest.forEach(function(r){r._v=r.ca;});
+  html+='<div class="panel"><div class="panel-title">Prestations les plus rentables<span class="pt-sub">sur la période</span></div>'+
+    rankList(prest, function(r){return eur0(r.ca);}, function(r){return '×'+r.count;})+'</div>';
+  cli.forEach(function(r){r._v=r.ca;});
+  html+='<div class="panel"><div class="panel-title">Meilleurs clients<span class="pt-sub">sur la période</span></div>'+
+    rankList(cli, function(r){return eur0(r.ca);}, function(r){return r.count+(r.count>1?' visites':' visite');})+'</div>';
+  html+='<div class="panel"><div class="panel-title">Clients en sommeil<span class="pt-sub">+ de 60 jours</span></div>'+
+    (dorm>0
+      ? '<div style="display:flex;align-items:center;gap:.8rem"><div style="font-size:1.8rem;font-weight:800;color:#A22C29">'+dorm+'</div>'+
+        '<div class="muted" style="text-align:left;padding:0;flex:1">client'+(dorm>1?'s ne sont':' n\'est')+' pas revenu'+(dorm>1?'s':'')+' depuis plus de 2 mois. '+
+        '<a href="#" style="color:#A22C29;font-weight:700;text-decoration:none">Lancer une relance →</a></div></div>'
+      : '<div class="muted" style="padding:.2rem 0;text-align:left">Aucun client en sommeil : tout le monde est revenu récemment. 👍</div>')+'</div>';
+  content.innerHTML=html;
+}
+document.getElementById('periodBar').addEventListener('click', function(e){
+  var b=e.target.closest('.pbtn'); if(!b) return;
+  period=b.getAttribute('data-p');
+  Array.prototype.forEach.call(this.querySelectorAll('.pbtn'), function(x){ x.classList.toggle('on', x===b); });
+  render();
+});
+render();
+</script>
+</body>
+</html>

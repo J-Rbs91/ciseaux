@@ -103,6 +103,12 @@ html[data-theme="dark"] .rank-track{background:#171C1F}
 html[data-theme="dark"] .empty-ico{background:#1F2528;border-color:#313A3F}
 html[data-theme="dark"] .empty-title{color:#E7ECEE}
 html[data-theme="dark"] .empty-text{color:#9AA6AE}
+
+/* ── ADAPTATION ÉCRAN LARGE (desktop) ── */
+@media(min-width:768px){
+  main{max-width:980px}
+  .kpi-grid{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+}
 </style>
 <script>(function(){try{if(localStorage.getItem("kut-theme")==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();</script>
 </head>

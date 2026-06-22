@@ -340,6 +340,14 @@ html[data-theme="dark"] .tl-item::before{border-color:#1F2528!important}
 html[data-theme="dark"] .tl-date{color:#E7ECEE!important}
 html[data-theme="dark"] .tl-amt{color:#E0635D!important}
 html[data-theme="dark"] .tl-tag{background:#171C1F!important;border-color:#313A3F!important;color:#9AA6AE!important}
+
+/* ── ADAPTATION ÉCRAN LARGE (desktop) ── */
+@media(min-width:768px){
+  .search-wrap,.sync-row,.list{max-width:1100px;margin-left:auto;margin-right:auto}
+  .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.75rem;align-items:start}
+  .list .card{margin-bottom:0}
+  .empty{grid-column:1/-1}
+}
 </style>
 <script>(function(){try{if(localStorage.getItem("kut-theme")==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();</script>
 </head>

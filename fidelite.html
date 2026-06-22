@@ -371,6 +371,13 @@ html[data-theme="dark"] .cfg-sec{border-top-color:#313A3F!important}
 html[data-theme="dark"] .ledger-item{border-bottom-color:#262d31!important}
 html[data-theme="dark"] .ld-delta.pos{color:#5BC88A!important}
 html[data-theme="dark"] .switch .sl{background:#3d484e!important}
+
+/* ── ADAPTATION ÉCRAN LARGE (desktop) ── */
+@media(min-width:768px){
+  main{max-width:920px}
+  #topList{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:.65rem;align-items:start}
+  #topList .top-card{margin-bottom:0}
+}
 </style>
 <script>(function(){try{if(localStorage.getItem("kut-theme")==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();</script>
 </head>

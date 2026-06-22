@@ -80,6 +80,14 @@ html[data-theme="dark"] .modal{background:#1F2528;color:#E7ECEE}
 html[data-theme="dark"] .modal .xbtn{color:#9AA6AE}
 html[data-theme="dark"] .fld input,html[data-theme="dark"] .fld select,html[data-theme="dark"] .dayrow input[type=time]{background:#14181A;color:#E7ECEE;border-color:#313A3F}
 html[data-theme="dark"] .share-url{background:#14181A;color:#E7ECEE;border-color:#313A3F}
+
+/* ── ADAPTATION ÉCRAN LARGE (desktop) ── */
+@media(min-width:768px){
+  .bar,.tabs,.list,.notice{max-width:1100px}
+  .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:.7rem;align-items:start}
+  .list .item{margin-bottom:0}
+  .empty{grid-column:1/-1}
+}
 </style>
 <script>(function(){try{if(localStorage.getItem("kut-theme")==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();</script>
 </head>

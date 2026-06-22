@@ -313,6 +313,14 @@ html[data-theme="dark"] .anniv-check{color:#E7ECEE!important}
 html[data-theme="dark"] #annivBlock{background:#171C1F!important;border-color:#313A3F!important}
 html[data-theme="dark"] .presta-box label{color:#E7ECEE!important}
 html[data-theme="dark"] .anniv-tag{background:#2a1614!important;color:#E0635D!important;border-color:#3d484e!important}
+
+/* ── ADAPTATION ÉCRAN LARGE (desktop) ── */
+@media(min-width:768px){
+  main{max-width:1100px}
+  #liste{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:.9rem;align-items:start}
+  #liste .offre-card{margin-bottom:0}
+  .empty{grid-column:1/-1}
+}
 </style>
 <script>(function(){try{if(localStorage.getItem("kut-theme")==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();</script>
 </head>

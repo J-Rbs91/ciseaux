@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; img-src 'self' data: https:; font-src https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://script.google.com https://script.googleusercontent.com; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.emailjs.com">
 <title>KuT</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <meta name="theme-color" content="#1C2321">
@@ -656,18 +656,21 @@ function doExport(){
   bundle.caisseFondCible=localStorage.getItem('cloture-fond-cible-v1')||'';
   try{bundle.fideliteConfig=JSON.parse(localStorage.getItem('fidelite-config-v1')||'{}');}catch(e){}
   try{bundle.offres=JSON.parse(localStorage.getItem('offres-v1')||'[]');}catch(e){bundle.offres=[];}
-  // Paramètres de connexion/sécurité : permettent à une restauration de rendre un
-  // nouvel appareil opérationnel sans recoller l'URL ni la clé admin manuellement.
-  bundle.syncUrl=su();
-  bundle.adminKey=ak();
   try{bundle.crmPolicy=JSON.parse(localStorage.getItem('crm-policy-v1')||'{}');}catch(e){}
+  // la clé admin et l'URL de synchro sont des SECRETS. Par défaut la
+  // sauvegarde n'en contient AUCUN (sûre à archiver/partager) ; on ne les
+  // embarque que si l'utilisateur le demande explicitement.
+  var hasSecrets=!!(su()||ak());
+  var withSecrets=hasSecrets&&confirm('Inclure la clé admin et l\'URL de synchro dans cette sauvegarde ?\n\n• OK : la restauration rend un nouvel appareil opérationnel sans ressaisie, mais le fichier devient un SECRET (ne le partagez pas).\n• Annuler (recommandé) : sauvegarde sans secrets.');
+  if(withSecrets){bundle.syncUrl=su();bundle.adminKey=ak();}
   var nom=(p.nom||'monsalon').toLowerCase().replace(/[^a-z0-9]+/g,'-');
   var date=new Date().toISOString().slice(0,10);
   var blob=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sauvegarde-'+nom+'-'+date+'.json';a.click();
   setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
-  // la sauvegarde contient l'URL de synchro et la clé admin → secret à protéger.
-  setSt('fileSt','ok','✓ Fichier téléchargé. ⚠ Il contient votre clé admin et l\'URL de votre script : conservez-le en lieu sûr, ne le partagez pas.');
+  setSt('fileSt','ok',withSecrets
+    ?'✓ Fichier téléchargé. ⚠ Il contient votre clé admin et l\'URL : conservez-le en lieu sûr, ne le partagez pas.'
+    :'✓ Fichier téléchargé (sans secrets : ni clé admin, ni URL de synchro).');
 }
 
 function doImport(e){

@@ -59,16 +59,14 @@ function genererCleAdmin() {
   return k;
 }
 
-// l'amorçage public de la clé (« claimKey ») a été RETIRÉ. La clé ne
-// peut plus être posée depuis le réseau (sinon le premier à connaître l'URL …/exec
-// pouvait revendiquer la clé et prendre le contrôle). Elle se génère désormais
+// La clé admin ne peut pas être posée depuis le réseau. Elle se génère
 // UNIQUEMENT depuis l'éditeur Apps Script via genererCleAdmin(), puis se colle
 // dans l'application (Mon salon → Clé admin).
 
 function doGet(e) {
   var p = (e && e.parameter) || {}, cb = p.callback;
   // Lien de désinscription cliqué depuis un email : navigation directe (page HTML)
-  if ((p.action || 'load') === 'unsub') return pageDesinscription_(p);
+  if ((p.action || 'load') === 'unsub') return pageDesinscription_(p, false);
   return sortie_(traiter_(p), cb);
 }
 
@@ -86,6 +84,8 @@ function doPost(e) {
       if (body && typeof body === 'object') { for (var b in body) if (body.hasOwnProperty(b)) p[b] = body[b]; }
     }
   } catch (e2) {}
+  // confirmation de désinscription d'un lien hérité (POST humain).
+  if ((p.action || 'load') === 'unsub') return pageDesinscription_(p, true);
   return sortie_(traiter_(p), p.callback);
 }
 
@@ -1144,18 +1144,24 @@ function lienDesinscription_(baseUrl, id) {
   return baseUrl + '?action=unsub&id=' + encodeURIComponent(id) + '&sig=' + encodeURIComponent(signUnsub_(id));
 }
 
-function pageDesinscription_(p) {
-  var ok = false;
+function pageDesinscription_(p, estPost) {
+  var ok = false, demandeConfirmation = false;
   try {
     if (p.id) {
-      // Si une signature est fournie, elle DOIT être valide (anti-falsification).
-      // Les anciens liens sans signature restent acceptés pendant une transition
-      // (résiduel documenté ) ; retirer cette tolérance une fois les anciens
-      // emails périmés pour fermer entièrement l'.
       var sig = String(p.sig || '');
-      if (!sig || egalConstant_(sig, signUnsub_(p.id))) ok = majOptin_(p.id, false);
+      if (sig) {
+        // Lien SIGNÉ (emails récents) : désinscription en un clic, signature
+        // vérifiée à temps constant.
+        if (egalConstant_(sig, signUnsub_(p.id))) ok = majOptin_(p.id, false);
+      } else {
+        // Lien hérité sans signature : l'état n'est jamais modifié sur un simple
+        // GET ; une confirmation humaine envoyée en POST est requise.
+        if (estPost && String(p.confirm || '') === '1') ok = majOptin_(p.id, false);
+        else demandeConfirmation = true;
+      }
     }
   } catch(e) {}
+  if (demandeConfirmation) return pageConfirmationDesinscription_(String(p.id));
   var msg = ok
     ? 'Vous êtes bien désinscrit(e) des offres. À bientôt !'
     : 'Lien invalide ou désinscription déjà prise en compte.';
@@ -1166,6 +1172,28 @@ function pageDesinscription_(p) {
     + '<div style="font-size:42px">✂️</div>'
     + '<h1 style="font-size:18px;color:#b87c6e">' + msg + '</h1>'
     + '</div></body></html>';
+  return HtmlService.createHtmlOutput(html);
+}
+
+// page de confirmation pour les liens hérités (sans signature).
+// La désinscription n'est effectuée qu'après envoi du formulaire (POST), ce qui
+// empêche toute désinscription via un simple GET (devinette d'id, pré-chargement).
+function pageConfirmationDesinscription_(id) {
+  var action = '';
+  try { action = ScriptApp.getService().getUrl(); } catch(e) {}
+  var html = '<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">'
+    + '<meta name="viewport" content="width=device-width,initial-scale=1"><title>Désinscription</title></head>'
+    + '<body style="font-family:Arial,Helvetica,sans-serif;background:#fdf3ef;color:#3d2b27;text-align:center;padding:60px 20px">'
+    + '<div style="max-width:420px;margin:0 auto;background:#fff;border-radius:16px;padding:32px;box-shadow:0 2px 14px rgba(0,0,0,.08)">'
+    + '<div style="font-size:42px">✂️</div>'
+    + '<h1 style="font-size:18px;color:#b87c6e">Confirmer la désinscription</h1>'
+    + '<p style="font-size:14px;line-height:1.5">Cliquez ci-dessous pour ne plus recevoir nos offres par email.</p>'
+    + '<form method="post" action="' + escapeHtml_(action) + '" style="margin-top:18px">'
+    + '<input type="hidden" name="action" value="unsub">'
+    + '<input type="hidden" name="id" value="' + escapeHtml_(id) + '">'
+    + '<input type="hidden" name="confirm" value="1">'
+    + '<button type="submit" style="background:#b87c6e;color:#fff;border:none;border-radius:10px;padding:12px 22px;font-size:15px;font-weight:bold;cursor:pointer">Me désinscrire</button>'
+    + '</form></div></body></html>';
   return HtmlService.createHtmlOutput(html);
 }
 

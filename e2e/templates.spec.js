@@ -3,17 +3,19 @@ const { seed, tpl, offre, lsGet } = require('./_helpers');
 
 test.describe('templates.html — seeds, CRUD, segment, variables', () => {
 
-  test('initSeeds : injecte les 7 modèles de base si vide', async ({ page }) => {
+  test('initSeeds : injecte les 9 modèles de base si vide', async ({ page }) => {
     await seed(page, { templates: [] });
     await page.goto('/templates.html');
-    await expect(page.locator('.tpl-card')).toHaveCount(7);
+    await expect(page.locator('.tpl-card')).toHaveCount(9);
     const arr = await lsGet(page, 'email-templates-v1');
-    expect(arr).toHaveLength(7);
+    expect(arr).toHaveLength(9);
     const segs = arr.reduce((m, t) => { m[t.id] = t.segment; return m; }, {});
     expect(segs['t_seed_promo']).toBe('winback');
     expect(segs['t_seed_fide']).toBe('reward');
     expect(segs['t_seed_vip']).toBe('vip');
     expect(segs['t_seed_enfant']).toBe('profil:enfant');
+    expect(segs['t_seed_homme']).toBe('profil:homme');
+    expect(segs['t_seed_femme']).toBe('profil:femme');
   });
 
   test('initSeeds : rétro-remplit le champ segment des seeds installés SANS segment', async ({ page }) => {
@@ -43,7 +45,7 @@ test.describe('templates.html — seeds, CRUD, segment, variables', () => {
     const arr = await lsGet(page, 'email-templates-v1');
     expect(arr.find(t => t.id === 't_custom')).toBeTruthy();
     expect(arr.find(t => t.id === 't_seed_promo')).toBeTruthy();
-    expect(arr.length).toBe(8); // 1 perso + 7 seeds
+    expect(arr.length).toBe(10); // 1 perso + 9 seeds
   });
 
   test('création d\'un template avec segment : persiste', async ({ page }) => {

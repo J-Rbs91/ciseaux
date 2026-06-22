@@ -442,27 +442,62 @@ var SEEDS=[
   {id:'t_seed_conge',segment:'',nom:'Fermeture / Congés',sujet:'Fermeture exceptionnelle du salon',titre:'Le salon fait une pause',sousTitre:'',accroche:'',corps:'Bonjour {prenom},\n\nNotre salon sera fermé du [date de début] au [date de fin]. Nous retrouverons avec plaisir le chemin de votre rendez-vous dès la réouverture.\n\nPensez à réserver à l\'avance pour choisir le créneau qui vous convient le mieux.',offresIds:[],afficherFidelite:false,phraseSortie:'Merci de votre compréhension.',salutation:'Bien à vous,',signature:'L\'équipe',logoDataUrl:'',logoUrl:'',createdAt:''},
   {id:'t_seed_relance1',segment:'',nom:'Relance 1ʳᵉ visite',sujet:'On aimerait vous revoir',titre:'Votre première visite vous a plu ?',sousTitre:'On a hâte de vous revoir',accroche:'Une attention pour votre retour',corps:'Bonjour {prenom},\n\nVous nous avez fait confiance pour la première fois, et nous espérons que vous en avez été pleinement satisfait(e).\n\nPour vous donner envie de revenir, profitez d\'un avantage sur votre 2ᵉ visite. Réservez dès maintenant le créneau qui vous convient le mieux.',offresIds:[],afficherFidelite:false,phraseSortie:'Au plaisir de vous revoir très vite.',salutation:'Bien à vous,',signature:'L\'équipe',logoDataUrl:'',logoUrl:'',createdAt:''},
   {id:'t_seed_vip',segment:'vip',nom:'Client fidèle',sujet:'Un petit merci pour votre fidélité',titre:'Merci d\'être fidèle',sousTitre:'',accroche:'',corps:'Bonjour {prenom},\n\nVous faites partie de nos client(e)s les plus fidèles, et nous tenions à vous le dire : merci de votre confiance.\n\nPour vous remercier, nous vous réservons une petite attention lors de votre prochaine visite. Réservez quand vous le souhaitez, nous prendrons soin de vous comme il se doit.',offresIds:[],afficherFidelite:true,phraseSortie:'Au plaisir de vous retrouver très vite.',salutation:'Bien à vous,',signature:'L\'équipe',logoDataUrl:'',logoUrl:'',createdAt:''},
-  {id:'t_seed_enfant',segment:'profil:enfant',nom:'Offre enfant',sujet:'Et si on s\'occupait des cheveux des enfants ?',titre:'Une coupe pour les enfants ?',sousTitre:'',accroche:'',corps:'Bonjour {prenom},\n\nLes cheveux des enfants ont repoussé ? Pensez à leur coupe : nous accueillons les plus jeunes dans une ambiance détendue, et ça va vite.\n\nRéservez le créneau qui vous arrange, nous nous occupons du reste.',offresIds:[],afficherFidelite:false,phraseSortie:'À très bientôt au salon.',salutation:'Bien à vous,',signature:'L\'équipe',logoDataUrl:'',logoUrl:'',createdAt:''}
+  {id:'t_seed_enfant',segment:'profil:enfant',nom:'Offre enfant',sujet:'Et si on s\'occupait des cheveux des enfants ?',titre:'Une coupe pour les enfants ?',sousTitre:'',accroche:'',corps:'Bonjour {prenom},\n\nLes cheveux des enfants ont repoussé ? Pensez à leur coupe : nous accueillons les plus jeunes dans une ambiance détendue, et ça va vite.\n\nRéservez le créneau qui vous arrange, nous nous occupons du reste.',offresIds:[],afficherFidelite:false,phraseSortie:'À très bientôt au salon.',salutation:'Bien à vous,',signature:'L\'équipe',logoDataUrl:'',logoUrl:'',createdAt:''},
+  {id:'t_seed_homme',segment:'profil:homme',nom:'Offre homme',sujet:'Une attention pour votre prochaine coupe',titre:'Pour vous, messieurs',sousTitre:'',accroche:'',corps:'Bonjour {prenom},\n\nUn petit rappel : il est peut-être temps de rafraîchir la coupe. Coupe, barbe ou les deux, on s\'occupe de tout, et ça va vite.\n\nRéservez le créneau qui vous arrange, nous vous attendons.',offresIds:[],afficherFidelite:false,phraseSortie:'À très bientôt au salon.',salutation:'Bien à vous,',signature:'L\'équipe',logoDataUrl:'',logoUrl:'',createdAt:''},
+  {id:'t_seed_femme',segment:'profil:femme',nom:'Offre femme',sujet:'Une attention rien que pour vous',titre:'Pour vous, mesdames',sousTitre:'',accroche:'',corps:'Bonjour {prenom},\n\nEnvie d\'un moment pour vous ? Coupe, couleur, balayage ou brushing : offrez-vous une parenthèse au salon.\n\nRéservez quand vous le souhaitez, nous prendrons soin de vous.',offresIds:[],afficherFidelite:false,phraseSortie:'Au plaisir de vous retrouver.',salutation:'Bien à vous,',signature:'L\'équipe',logoDataUrl:'',logoUrl:'',createdAt:''}
 ];
+
+// Journal des modèles fournis déjà installés : permet de NE PAS réinjecter un
+// modèle d'onboarding que le salon a sciemment supprimé (une fois configuré).
+var LS_SEEDLOG='email-templates-seeds-v1';
+function loadSeedLog(){try{var a=JSON.parse(localStorage.getItem(LS_SEEDLOG)||'[]');return Array.isArray(a)?a:[];}catch(e){return[];}}
+function saveSeedLog(a){try{localStorage.setItem(LS_SEEDLOG,JSON.stringify(a));}catch(e){}}
+
+// Onboarding terminé = salon paramétré (nom renseigné) ET script Google déployé
+// (URL de synchro posée). Tant que ce n'est pas le cas, le kit de modèles fournis
+// reste (re)proposé ; ensuite, le salon peut les supprimer définitivement.
+function isOnboarded(){
+  try{
+    var p=JSON.parse(localStorage.getItem('profil-magasin-v1')||'{}');
+    var salon=!!(p&&(p.nom||'').trim());
+    var sync=((localStorage.getItem('sync-url-v1')||'').trim()).length>0;
+    return salon&&sync;
+  }catch(e){return false;}
+}
 
 function initSeeds(){
   var arr=loadTpls();
-  if(arr.length===0){saveTpls(SEEDS);return SEEDS;}
-  // Ajoute les modèles de base manquants (ex. « Relance 1ʳᵉ visite ») sans toucher aux modèles déjà personnalisés.
   var ids={}; arr.forEach(function(t){ids[t.id]=1;});
-  var added=false;
+  var log=loadSeedLog(), logSet={}; log.forEach(function(id){logSet[id]=1;});
+  var onboarded=isOnboarded();
+  var added=false, logChanged=false;
   SEEDS.forEach(function(s){
-    if(!ids[s.id]){ arr.push(s); added=true; return; }
-    // Rétro-compat : renseigne le segment des modèles de base déjà installés qui ne l'avaient pas encore.
-    var ex=arr.filter(function(t){return t.id===s.id;})[0];
-    if(ex && typeof ex.segment==='undefined'){ ex.segment=s.segment||''; added=true; }
+    if(ids[s.id]){
+      // Modèle fourni présent : rétro-compat du champ segment + on mémorise l'installation.
+      var ex=arr.filter(function(t){return t.id===s.id;})[0];
+      if(ex && typeof ex.segment==='undefined'){ ex.segment=s.segment||''; added=true; }
+      if(!logSet[s.id]){ log.push(s.id); logSet[s.id]=1; logChanged=true; }
+      return;
+    }
+    if(!logSet[s.id]){
+      // Modèle fourni jamais installé (1er accès ou nouveauté) : on le pose une fois.
+      arr.push(s); ids[s.id]=1; added=true;
+      log.push(s.id); logSet[s.id]=1; logChanged=true;
+    } else if(!onboarded){
+      // Déjà connu mais absent et onboarding non terminé : on re-fournit le kit.
+      arr.push(s); ids[s.id]=1; added=true;
+    }
+    // Sinon (déjà installé, supprimé, salon configuré) : suppression RESPECTÉE.
   });
   if(added) saveTpls(arr);
+  if(logChanged) saveSeedLog(log);
   return arr;
 }
 
 function renderTplList(){
-  var arr=initSeeds(), el=document.getElementById('tplList');
+  // Le seeding ne s'exécute qu'au chargement de la page (voir boot), pas à chaque
+  // rendu : sinon un modèle fourni supprimé reviendrait instantanément.
+  var arr=loadTpls(), el=document.getElementById('tplList');
   if(!arr.length){el.innerHTML='';return;}
   el.innerHTML=arr.map(function(t){
     var sel=(editId&&editId===t.id)?' selected':'';
@@ -641,6 +676,7 @@ function utiliserDansCampagneId(id){
   setTimeout(function(){utiliserDansCampagne();},50);
 }
 
+initSeeds();   // installe / re-fournit le kit une seule fois, au chargement
 renderTplList();
 nouveau();
 </script>

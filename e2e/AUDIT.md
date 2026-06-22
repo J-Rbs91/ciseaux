@@ -102,4 +102,8 @@ Les findings **F1–F4** sont des écarts de comportement réels :
 | **F6** | Cosmétique | ✅ Ajusté | Seuil d'alerte du compteur aligné sur la limite d'envoi (alerte à 1700, blocage 1800). | — |
 | **F5** | Cosmétique | ⏸️ Assumé | Réduction = **champ texte libre** (« -20% », « soin offert »…). Comportement voulu ; pas de validation numérique imposée. | — |
 
-**Suite après correctifs : 70 tests, 70 passants / 0 échouant** (`npx playwright test`).
+**Suite après correctifs : 74 tests, 74 passants / 0 échouant** (`npx playwright test`).
+
+### Évolutions fonctionnelles (post-audit)
+- **Modèles Homme & Femme** ajoutés au kit fourni (`segment` = `profil:homme` / `profil:femme`).
+- **Cycle de vie du kit d'onboarding** (`templates.html` `initSeeds`) : les modèles fournis sont posés au 1ᵉʳ accès et re-fournis tant que le salon n'est pas configuré ; **une fois le salon paramétré (`profil-magasin-v1.nom`) ET le script Google déployé (`sync-url-v1`), les suppressions deviennent définitives** (journal `email-templates-seeds-v1`). Le seeding ne s'exécute qu'au chargement (plus à chaque rendu) ⇒ suppression visible immédiatement. Couvert par `e2e/onboarding-seeds.spec.js` (4 tests).

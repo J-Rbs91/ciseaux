@@ -136,8 +136,10 @@ main{padding:1.1rem 1.1rem 3rem;max-width:1080px;margin:0 auto}
 .history-table .ht-zero{color:#9193a8;font-weight:700}
 .history-table .ht-bold{font-weight:700}
 .history-empty{padding:1.6rem;text-align:center;color:#6b6c88;font-size:.86rem;font-style:italic}
-/* Historique → cartes empilées sur mobile (évite le débordement horizontal) */
-@media(max-width:540px){
+/* Historique → cartes empilées sous ~860px (mobile portrait/paysage + tablette
+   portrait) : la table à 8 colonnes (~810px) déborderait sinon. Au-delà
+   (tablette paysage, desktop) la table tient et reste affichée. */
+@media(max-width:860px){
   .history-body{overflow-x:visible}
   .history-table{display:block}
   .history-table thead{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);border:0}

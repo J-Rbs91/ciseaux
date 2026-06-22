@@ -3,8 +3,11 @@
 **App :** KuT (outil salon, statique)
 **Date :** 2026-06-22
 **Méthode :** audit automatisé Playwright (Chromium) + revue visuelle.
-**Couverture :** 14 pages × 2 viewports (desktop 1280×800, mobile 390×844) +
-tour d'onboarding complet (12 slides) sur les 2 viewports.
+**Couverture :** 14 pages + tour d'onboarding complet (12 slides) sur **5
+configurations** :
+- Desktop 1280×800
+- Mobile portrait 390×844 · Mobile paysage 844×390
+- Tablette portrait 768×1024 · Tablette paysage 1024×768
 **Diagnostics auto :** débordement horizontal, éléments hors viewport, images
 cassées, cibles tactiles, troncature de texte, erreurs console.
 
@@ -108,12 +111,19 @@ Remontés par la revue automatique, **rejetés** après vérification :
 
 | # | Correctif | Fichier | Vérif |
 |---|-----------|---------|-------|
-| B1 | Historique caisse → **cartes empilées** sur mobile (`@media <=540px`) avec libellés (`data-label`) ; plus de débordement, état vide et lignes peuplées entièrement lisibles | `caisse.html` | ✅ vide + peuplé, `overflowX=false` |
+| B1 | Historique caisse → **cartes empilées** (`@media <=860px`) avec libellés (`data-label`) ; couvre mobile portrait/paysage **et tablette portrait** (table 8 col. ~810px qui débordait sous ~848px). Table conservée en tablette paysage/desktop. | `caisse.html` | ✅ vide + peuplé sur les 5 configs, `overflowX=false` |
 | B2 | Popup du tour **épinglée en haut** quand la zone dépasse 78 % de la hauteur → le bouton d'action (Enregistrer/Envoyer) reste visible | `onboarding.js` (`placePop`) | ✅ bouton « Enregistrer » visible |
 | B3 | Marge mini des bords portée à **14 px** (`applyHole`) → l'anneau lumineux n'est plus rogné quand la cible touche un bord | `onboarding.js` (`applyHole`) | ✅ anneau header complet (mobile) |
 | B4 | Copie fidélité : « Aucun **points**… » → « Personne n'a encore de … » (neutre, sans problème d'accord) | `fidelite.html` | ✅ |
 
 Tests de non-régression sécurité : **11/11 ✅**.
+
+> **Couverture étendue (suite à revue) :** l'audit initial ne couvrait que
+> desktop + mobile portrait. Il a été **complété** sur mobile paysage,
+> tablette portrait et tablette paysage. Seul écart trouvé : la table
+> d'historique caisse débordait aussi en **tablette portrait** (colonne
+> « Supprimer » coupée) → résolu en remontant le breakpoint cartes à 860px.
+> Aucun autre défaut sur ces orientations (pages et tour conformes).
 
 ## Verdict QA
 

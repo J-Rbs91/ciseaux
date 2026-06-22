@@ -104,6 +104,17 @@ Remontés par la revue automatique, **rejetés** après vérification :
 
 ---
 
+## Correctifs appliqués (vérifiés Playwright)
+
+| # | Correctif | Fichier | Vérif |
+|---|-----------|---------|-------|
+| B1 | Historique caisse → **cartes empilées** sur mobile (`@media <=540px`) avec libellés (`data-label`) ; plus de débordement, état vide et lignes peuplées entièrement lisibles | `caisse.html` | ✅ vide + peuplé, `overflowX=false` |
+| B2 | Popup du tour **épinglée en haut** quand la zone dépasse 78 % de la hauteur → le bouton d'action (Enregistrer/Envoyer) reste visible | `onboarding.js` (`placePop`) | ✅ bouton « Enregistrer » visible |
+| B3 | Marge mini des bords portée à **14 px** (`applyHole`) → l'anneau lumineux n'est plus rogné quand la cible touche un bord | `onboarding.js` (`applyHole`) | ✅ anneau header complet (mobile) |
+| B4 | Copie fidélité : « Aucun **points**… » → « Personne n'a encore de … » (neutre, sans problème d'accord) | `fidelite.html` | ✅ |
+
+Tests de non-régression sécurité : **11/11 ✅**.
+
 ## Verdict QA
 
 L'onboarding et la présentation de l'app sont **globalement prêts**, avec des

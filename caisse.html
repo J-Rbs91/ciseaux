@@ -136,6 +136,20 @@ main{padding:1.1rem 1.1rem 3rem;max-width:1080px;margin:0 auto}
 .history-table .ht-zero{color:#9193a8;font-weight:700}
 .history-table .ht-bold{font-weight:700}
 .history-empty{padding:1.6rem;text-align:center;color:#6b6c88;font-size:.86rem;font-style:italic}
+/* Historique → cartes empilées sur mobile (évite le débordement horizontal) */
+@media(max-width:540px){
+  .history-body{overflow-x:visible}
+  .history-table{display:block}
+  .history-table thead{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);border:0}
+  .history-table tbody{display:block}
+  .history-table tbody tr{display:block;border:1.5px solid #e6dcc4;border-radius:12px;margin:0 .9rem .7rem;background:#fffaf2}
+  .history-table tbody tr:nth-child(even) td{background:transparent}
+  .history-table tbody td{display:flex;justify-content:space-between;align-items:center;gap:1rem;text-align:right;white-space:normal;padding:.5rem .85rem;border-bottom:1px solid #f0e8d8}
+  .history-table tbody td:last-child{border-bottom:0;justify-content:flex-end}
+  .history-table tbody td::before{content:attr(data-label);font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9a854f;text-align:left;flex:0 0 auto}
+  .history-table tbody td[data-label=""]::before,.history-table tbody td:not([data-label])::before{display:none}
+  .history-table tbody td.history-empty{display:block;text-align:center;padding:1.4rem .85rem}
+}
 .btn-del{background:none;border:1px solid #5a3a3a;color:#e5736b;border-radius:6px;font-size:.7rem;font-weight:700;padding:.25rem .6rem;cursor:pointer;transition:all .15s;font-family:inherit}
 .btn-del:hover{background:#2a1f1f}
 
@@ -680,16 +694,16 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
       var eCls=entry.ecart>0.005?'ht-pos':entry.ecart<-0.005?'ht-neg':'ht-zero';
       var eSign=entry.ecart>0.005?'+':'';
       var cells=[
-        {cls:'',text:entry.date},
-        {cls:'h-r ht-bold',text:fmt(entry.comptage)},
-        {cls:'h-r',text:fmt(typeof entry.reserve==='number'?entry.reserve:entry.fond||0)},
-        {cls:'h-r',text:typeof entry.fondCible==='number'?fmt(entry.fondCible):'—'},
-        {cls:'h-r',text:typeof entry.sortie==='number'?fmt(entry.sortie):'—'},
-        {cls:'h-r',text:entry.ref>0?fmt(entry.ref):'—'},
-        {cls:'h-r '+eCls,text:eSign+fmt(entry.ecart)}
+        {cls:'',text:entry.date,lab:'Date'},
+        {cls:'h-r ht-bold',text:fmt(entry.comptage),lab:'Pièces + billets'},
+        {cls:'h-r',text:fmt(typeof entry.reserve==='number'?entry.reserve:entry.fond||0),lab:'Réserve monnaie'},
+        {cls:'h-r',text:typeof entry.fondCible==='number'?fmt(entry.fondCible):'—',lab:'Fond cible'},
+        {cls:'h-r',text:typeof entry.sortie==='number'?fmt(entry.sortie):'—',lab:'Sortie'},
+        {cls:'h-r',text:entry.ref>0?fmt(entry.ref):'—',lab:'Logiciel'},
+        {cls:'h-r '+eCls,text:eSign+fmt(entry.ecart),lab:'Écart'}
       ];
-      cells.forEach(function(c){var td=document.createElement('td');if(c.cls)td.className=c.cls;td.textContent=c.text;tr.appendChild(td);});
-      var tdDel=document.createElement('td');tdDel.className='h-r';
+      cells.forEach(function(c){var td=document.createElement('td');if(c.cls)td.className=c.cls;td.setAttribute('data-label',c.lab);td.textContent=c.text;tr.appendChild(td);});
+      var tdDel=document.createElement('td');tdDel.className='h-r';tdDel.setAttribute('data-label','');
       var btnDel=document.createElement('button');btnDel.className='btn-del';btnDel.type='button';btnDel.textContent='Supprimer';btnDel.dataset.idx=i;
       btnDel.addEventListener('click',function(){var idx=parseInt(this.dataset.idx,10),d=loadHistory();d.splice(idx,1);saveHistoryData(d);renderHistory();showToast('Entrée supprimée');});
       tdDel.appendChild(btnDel);tr.appendChild(tdDel);tbody.appendChild(tr);

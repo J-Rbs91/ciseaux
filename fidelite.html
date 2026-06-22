@@ -783,7 +783,7 @@ function renderTop(){
   var all=lc().filter(function(c){return bal(c,k)>0;});
   all.sort(function(a,b){return bal(b,k)-bal(a,k);});
   var top=all.slice(0,10);
-  if(!top.length){document.getElementById('topList').innerHTML='<div class="empty">Aucun '+lab.toLowerCase()+' attribué encore.</div>';return;}
+  if(!top.length){document.getElementById('topList').innerHTML='<div class="empty">Personne n\'a encore de '+lab.toLowerCase()+'.</div>';return;}
   var medals=['🥇','🥈','🥉'];
   document.getElementById('topList').innerHTML=top.map(function(c,idx){
     var b=bal(c,k),avail=availableRewards(c,cf).length>0,nr=nextReward(c,cf,k);

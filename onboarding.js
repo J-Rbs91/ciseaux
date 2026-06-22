@@ -413,9 +413,12 @@
 
   function applyHole(x, y, w, h) {
     var W = window.innerWidth, H = window.innerHeight;
-    x = Math.max(6, x); y = Math.max(6, y);
-    if (x + w > W - 6) w = W - 6 - x;
-    if (y + h > H - 6) h = H - 6 - y;
+    // Marge mini aux bords : l'anneau lumineux (halo box-shadow) doit rester
+    // entièrement visible, sinon il paraît rogné quand la cible touche un bord.
+    var EDGE = 14;
+    x = Math.max(EDGE, x); y = Math.max(EDGE, y);
+    if (x + w > W - EDGE) w = W - EDGE - x;
+    if (y + h > H - EDGE) h = H - EDGE - y;
     if (SUPPORTS_HOLE && blur) {
       var p = holePath(x, y, w, h, 16);
       blur.style.clipPath = p;
@@ -752,7 +755,10 @@
     if (tall || (below < ph + margin && above < ph + margin)) {
       // Zone trop grande : on épingle en haut ou en bas, sans flèche.
       left = (vw - pw) / 2;
-      top = rect.top > vh / 2 ? margin : vh - ph - margin;
+      // Zone quasi plein écran (formulaire) : épingler en haut pour laisser
+      // visible le bouton d'action, situé en bas du formulaire.
+      if (rect.height > vh * 0.78) top = margin;
+      else top = rect.top > vh / 2 ? margin : vh - ph - margin;
     } else if (below >= ph + margin) {
       top = rect.top + rect.height + margin;
       left = rect.left + rect.width / 2 - pw / 2;

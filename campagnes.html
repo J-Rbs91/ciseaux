@@ -354,6 +354,7 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
         <option value="freq">Clients fidèles (nombre de passages)</option>
         <option value="vip">Clients VIP (panier moyen élevé)</option>
         <option value="presta">Clients ayant pris une prestation</option>
+        <option value="profil">Clients par profil (homme / femme / enfant)</option>
       </select>
       <div class="hint" id="segHint"></div>
     </div>
@@ -380,6 +381,12 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
       <label>Prestation</label>
       <select id="prestaSel"></select>
       <div class="hint">Cible les clients ayant déjà bénéficié de cette prestation.</div>
+    </div>
+
+    <div class="field" id="paramProfil" style="display:none">
+      <label>Profil ciblé</label>
+      <select id="profilSel"><option value="homme">Homme</option><option value="femme">Femme</option><option value="enfant">Enfant</option><option value="none">Non précisé</option></select>
+      <div class="hint">Cible les clients selon le profil renseigné dans leur fiche.</div>
     </div>
 
     <div class="field">
@@ -479,7 +486,8 @@ var SEG_HINTS={
   winback:"Clients réguliers (≥ 3 passages) dont le délai depuis la dernière visite dépasse leur délai moyen × le facteur ci-dessous.",
   freq:"Clients ayant enregistré au moins le nombre de passages indiqué.",
   vip:"Clients dont le panier moyen atteint le montant indiqué.",
-  presta:"Clients ayant déjà bénéficié de la prestation choisie."
+  presta:"Clients ayant déjà bénéficié de la prestation choisie.",
+  profil:"Clients dont la fiche indique le profil choisi (« Non précisé » par défaut si non renseigné)."
 };
 function prestaNames(){
   try{var p=JSON.parse(localStorage.getItem('profil-magasin-v1')||'{}');var a=Array.isArray(p.prestations)?p.prestations:[];
@@ -498,11 +506,14 @@ function segChange(){
   document.getElementById('paramFreq').style.display=seg==='freq'?'':'none';
   document.getElementById('paramVip').style.display=seg==='vip'?'':'none';
   document.getElementById('paramPresta').style.display=seg==='presta'?'':'none';
+  document.getElementById('paramProfil').style.display=seg==='profil'?'':'none';
   var h=document.getElementById('segHint');if(h)h.textContent=SEG_HINTS[seg]||'';
 }
 function minVisitsVal(){var n=parseInt((document.getElementById('minVisits')||{}).value,10);return(isNaN(n)||n<1)?1:n;}
 function minBasketVal(){var n=parseFloat((document.getElementById('minBasket')||{}).value);return(isNaN(n)||n<0)?0:n;}
 function prestaVal(){return((document.getElementById('prestaSel')||{}).value||'').trim();}
+function profilVal(){return((document.getElementById('profilSel')||{}).value||'').trim();}
+function isProfil(c,p){if(!p)return false;var v=String(c.profil||'').trim().toLowerCase();return p==='none'?!v:v===p;}
 function basketAvg(c){
   var v=(Array.isArray(c.visites)?c.visites:[]),sum=0,n=0;
   v.forEach(function(x){var m=+(x&&x.montant)||0;if(m>0){sum+=m;n++;}});
@@ -538,6 +549,7 @@ function filtrer(arr){
     if(seg==='freq')return passCount(c)>=minVisitsVal();
     if(seg==='vip')return basketAvg(c)>=minBasketVal();
     if(seg==='presta')return tookPresta(c,prestaVal());
+    if(seg==='profil')return isProfil(c,profilVal());
     return true;
   });
 }
@@ -572,6 +584,7 @@ function send(){
   if(seg==='freq')params.minVisits=minVisitsVal();
   if(seg==='vip')params.minBasket=minBasketVal();
   if(seg==='presta')params.prestaName=prestaVal();
+  if(seg==='profil')params.profil=profilVal();
   if(logo&&/^https:\/\//i.test(logo))params.logoUrl=logo;
   jsonp(url,params,function(r){
     btn.disabled=false;

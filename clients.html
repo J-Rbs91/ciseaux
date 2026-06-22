@@ -395,6 +395,7 @@ html[data-theme="dark"] .tl-tag{background:#171C1F!important;border-color:#313A3
     <div class="field"><label>Téléphone</label><input id="fT" type="tel" placeholder="06 12 34 56 78"></div>
     <div class="field"><label>Email ✱</label><input id="fE" type="email" placeholder="marie@exemple.fr"></div>
     <div class="field"><label>Date de naissance <span style="font-weight:400;color:#A9B4C2">(facultatif)</span></label><input id="fDob" type="date"><div class="hint" style="font-size:.74rem;color:#A9B4C2;margin-top:.3rem">Facultatif — sert uniquement à l'offre et au mail d'anniversaire (si une offre est active). À ne renseigner qu'avec l'accord du client.</div></div>
+    <div class="field"><label>Profil <span style="font-weight:400;color:#A9B4C2">(facultatif)</span></label><select id="fProf"><option value="">Non précisé</option><option value="homme">Homme</option><option value="femme">Femme</option><option value="enfant">Enfant</option></select><div class="hint" style="font-size:.74rem;color:#A9B4C2;margin-top:.3rem">Sert uniquement à cibler les campagnes (ex. offre coupe homme/femme/enfant). « Non précisé » par défaut : aucune obligation de renseigner.</div></div>
     <div class="field"><label>Notes</label><textarea id="fNt" placeholder="Préférences, coupe habituelle…"></textarea><div class="hint" style="font-size:.74rem;color:#A9B4C2;margin-top:.3rem">Évitez d'y noter des données sensibles (santé, allergies…) sans nécessité ni accord du client.</div></div>
     <div class="field"><label class="check"><input type="checkbox" id="fOpt"> Accepte de recevoir les offres &amp; promotions par email</label></div>
     <div class="hist-sec" id="histSec" style="display:none">
@@ -638,7 +639,7 @@ function render(){
 function openNew(){
   eid=null;
   document.getElementById('mTitle').textContent='Nouveau client';
-  ['fN','fT','fE','fDob','fNt'].forEach(function(id){document.getElementById(id).value='';});
+  ['fN','fT','fE','fDob','fProf','fNt'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('fOpt').checked=false;
   document.getElementById('delBtn').style.display='none';
   document.getElementById('histSec').style.display='none';
@@ -655,6 +656,7 @@ function openEdit(id){
   document.getElementById('fT').value=c.tel||'';
   document.getElementById('fE').value=c.mail||'';
   document.getElementById('fDob').value=c.dob||'';
+  document.getElementById('fProf').value=c.profil||'';
   document.getElementById('fNt').value=c.notes||'';
   document.getElementById('fOpt').checked=isOptin(c.optin);
   document.getElementById('delBtn').style.display='';
@@ -672,9 +674,9 @@ function save_(){
   var saved=null;
   if(eid){
     var i=all.findIndex(function(x){return x.id===eid;});
-    if(i>=0){all[i].nom=nom;all[i].tel=(document.getElementById('fT').value||'').trim();all[i].mail=mail;all[i].dob=(document.getElementById('fDob').value||'').trim();all[i].notes=(document.getElementById('fNt').value||'').trim();all[i].optin=optin;all[i].maj=now;saved=all[i];}
+    if(i>=0){all[i].nom=nom;all[i].tel=(document.getElementById('fT').value||'').trim();all[i].mail=mail;all[i].dob=(document.getElementById('fDob').value||'').trim();all[i].profil=(document.getElementById('fProf').value||'').trim();all[i].notes=(document.getElementById('fNt').value||'').trim();all[i].optin=optin;all[i].maj=now;saved=all[i];}
   }else{
-    saved={id:'c_'+Date.now()+'_'+Math.floor(Math.random()*9999),nom:nom,tel:(document.getElementById('fT').value||'').trim(),mail:mail,dob:(document.getElementById('fDob').value||'').trim(),notes:(document.getElementById('fNt').value||'').trim(),points:0,visitsCount:0,offre:'',optin:optin,maj:now,visites:[],ledger:[]};
+    saved={id:'c_'+Date.now()+'_'+Math.floor(Math.random()*9999),nom:nom,tel:(document.getElementById('fT').value||'').trim(),mail:mail,dob:(document.getElementById('fDob').value||'').trim(),profil:(document.getElementById('fProf').value||'').trim(),notes:(document.getElementById('fNt').value||'').trim(),points:0,visitsCount:0,offre:'',optin:optin,maj:now,visites:[],ledger:[]};
     all.push(saved);
   }
   sc(all);if(saved&&window.DB)DB.upsert(saved);close_();render();

@@ -215,13 +215,36 @@ function monthly(){
   return { labels:labels, vals:vals, keys:keys, curKey:curKey };
 }
 
-/* Clients sans passage depuis plus de N jours (parmi ceux déjà venus). */
-function dormants(days){
-  var lim=Date.now()-days*86400000, n=0;
+/* ── Clients en sommeil : seuil ADAPTATIF, propre à chaque client ──
+   Un client est « en sommeil » quand son inactivité dépasse
+   SOMMEIL_FACTOR × son propre délai moyen de renouvellement.
+   Client à visite unique (pas de rythme calculable) : délai fixe par défaut. */
+var SOMMEIL_FACTOR=2.5;        // ex. rythme de 45 j → relance à partir de 112 j
+var SOMMEIL_DEFAUT_J=60;       // repli (jours) pour un client venu une seule fois
+
+/* Délai moyen (ms) entre deux visites consécutives ; null si < 2 visites. */
+function delaiMoyen(vs){
+  var ts=(vs||[]).map(function(v){return new Date(v.date).getTime();})
+                 .filter(function(t){return !isNaN(t);})
+                 .sort(function(a,b){return a-b;});
+  if(ts.length<2) return null;
+  var tot=0; for(var i=1;i<ts.length;i++) tot+=ts[i]-ts[i-1];
+  return tot/(ts.length-1);
+}
+
+/* Durée d'inactivité (ms) au-delà de laquelle le client bascule en sommeil. */
+function seuilSommeil(vs){
+  var avg=delaiMoyen(vs);
+  return avg==null ? SOMMEIL_DEFAUT_J*86400000 : SOMMEIL_FACTOR*avg;
+}
+
+/* Clients ayant dépassé leur propre seuil d'inactivité (parmi ceux déjà venus). */
+function dormants(){
+  var now=Date.now(), n=0;
   lc().forEach(function(c){
     var vs=Array.isArray(c.visites)?c.visites:[]; if(!vs.length) return;
     var last=0; vs.forEach(function(v){ var t=new Date(v.date).getTime(); if(t>last) last=t; });
-    if(last && last<lim) n++;
+    if(last && (now-last)>=seuilSommeil(vs)) n++;
   });
   return n;
 }
@@ -277,7 +300,7 @@ function render(){
     else { deltaHtml='<div class="d flat">— vs mois dernier</div>'; }
   }
 
-  var prest=topPrestations(ps), cli=topClients(ps), m=monthly(), dorm=dormants(60);
+  var prest=topPrestations(ps), cli=topClients(ps), m=monthly(), dorm=dormants();
 
   var html='';
   // KPI
@@ -302,12 +325,12 @@ function render(){
     rankList(cli, function(r){return eur0(r.ca);}, function(r){return r.count+(r.count>1?' visites':' visite');})+'</div>';
 
   // Clients en sommeil
-  html+='<div class="panel"><div class="panel-title">Clients en sommeil<span class="pt-sub">+ de 60 jours</span></div>'+
+  html+='<div class="panel"><div class="panel-title">Clients en sommeil<span class="pt-sub">rythme dépassé</span></div>'+
     (dorm>0
       ? '<div style="display:flex;align-items:center;gap:.8rem"><div style="font-size:1.8rem;font-weight:800;color:#A22C29">'+dorm+'</div>'+
-        '<div class="muted" style="text-align:left;padding:0;flex:1">client'+(dorm>1?'s ne sont':' n\'est')+' pas revenu'+(dorm>1?'s':'')+' depuis plus de 2 mois. '+
+        '<div class="muted" style="text-align:left;padding:0;flex:1">client'+(dorm>1?'s ont':' a')+' dépassé '+(dorm>1?'leur':'son')+' rythme habituel de visite. '+
         '<a href="campagnes.html" style="color:#A22C29;font-weight:700;text-decoration:none">Lancer une relance →</a></div></div>'
-      : '<div class="muted" style="padding:.2rem 0;text-align:left">Aucun client en sommeil : tout le monde est revenu récemment. 👍</div>')+'</div>';
+      : '<div class="muted" style="padding:.2rem 0;text-align:left">Aucun client en sommeil : tout le monde respecte son rythme de visite. 👍</div>')+'</div>';
 
   content.innerHTML=html;
 }

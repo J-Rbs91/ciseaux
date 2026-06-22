@@ -131,6 +131,12 @@ function buildClients(){
   return clients;
 }
 var CLIENTS=buildClients();
+// Clients-exemples explicites pour illustrer la logique adaptative
+function visAgo(daysArr,combo){return daysArr.map(function(db){var d=new Date(NOW);d.setDate(d.getDate()-db);var items=combo.map(function(x){return {nom:PRESTATIONS[x].nom,prix:PRESTATIONS[x].prix};});return {date:d.toISOString(),montant:items.reduce(function(s,it){return s+it.prix;},0),items:items};});}
+CLIENTS.push({id:'demo_michel',nom:'Michel Durand',visites:visAgo([130,175,220,265,310,355],[5])});  // ~45 j, absent 130 j → EN SOMMEIL
+CLIENTS.push({id:'demo_brigitte',nom:'Brigitte Leclerc',visites:visAgo([100,220,340],[3,4])});       // ~120 j, absent 100 j → PAS en sommeil (l'ancien seuil 60 j l'aurait relancée à tort)
+CLIENTS.push({id:'demo_kevin',nom:'Kevin Nouveau',visites:visAgo([75],[1])});                         // 1 visite, absent 75 j → EN SOMMEIL (repli 60 j)
+CLIENTS.push({id:'demo_lea',nom:'Léa Première',visites:visAgo([30],[0])});                            // 1 visite, absent 30 j → PAS en sommeil
 function lc(){return CLIENTS;}
 
 /* ── Helpers (identiques à stats.html) ── */
@@ -188,15 +194,36 @@ function monthly(){
   allPassages().forEach(function(p){ var k=p.d.getFullYear()+'-'+p.d.getMonth(); var idx=keys.indexOf(k); if(idx>=0) vals[idx]+=p.montant; });
   return { labels:labels, vals:vals, keys:keys, curKey:curKey };
 }
-function dormants(days){
-  var lim=today().getTime()-days*86400000, n=0;
+/* Seuil ADAPTATIF par client : 2,5 × son délai moyen de renouvellement.
+   Visite unique (pas de rythme) : repli fixe de 60 jours. */
+var SOMMEIL_FACTOR=2.5, SOMMEIL_DEFAUT_J=60;
+function delaiMoyen(vs){
+  var ts=(vs||[]).map(function(v){return new Date(v.date).getTime();})
+                 .filter(function(t){return !isNaN(t);})
+                 .sort(function(a,b){return a-b;});
+  if(ts.length<2) return null;
+  var tot=0; for(var i=1;i<ts.length;i++) tot+=ts[i]-ts[i-1];
+  return tot/(ts.length-1);
+}
+function seuilSommeil(vs){ var a=delaiMoyen(vs); return a==null?SOMMEIL_DEFAUT_J*86400000:SOMMEIL_FACTOR*a; }
+/* Renvoie la liste détaillée des clients en sommeil (triés par retard décroissant). */
+function dormantsList(){
+  var now=today().getTime(), out=[];
   lc().forEach(function(c){
     var vs=Array.isArray(c.visites)?c.visites:[]; if(!vs.length) return;
     var last=0; vs.forEach(function(v){ var t=new Date(v.date).getTime(); if(t>last) last=t; });
-    if(last && last<lim) n++;
+    if(!last) return;
+    var seuil=seuilSommeil(vs), inact=now-last;
+    if(inact>=seuil){
+      var avg=delaiMoyen(vs);
+      out.push({nom:c.nom, single:avg==null, rythmeJ:avg==null?null:Math.round(avg/86400000),
+                inactJ:Math.round(inact/86400000), seuilJ:Math.round(seuil/86400000),
+                retard:inact-seuil});
+    }
   });
-  return n;
+  return out.sort(function(a,b){return b.retard-a.retard;});
 }
+function dormants(){ return dormantsList().length; }
 function bars(m){
   var max=Math.max.apply(null, m.vals.concat([1]));
   var H=104;
@@ -231,7 +258,7 @@ function render(){
       deltaHtml='<div class="d '+cls+'">'+arr+' '+Math.abs(pct)+'% vs mois dernier</div>'; }
     else { deltaHtml='<div class="d flat">— vs mois dernier</div>'; }
   }
-  var prest=topPrestations(ps), cli=topClients(ps), m=monthly(), dorm=dormants(60);
+  var prest=topPrestations(ps), cli=topClients(ps), m=monthly(), dlist=dormantsList(), dorm=dlist.length;
   var html='';
   html+='<div class="kpi-grid">'+
     '<div class="kpi"><div class="k">Chiffre d\'affaires</div><div class="v">'+eur0(k.ca)+'</div>'+deltaHtml+'</div>'+
@@ -246,12 +273,20 @@ function render(){
   cli.forEach(function(r){r._v=r.ca;});
   html+='<div class="panel"><div class="panel-title">Meilleurs clients<span class="pt-sub">sur la période</span></div>'+
     rankList(cli, function(r){return eur0(r.ca);}, function(r){return r.count+(r.count>1?' visites':' visite');})+'</div>';
-  html+='<div class="panel"><div class="panel-title">Clients en sommeil<span class="pt-sub">+ de 60 jours</span></div>'+
+  var detail=dlist.slice(0,6).map(function(d){
+    var sub=d.single?'1ʳᵉ visite · seuil 60 j':('vient ~tous les '+d.rythmeJ+' j · seuil '+d.seuilJ+' j');
+    return '<div class="rank-item"><div class="rank-head">'+
+      '<span class="rank-name">'+esc(d.nom)+'</span>'+
+      '<span class="rank-val" style="color:#A22C29">absent '+d.inactJ+' j</span></div>'+
+      '<div class="rank-sub" style="margin:0">'+sub+'</div></div>';
+  }).join('');
+  html+='<div class="panel"><div class="panel-title">Clients en sommeil<span class="pt-sub">rythme dépassé (× 2,5)</span></div>'+
     (dorm>0
-      ? '<div style="display:flex;align-items:center;gap:.8rem"><div style="font-size:1.8rem;font-weight:800;color:#A22C29">'+dorm+'</div>'+
-        '<div class="muted" style="text-align:left;padding:0;flex:1">client'+(dorm>1?'s ne sont':' n\'est')+' pas revenu'+(dorm>1?'s':'')+' depuis plus de 2 mois. '+
-        '<a href="#" style="color:#A22C29;font-weight:700;text-decoration:none">Lancer une relance →</a></div></div>'
-      : '<div class="muted" style="padding:.2rem 0;text-align:left">Aucun client en sommeil : tout le monde est revenu récemment. 👍</div>')+'</div>';
+      ? '<div style="display:flex;align-items:center;gap:.8rem;margin-bottom:.6rem"><div style="font-size:1.8rem;font-weight:800;color:#A22C29">'+dorm+'</div>'+
+        '<div class="muted" style="text-align:left;padding:0;flex:1">client'+(dorm>1?'s ont':' a')+' dépassé '+(dorm>1?'leur':'son')+' rythme habituel de visite. '+
+        '<a href="#" style="color:#A22C29;font-weight:700;text-decoration:none">Lancer une relance →</a></div></div>'+detail+
+        (dlist.length>6?'<div class="muted" style="text-align:left;padding:.5rem 0 0">…et '+(dlist.length-6)+' autres.</div>':'')
+      : '<div class="muted" style="padding:.2rem 0;text-align:left">Aucun client en sommeil : tout le monde respecte son rythme de visite. 👍</div>')+'</div>';
   content.innerHTML=html;
 }
 document.getElementById('periodBar').addEventListener('click', function(e){

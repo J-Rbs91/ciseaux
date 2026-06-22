@@ -13,9 +13,11 @@ Avant de contribuer, gardez ces invariants en tête :
    framework, pas d'étape de compilation.
 3. **Les données restent dans le navigateur** (`localStorage`) ; rien ne sort
    sauf action explicite de l'utilisateur.
-4. **Synchro via JSONP** vers un Apps Script hébergé par l'utilisateur —
-   jamais `fetch`, jamais de serveur côté projet.
-5. **Interface en français**, accessible, mobile-first.
+4. **Synchro via un Apps Script hébergé par l'utilisateur** — communication
+   en `POST` avec **repli automatique sur JSONP** ; jamais de serveur ni de
+   backend côté projet.
+5. **Interface en français**, accessible, **responsive** (mobile, tablette
+   paysage, desktop) et confortable au **tactile** ; **mode clair / sombre**.
 6. **Jamais de données client en dur** ; dégradation propre si non configuré.
 
 Si une idée nécessite de casser un de ces points, ouvrez d'abord une *issue*
@@ -43,6 +45,10 @@ pas seulement la solution technique.
    - Les pages fonctionnent sans connexion (mode hors-ligne).
    - La synchro et l'export/import restent compatibles avec le format
      existant (`app: "ciseaux-hub"`, clés `*-v1`).
+   - Le rendu reste correct en **mobile, tablette paysage et desktop**, en
+     **mode clair et sombre**, avec des **cibles tactiles confortables (≥ 44 px)**.
+   - Si vous ajoutez une page, pensez à la déclarer dans `sw.js` (pré-cache) et
+     à **incrémenter la version du cache**.
 5. **Commitez** avec un message clair et ouvrez une **Pull Request** vers `main`
    en remplissant le modèle.
 
@@ -51,7 +57,9 @@ pas seulement la solution technique.
 - Indentation : 2 espaces.
 - JavaScript : ES5 compatible (pas de transpilation), `var` accepté pour rester
   cohérent avec l'existant, fonctions nommées.
-- CSS : palette « salon » existante (tons terracotta `#b87c6e`, fond `#fdf3ef`).
+- CSS : palette « salon » existante — accent rouge `#A22C29`, fond clair
+  `#EEF1EF`, carbone `#1C2321`, gris `#5E6572` / `#A9B4C2`. Respectez le
+  **mode sombre** (`html[data-theme="dark"] …`) pour tout nouvel élément visuel.
 - Échappez toujours les données utilisateur affichées en HTML.
 
 ## Versionnage des données

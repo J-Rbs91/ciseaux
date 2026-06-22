@@ -12,13 +12,18 @@ Outil open source pour salons de coiffure — CRM clients, programme de fidélit
 - **📊 Statistiques** — tableau de bord calculé à partir des passages : **chiffre d'affaires, panier moyen, nombre de passages et clients servis** (par mois en cours, mois précédent, 12 mois glissants ou tout l'historique), **évolution du CA sur 12 mois**, **prestations les plus rentables**, **meilleurs clients** et **clients en sommeil** (aucune nouvelle saisie : tout est dérivé des données existantes)
 - **💰 Caisse** — clôture journalière : comptage pièces/billets + paiements électroniques, réserve de monnaie, fond de caisse cible, calcul d'écart vs logiciel de caisse, historique 15 jours, report de la veille
 - **✉️ Campagnes** — envoi d'offres par email depuis votre propre Gmail, aux clients opt-in, avec **segmentation** des destinataires : tous, récompense disponible, à relancer, **clients fidèles** (nombre de passages), **clients VIP** (panier moyen) ou **ayant pris une prestation** donnée
+- **🏷️ Offres** — promotions & avantages réutilisables (dont l'**offre d'anniversaire**) injectables dans les campagnes
+- **📄 Templates** — modèles d'emails réutilisables (sujet + corps, variables comme `{prenom}`)
+- **🎯 Marketing** — sur l'accueil, **Campagnes**, **Offres** et **Templates** sont regroupées sous une carte « Marketing » ([`marketing.html`](marketing.html))
 - **📅 Réservations en ligne (agenda)** — formulaire public (`reservation.html`) à lier depuis votre fiche Google : le client choisit une **prestation**, une **date** et un **créneau réellement libre** (calculé selon vos horaires, la durée de la prestation et la capacité). Le créneau est **bloqué automatiquement** (anti-doublon sous verrou) ; horaires & capacité paramétrables depuis la page Réservations. Deux organisations possibles : **postes anonymes** (capacité N) ou **collaborateurs nommés** avec plannings séparés (le client choisit avec qui, ou « sans préférence »). Le client peut sélectionner **plusieurs prestations** ; il reçoit un **email de confirmation** immédiat puis un **rappel la veille à 7h**
+- **📆 Planning équipe** — horaires d'ouverture, équipe, prestations par collaborateur, heures contractuelles & absences ([`planning.html`](planning.html))
 - **☁️ Synchro Drive** — sauvegarde automatique multi-appareils via votre propre Google Drive
 - **💾 Sauvegarde fichier** — export/import `.json` local
 
 ## Principe technique
 
 - Site 100 % statique — HTML/CSS/JS inline, **aucun backend**, **aucune dépendance JS** (police Manrope via Google Fonts, avec repli système)
+- Interface **responsive** (mobile, tablette paysage, desktop), confortable au **tactile**, avec **mode clair / sombre** ; **PWA installable** et utilisable **hors-ligne** (service worker)
 - Données stockées dans `localStorage` du navigateur
 - Synchro et envoi d'emails via un script Google Apps Script déployé **sur le compte de chaque utilisateur**
 - Communication avec le script Apps Script en **POST** (`fetch`, clé admin dans le corps, hors URL/journaux) avec **repli automatique sur JSONP** — compatible avec les web apps Apps Script

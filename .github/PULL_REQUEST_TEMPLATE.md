@@ -16,10 +16,12 @@ Fixes #(numéro de l'issue)
 
 - [ ] Reste **100 % statique** (pas de backend, pas de dépendance, pas de build)
 - [ ] Les données restent dans le navigateur (`localStorage`)
-- [ ] La synchro reste en **JSONP** (jamais `fetch`)
+- [ ] Pas de backend côté projet (synchro en `POST` + repli **JSONP** vers l'Apps Script de l'utilisateur)
 - [ ] Compatible avec le format de données existant (`app: "ciseaux-hub"`, clés `*-v1`)
-- [ ] Interface en français, mobile-first
+- [ ] Interface en français, **responsive** (mobile, tablette paysage, desktop) et tactile (cibles ≥ 44 px)
+- [ ] Rendu correct en **mode clair et sombre**
 - [ ] Données utilisateur échappées avant affichage HTML
+- [ ] Nouvelle page éventuelle ajoutée à `sw.js` + version du cache incrémentée
 
 ## Tests effectués
 

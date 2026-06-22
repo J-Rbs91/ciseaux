@@ -20,6 +20,10 @@ implications importantes pour la sécurité :
   (`createBooking`, `availability`, `catalogue`, gestion d'un RDV par jeton…) et
   `securite` restent accessibles sans clé.
 
+Les revues de sécurité menées sur le projet sont documentées dans
+[`SECURITY_AUDIT_REPORT.md`](SECURITY_AUDIT_REPORT.md) (constats) et
+[`SECURITY_REMEDIATION_REPORT.md`](SECURITY_REMEDIATION_REPORT.md) (corrections).
+
 ## Formulaire de réservation public
 
 Le formulaire `reservation.html` est conçu pour être exposé publiquement :

@@ -88,7 +88,7 @@ input[type=number]{width:80px}
 
 <script>
 var NOW=new Date(2026,5,22);
-var TEMPLATES=['Promo du moment','Programme fidélité','Bienvenue','Relance 1ʳᵉ visite','Fermeture / Congés'];
+var TEMPLATES=['Promo du moment','Programme fidélité','Bienvenue','Relance 1ʳᵉ visite','Client fidèle','Offre enfant','Fermeture / Congés'];
 
 /* Groupes en langage clair. Les réglages numériques restent là mais sont habillés. */
 var RULES=[
@@ -100,7 +100,7 @@ var RULES=[
    delaiJ:60, tpl:'Relance 1ʳᵉ visite'},
   {id:'vip', actif:false, mode:'auto', badge:'b-vip',
    name:'Très bons clients', desc:'Gros paniers : un petit mot premium pour les choyer.',
-   minBasket:50, patience:2, tpl:'Programme fidélité'}
+   minBasket:50, patience:2, tpl:'Client fidèle'}
 ];
 function R(id){return RULES.filter(function(x){return x.id===id;})[0];}
 

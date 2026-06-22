@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Relances — KuT (MOCKUP)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Manrope",-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#EEF1EF;color:#1C2321;min-height:100vh;padding-bottom:3rem}
+header{background:#1C2321;color:#fff;padding:1rem 1.2rem;display:flex;align-items:center;gap:.8rem;position:sticky;top:0;z-index:20}
+.back{color:#fff;text-decoration:none;font-size:1.3rem;opacity:.85;line-height:1;padding:.2rem}
+h1{font-size:1.08rem;font-weight:800;flex:1}
+main{max-width:640px;margin:0 auto;padding:1rem 1.1rem 0}
+.demo-banner div{background:#fff3cd;border:1.5px solid #e8d48a;color:#7a5d00;border-radius:11px;padding:.6rem .8rem;font-size:.78rem;font-weight:700;text-align:center;margin-bottom:1.1rem}
+.section-title{font-size:.95rem;font-weight:800;color:#1C2321;margin:.4rem 0 .7rem;display:flex;align-items:center;gap:.45rem}
+.panel{background:#fff;border-radius:16px;padding:1rem 1.05rem 1.1rem;box-shadow:0 2px 10px rgba(28,35,33,.1);margin-bottom:1rem}
+/* Cartes de segment */
+.seg{border:1.5px solid #e3e9e7;border-radius:13px;padding:.85rem .9rem;margin-bottom:.7rem;transition:opacity .15s}
+.seg.off{opacity:.5}
+.seg-head{display:flex;align-items:center;gap:.55rem;margin-bottom:.55rem}
+.seg-badge{font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:.2rem .5rem;border-radius:6px;color:#fff}
+.b-hab{background:#A22C29}.b-prem{background:#3E7C4F}.b-vip{background:#8A5A1E}
+.seg-name{font-weight:800;font-size:.95rem;flex:1}
+.seg-cond{font-size:.74rem;color:#A9B4C2;font-weight:600}
+.seg-row{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .8rem;font-size:.8rem;font-weight:600;color:#5E6572}
+.seg-row label{display:flex;align-items:center;gap:.35rem}
+input[type=number]{width:62px;font-family:inherit;font-weight:700;font-size:.82rem;padding:.28rem .4rem;border:1.5px solid #c8d4da;border-radius:8px;color:#1C2321}
+select{font-family:inherit;font-weight:700;font-size:.78rem;padding:.28rem .4rem;border:1.5px solid #c8d4da;border-radius:8px;color:#1C2321;background:#fff;max-width:170px}
+.mode-pill{display:inline-flex;border:1.5px solid #c8d4da;border-radius:9px;overflow:hidden}
+.mode-pill button{font-family:inherit;font-weight:700;font-size:.74rem;padding:.3rem .6rem;border:0;background:#fff;color:#5E6572;cursor:pointer}
+.mode-pill button.on{background:#1C2321;color:#fff}
+.sw{position:relative;width:40px;height:23px;flex-shrink:0}
+.sw input{opacity:0;width:0;height:0}
+.sw span{position:absolute;inset:0;background:#c8d4da;border-radius:20px;transition:.2s;cursor:pointer}
+.sw span:before{content:"";position:absolute;height:17px;width:17px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+.sw input:checked+span{background:#3E7C4F}
+.sw input:checked+span:before{transform:translateX(17px)}
+/* File d'attente */
+.q-summary{display:flex;align-items:baseline;gap:.5rem;margin-bottom:.2rem}
+.q-num{font-size:1.9rem;font-weight:800;color:#A22C29}
+.q-lbl{font-size:.85rem;font-weight:700;color:#5E6572}
+.q-ctrl{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin:.6rem 0 .3rem}
+.q-all{font-size:.78rem;font-weight:700;color:#5E6572;background:none;border:0;cursor:pointer;font-family:inherit;text-decoration:underline}
+.btn-send{background:#A22C29;color:#fff;border:0;border-radius:11px;padding:.62rem 1rem;font-size:.85rem;font-weight:800;font-family:inherit;cursor:pointer}
+.btn-send:disabled{background:#c8d4da;cursor:not-allowed}
+.qi{display:flex;align-items:center;gap:.7rem;padding:.6rem 0;border-bottom:1px solid #f0f3f2}
+.qi:last-child{border-bottom:none}
+.qi input[type=checkbox]{width:19px;height:19px;flex-shrink:0;accent-color:#A22C29}
+.qi-main{flex:1;min-width:0}
+.qi-name{font-weight:700;font-size:.92rem}
+.qi-meta{font-size:.74rem;color:#A9B4C2;font-weight:600;margin-top:.1rem}
+.tag{font-size:.62rem;font-weight:800;text-transform:uppercase;padding:.12rem .4rem;border-radius:5px;color:#fff;vertical-align:.08em}
+.qi-auto{font-size:.66rem;font-weight:800;color:#3E7C4F;background:#e7f1ea;padding:.2rem .45rem;border-radius:6px;white-space:nowrap}
+.qi-tpl{font-size:.7rem;color:#5E6572;font-weight:600}
+.muted{font-size:.86rem;color:#A9B4C2;text-align:center;padding:1.2rem .5rem}
+.note{font-size:.74rem;color:#A9B4C2;font-weight:600;margin-top:.6rem;line-height:1.5}
+</style>
+</head>
+<body>
+<header>
+  <a href="#" class="back">‹</a>
+  <h1>🔔 Relances</h1>
+</header>
+<main>
+  <div class="demo-banner"><div>⚠️ MOCKUP — écran de proposition (Campagnes › Relances). Données fictives, « aujourd'hui » = 22 juin 2026. Réglages et file d'attente sont interactifs.</div></div>
+
+  <div class="section-title">⚙️ Règles de relance par segment</div>
+  <div class="panel" id="segPanel"></div>
+
+  <div class="section-title">📬 File d'attente — à valider</div>
+  <div class="panel" id="queuePanel"></div>
+
+  <div class="note">💡 « Proposé » = la relance attend votre validation dans cette file. « Auto » = elle partirait toute seule au franchissement du seuil (nécessite l'activation côté serveur). Un client déjà relancé n'est pas re-proposé avant sa prochaine visite.</div>
+</main>
+
+<script>
+var NOW=new Date(2026,5,22);
+var TEMPLATES=['Promo du moment','Programme fidélité','Bienvenue','Relance 1ʳᵉ visite','Fermeture / Congés'];
+
+/* ── Config par segment (modifiable dans l'écran) ── */
+var CONFIG=[
+  {id:'habitues',nom:'Habitués',badge:'b-hab',cond:'≥ 2 visites',type:'facteur',factor:2.5,tpl:'Promo du moment',mode:'propose',actif:true},
+  {id:'premiere',nom:'Première visite',badge:'b-prem',cond:'1 seule visite',type:'fixe',delaiJ:60,tpl:'Relance 1ʳᵉ visite',mode:'propose',actif:true},
+  {id:'vip',nom:'VIP',badge:'b-vip',cond:'panier moyen ≥',type:'facteur',factor:2,minBasket:50,tpl:'Programme fidélité',mode:'auto',actif:false}
+];
+
+/* ── Données fictives (même salon que le mockup Statistiques) ── */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+var rng=mulberry32(20260622);function pick(a){return a[Math.floor(rng()*a.length)];}
+var PF=['Sophie','Camille','Léa','Emma','Chloé','Manon','Inès','Sarah','Julie','Alice','Clara','Marine','Pauline','Laura','Charlotte','Amélie','Nathalie','Caroline','Aurélie','Céline','Sandrine','Valérie','Lucie','Margaux'];
+var PH=['Julien','Thomas','Nicolas','Antoine','Lucas','Hugo','Maxime','Paul','Romain','Adrien','Mathieu','Benjamin','Pierre','Alexandre','Sébastien','David','Vincent','Olivier','Cédric','Raphaël'];
+var NOMS=['Martin','Bernard','Dubois','Moreau','Petit','Laurent','Garcia','Roux','Fournier','Girard','Mercier','Bonnet','Lambert','Fontaine','Rousseau','Vincent','Henry','Faure','Blanc','Robin','Morel','Simon','Gauthier','Perrin','Roy','Noël','André','Renard','Aubert','Leroy','Picard','Vidal','Marchand','Lefebvre','Guérin','Boyer','Garnier','Chevalier'];
+var PRESTATIONS=[{nom:'Coupe femme',prix:35},{nom:'Coupe homme',prix:22},{nom:'Coloration',prix:48},{nom:'Balayage / Mèches',prix:75},{nom:'Brushing',prix:25},{nom:'Coupe + Barbe',prix:30}];
+var PAN_F=[[0],[0],[0,4],[2,4],[3,4],[0,2]];var PAN_H=[[1],[1],[5],[1]];
+function names(n){var s={},o=[],g=0;while(o.length<n&&g++<4000){var f=rng()<0.62;var nm=(f?pick(PF):pick(PH))+' '+pick(NOMS);if(s[nm])continue;s[nm]=1;o.push({nom:nm,f:f});}return o;}
+var POOL=names(140);
+function vis(combo){var items=combo.map(function(x){return {nom:PRESTATIONS[x].nom,prix:PRESTATIONS[x].prix};});return {items:items,montant:items.reduce(function(s,it){return s+it.prix;},0)};}
+function build(){
+  var cl=[];
+  for(var i=0;i<POOL.length;i++){
+    var c={id:'c'+i,nom:POOL[i].nom,email:true,optin:true,visites:[]};
+    var freq=28+Math.floor(rng()*45);
+    var dormant=rng()<0.22;
+    var lastOffset=dormant?(Math.round(freq*2.5)+Math.floor(rng()*60)):Math.floor(rng()*freq);
+    var single=rng()<0.12;
+    if(single){var d=new Date(NOW);d.setDate(d.getDate()-(20+Math.floor(rng()*90)));var v=vis(pick(POOL[i].f?PAN_F:PAN_H));c.visites.push({date:d.toISOString(),montant:v.montant,items:v.items});}
+    else{for(var db=lastOffset;db<380;db+=freq+Math.floor(rng()*14-7)){var d2=new Date(NOW);d2.setDate(d2.getDate()-db);var v2=vis(pick(POOL[i].f?PAN_F:PAN_H));c.visites.push({date:d2.toISOString(),montant:v2.montant,items:v2.items});}}
+    if(c.visites.length)cl.push(c);
+  }
+  return cl;
+}
+var CLIENTS=build();
+function visAgo(arr,combo){return arr.map(function(db){var d=new Date(NOW);d.setDate(d.getDate()-db);var v=vis(combo);return {date:d.toISOString(),montant:v.montant,items:v.items};});}
+CLIENTS.push({id:'d_michel',nom:'Michel Durand',email:true,optin:true,visites:visAgo([130,175,220,265,310,355],[5])});
+CLIENTS.push({id:'d_brigitte',nom:'Brigitte Leclerc',email:true,optin:true,visites:visAgo([100,220,340],[3,4])});
+CLIENTS.push({id:'d_kevin',nom:'Kevin Nouveau',email:true,optin:true,visites:visAgo([75],[1])});
+CLIENTS.push({id:'d_lea',nom:'Léa Première',email:true,optin:true,visites:visAgo([30],[0])});
+
+/* ── Logique de seuil (identique à stats.html) ── */
+function delaiMoyen(vs){var ts=vs.map(function(v){return new Date(v.date).getTime();}).sort(function(a,b){return a-b;});if(ts.length<2)return null;var t=0;for(var i=1;i<ts.length;i++)t+=ts[i]-ts[i-1];return t/(ts.length-1);}
+function lastVisit(vs){var m=0;vs.forEach(function(v){var t=new Date(v.date).getTime();if(t>m)m=t;});return m;}
+function panierMoyen(vs){if(!vs.length)return 0;return vs.reduce(function(s,v){return s+(+v.montant||0);},0)/vs.length;}
+
+function segActif(id){return CONFIG.filter(function(s){return s.id===id;})[0];}
+
+/* Détermine si un client est « dû » et pour quel segment (priorité : première > vip > habitués). */
+function evalClient(c){
+  var vs=c.visites||[]; if(!vs.length||!c.email||!c.optin) return null;
+  var now=NOW.getTime(), last=lastVisit(vs), inactJ=Math.round((now-last)/864e5);
+  var avg=delaiMoyen(vs), rythmeJ=avg==null?null:Math.round(avg/864e5);
+  // Première visite
+  if(vs.length===1){
+    var sp=segActif('premiere'); if(!sp.actif) return null;
+    if(inactJ>=sp.delaiJ) return {seg:sp,inactJ:inactJ,rythmeJ:null,why:'1ʳᵉ visite il y a '+inactJ+' j (seuil '+sp.delaiJ+' j)'};
+    return null;
+  }
+  // VIP (si panier moyen suffisant et segment actif)
+  var sv=segActif('vip');
+  if(sv.actif && panierMoyen(vs)>=sv.minBasket){
+    if(now-last>=sv.factor*avg) return {seg:sv,inactJ:inactJ,rythmeJ:rythmeJ,why:'rythme ~'+rythmeJ+' j · absent '+inactJ+' j (seuil '+Math.round(sv.factor*rythmeJ)+' j) · panier '+Math.round(panierMoyen(vs))+' €'};
+    return null;
+  }
+  // Habitués
+  var sh=segActif('habitues'); if(!sh.actif) return null;
+  if(now-last>=sh.factor*avg) return {seg:sh,inactJ:inactJ,rythmeJ:rythmeJ,why:'rythme ~'+rythmeJ+' j · absent '+inactJ+' j (seuil '+Math.round(sh.factor*rythmeJ)+' j)'};
+  return null;
+}
+
+var checked={}; // état des cases cochées
+function queue(){
+  var out=[];
+  CLIENTS.forEach(function(c){var e=evalClient(c);if(e)out.push({nom:c.nom,id:c.id,e:e});});
+  var order={premiere:0,vip:1,habitues:2};
+  return out.sort(function(a,b){return (order[a.e.seg.id]-order[b.e.seg.id])||(b.e.inactJ-a.e.inactJ);});
+}
+
+/* ── Rendu des réglages ── */
+function renderSegs(){
+  var tplOpts=function(sel){return TEMPLATES.map(function(t){return '<option'+(t===sel?' selected':'')+'>'+t+'</option>';}).join('');};
+  document.getElementById('segPanel').innerHTML=CONFIG.map(function(s,i){
+    var seuil = s.type==='fixe'
+      ? '<label>Seuil <input type="number" min="1" value="'+s.delaiJ+'" data-i="'+i+'" data-k="delaiJ"> jours</label>'
+      : '<label>Seuil = <input type="number" min="1" step="0.1" value="'+s.factor+'" data-i="'+i+'" data-k="factor"> × le rythme</label>';
+    var vipExtra = s.id==='vip' ? '<label>min <input type="number" min="0" value="'+s.minBasket+'" data-i="'+i+'" data-k="minBasket"> €</label>' : '';
+    return '<div class="seg'+(s.actif?'':' off')+'">'+
+      '<div class="seg-head"><span class="seg-badge '+s.badge+'">'+s.nom+'</span>'+
+        '<span class="seg-name"></span><span class="seg-cond">'+s.cond+(s.id==='vip'?' '+s.minBasket+' €':'')+'</span>'+
+        '<label class="sw"><input type="checkbox" data-i="'+i+'" data-k="actif" '+(s.actif?'checked':'')+'><span></span></label></div>'+
+      '<div class="seg-row">'+seuil+vipExtra+
+        '<span class="mode-pill"><button data-i="'+i+'" data-mode="propose" class="'+(s.mode==='propose'?'on':'')+'">Proposé</button>'+
+        '<button data-i="'+i+'" data-mode="auto" class="'+(s.mode==='auto'?'on':'')+'">Auto</button></span>'+
+        '<label>Modèle <select data-i="'+i+'" data-k="tpl">'+tplOpts(s.tpl)+'</select></label>'+
+      '</div></div>';
+  }).join('');
+}
+
+/* ── Rendu de la file ── */
+function renderQueue(){
+  var q=queue();
+  var proposes=q.filter(function(x){return x.e.seg.mode==='propose';});
+  var autos=q.filter(function(x){return x.e.seg.mode==='auto';});
+  var nSel=proposes.filter(function(x){return checked[x.id];}).length;
+  var html='<div class="q-summary"><span class="q-num">'+proposes.length+'</span><span class="q-lbl">relance'+(proposes.length>1?'s':'')+' à valider'+(autos.length?' · '+autos.length+' en envoi auto':'')+'</span></div>';
+  if(!q.length){ document.getElementById('queuePanel').innerHTML=html+'<div class="muted">Personne à relancer aujourd\'hui : tout le monde respecte son rythme. 👍</div>'; return; }
+  html+='<div class="q-ctrl"><button class="q-all" id="qAll">Tout sélectionner / désélectionner</button>'+
+        '<button class="btn-send" id="qSend"'+(nSel?'':' disabled')+'>Valider & envoyer ('+nSel+')</button></div>';
+  html+=q.map(function(x){
+    var s=x.e.seg, auto=s.mode==='auto';
+    var ctrl=auto?'<span class="qi-auto">envoi auto</span>':'<input type="checkbox" data-id="'+x.id+'" '+(checked[x.id]?'checked':'')+'>';
+    return '<div class="qi">'+ctrl+
+      '<div class="qi-main"><div class="qi-name"><span class="tag '+s.badge+'">'+s.nom+'</span> '+x.nom+'</div>'+
+      '<div class="qi-meta">'+x.e.why+'</div></div>'+
+      '<div class="qi-tpl">→ '+s.tpl+'</div></div>';
+  }).join('');
+  document.getElementById('queuePanel').innerHTML=html;
+}
+
+function renderAll(){renderSegs();renderQueue();}
+
+/* ── Interactions ── */
+document.getElementById('segPanel').addEventListener('input',function(e){
+  var t=e.target,i=t.getAttribute('data-i'),k=t.getAttribute('data-k');if(i==null||!k)return;
+  i=+i;var val=t.type==='checkbox'?t.checked:(t.tagName==='SELECT'?t.value:parseFloat(t.value));
+  CONFIG[i][k]=val;renderAll();
+});
+document.getElementById('segPanel').addEventListener('click',function(e){
+  var b=e.target.closest('button[data-mode]');if(!b)return;
+  CONFIG[+b.getAttribute('data-i')].mode=b.getAttribute('data-mode');renderAll();
+});
+document.getElementById('queuePanel').addEventListener('change',function(e){
+  var cb=e.target.closest('input[data-id]');if(!cb)return;
+  checked[cb.getAttribute('data-id')]=cb.checked;renderQueue();
+});
+document.getElementById('queuePanel').addEventListener('click',function(e){
+  if(e.target.id==='qAll'){var q=queue().filter(function(x){return x.e.seg.mode==='propose';});var allOn=q.every(function(x){return checked[x.id];});q.forEach(function(x){checked[x.id]=!allOn;});renderQueue();}
+  if(e.target.id==='qSend'){var n=queue().filter(function(x){return x.e.seg.mode==='propose'&&checked[x.id];}).length;if(n){alert('(Maquette) '+n+' relance(s) envoyée(s) via le pipeline Campagnes existant.\nLes clients envoyés seraient horodatés et retirés de la file jusqu\'à leur prochaine visite.');}}
+});
+
+renderAll();
+</script>
+</body>
+</html>

@@ -438,12 +438,18 @@ var SEEDS=[
   {id:'t_seed_promo',nom:'Promo du moment',sujet:'Une offre exclusive vous attend',titre:'Votre offre exclusive',sousTitre:'Réservée à nos client(e)s privilégié(e)s',accroche:'Pour une durée limitée',corps:'Bonjour {prenom},\n\nNous avons le plaisir de vous proposer une offre privilégiée, à découvrir lors de votre prochaine visite.\n\nRéservez dès maintenant votre rendez-vous pour en profiter : les disponibilités sont limitées.',offresIds:[],afficherFidelite:false,phraseSortie:'Au plaisir de vous accueillir.',salutation:'Bien à vous,',signature:'L\'équipe',logoDataUrl:'',logoUrl:'',createdAt:''},
   {id:'t_seed_fide',nom:'Programme fidélité',sujet:'Votre fidélité récompensée',titre:'Votre programme fidélité',sousTitre:'Merci de votre confiance',accroche:'',corps:'Bonjour {prenom},\n\nVotre fidélité compte beaucoup pour nous. Vous totalisez aujourd\'hui {points} point(s).\n\nDès {seuil} visites, profitez de votre récompense : {recompense}.\n\nRéservez votre prochain rendez-vous pour vous rapprocher de votre avantage.',offresIds:[],afficherFidelite:true,phraseSortie:'Merci d\'être à nos côtés.',salutation:'Bien à vous,',signature:'L\'équipe',logoDataUrl:'',logoUrl:'',createdAt:''},
   {id:'t_seed_bvn',nom:'Bienvenue',sujet:'Bienvenue parmi nous',titre:'Bienvenue parmi nous',sousTitre:'',accroche:'',corps:'Bonjour {prenom},\n\nNous sommes heureux de vous compter parmi nos client(e)s et avons hâte de prendre soin de vous.\n\nRéservez votre premier rendez-vous quand vous le souhaitez : nous serons ravis de vous accueillir.',offresIds:[],afficherFidelite:false,phraseSortie:'À très bientôt.',salutation:'Bien à vous,',signature:'L\'équipe',logoDataUrl:'',logoUrl:'',createdAt:''},
-  {id:'t_seed_conge',nom:'Fermeture / Congés',sujet:'Fermeture exceptionnelle du salon',titre:'Le salon fait une pause',sousTitre:'',accroche:'',corps:'Bonjour {prenom},\n\nNotre salon sera fermé du [date de début] au [date de fin]. Nous retrouverons avec plaisir le chemin de votre rendez-vous dès la réouverture.\n\nPensez à réserver à l\'avance pour choisir le créneau qui vous convient le mieux.',offresIds:[],afficherFidelite:false,phraseSortie:'Merci de votre compréhension.',salutation:'Bien à vous,',signature:'L\'équipe',logoDataUrl:'',logoUrl:'',createdAt:''}
+  {id:'t_seed_conge',nom:'Fermeture / Congés',sujet:'Fermeture exceptionnelle du salon',titre:'Le salon fait une pause',sousTitre:'',accroche:'',corps:'Bonjour {prenom},\n\nNotre salon sera fermé du [date de début] au [date de fin]. Nous retrouverons avec plaisir le chemin de votre rendez-vous dès la réouverture.\n\nPensez à réserver à l\'avance pour choisir le créneau qui vous convient le mieux.',offresIds:[],afficherFidelite:false,phraseSortie:'Merci de votre compréhension.',salutation:'Bien à vous,',signature:'L\'équipe',logoDataUrl:'',logoUrl:'',createdAt:''},
+  {id:'t_seed_relance1',nom:'Relance 1ʳᵉ visite',sujet:'On aimerait vous revoir',titre:'Votre première visite vous a plu ?',sousTitre:'On a hâte de vous revoir',accroche:'Une attention pour votre retour',corps:'Bonjour {prenom},\n\nVous nous avez fait confiance pour la première fois, et nous espérons que vous en avez été pleinement satisfait(e).\n\nPour vous donner envie de revenir, profitez d\'un avantage sur votre 2ᵉ visite. Réservez dès maintenant le créneau qui vous convient le mieux.',offresIds:[],afficherFidelite:false,phraseSortie:'Au plaisir de vous revoir très vite.',salutation:'Bien à vous,',signature:'L\'équipe',logoDataUrl:'',logoUrl:'',createdAt:''}
 ];
 
 function initSeeds(){
   var arr=loadTpls();
   if(arr.length===0){saveTpls(SEEDS);return SEEDS;}
+  // Ajoute les modèles de base manquants (ex. « Relance 1ʳᵉ visite ») sans toucher aux modèles déjà personnalisés.
+  var ids={}; arr.forEach(function(t){ids[t.id]=1;});
+  var added=false;
+  SEEDS.forEach(function(s){ if(!ids[s.id]){ arr.push(s); added=true; } });
+  if(added) saveTpls(arr);
   return arr;
 }
 

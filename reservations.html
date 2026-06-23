@@ -183,7 +183,7 @@ function setFilter(f){filter=f;document.querySelectorAll('.tab').forEach(functio
 
 function reload(){
   var url=su();
-  if(!url){setSt('err','Configurez la synchro dans « Mon salon ».');render();return;}
+  if(!url){setSt('err','Configurez la synchro dans « Paramètres ».');render();return;}
   setSt('','⏳ Chargement…');
   jsonp(url,{action:'loadBookings'},function(r){
     if(r&&r.ok){
@@ -202,7 +202,7 @@ function render(){
   checkNotice();
   var url=su();
   var box=document.getElementById('list');
-  if(!url){box.innerHTML='<div class="empty">Aucune synchro configurée.<br>Ouvrez <strong>Mon salon</strong> sur l\'accueil pour coller l\'URL de votre script et la clé admin.</div>';document.getElementById('count').textContent='';return;}
+  if(!url){box.innerHTML='<div class="empty">Aucune synchro configurée.<br>Ouvrez <strong>Paramètres</strong> sur l\'accueil pour coller l\'URL de votre script et la clé admin.</div>';document.getElementById('count').textContent='';return;}
   var shown=bookings.filter(function(b){return (b.statut||'en_attente')===filter;});
   document.getElementById('count').textContent=bookings.length?bookings.length+' au total':'';
   if(!shown.length){box.innerHTML='<div class="empty">Aucune réservation '+(filter==='en_attente'?'en attente':(filter==='confirme'?'confirmée':'annulée'))+'.</div>';return;}
@@ -271,7 +271,7 @@ function checkNotice(){
   var n=document.getElementById('notice');
   if(su()&&!ak()){
     n.style.display='';
-    n.querySelector('.box').innerHTML='⚠ <strong>Aucune clé admin configurée.</strong> Sans clé, l\'URL de votre script donne accès à toutes vos données si elle fuite. Définissez une clé admin dans <strong>Mon salon</strong> pour sécuriser le formulaire public.';
+    n.querySelector('.box').innerHTML='⚠ <strong>Aucune clé admin configurée.</strong> Sans clé, l\'URL de votre script donne accès à toutes vos données si elle fuite. Définissez une clé admin dans <strong>Paramètres</strong> pour sécuriser le formulaire public.';
   }else n.style.display='none';
 }
 
@@ -281,7 +281,7 @@ function shareLink(){
   return base+'reservation.html?api='+encodeURIComponent(su());
 }
 function openShare(){
-  if(!su()){setSt('err','Configurez la synchro dans « Mon salon ».');return;}
+  if(!su()){setSt('err','Configurez la synchro dans « Paramètres ».');return;}
   var link=shareLink();
   document.getElementById('shareUrl').textContent=link;
   document.getElementById('shareOpen').href=link;

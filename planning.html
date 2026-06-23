@@ -110,8 +110,8 @@ html[data-theme="dark"] .savebar{background:#14181A}
 <div class="wrap">
   <div id="notConfigured" class="card" style="display:none">
     <h2>Synchro non configurée</h2>
-    <p class="sub">Renseignez d'abord l'URL de votre script (page d'accueil → <strong>Mon salon</strong> → Synchro Google Drive) pour gérer le planning de l'équipe.</p>
-    <a class="btn primary" href="index.html">← Configurer « Mon salon »</a>
+    <p class="sub">Renseignez d'abord l'URL de votre script (page d'accueil → <strong>Paramètres</strong> → Synchro Google Drive) pour gérer le planning de l'équipe.</p>
+    <a class="btn primary" href="index.html">← Configurer « Paramètres »</a>
   </div>
 
   <div id="editor" style="display:none">
@@ -527,7 +527,7 @@ function refreshGrid(){
 
 // ── Enregistrement ───────────────────────────────────────────
 function savePlanning(){
-  var url=su();if(!url){setSt('err','Configurez la synchro dans « Mon salon ».');return;}
+  var url=su();if(!url){setSt('err','Configurez la synchro dans « Paramètres ».');return;}
   var mode=document.getElementById('agMode').value==='collaborateurs'?'collaborateurs':'capacite';
   syncCollabState();
   // Ne garde que les plages avec une date de début ; borne la fin par défaut sur le début.

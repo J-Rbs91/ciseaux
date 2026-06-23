@@ -483,7 +483,7 @@ function renderRentabilite(ps){
 function renderOccupation(ps){
   var ag=agendaConfig();
   var h='<div class="panel"><div class="panel-title">Taux d\'occupation de l\'agenda<span class="pt-sub">temps réalisé / capacité</span></div>';
-  if(!ag) return h+'<div class="muted" style="text-align:left;padding:.2rem 0">Configurez les <b>horaires</b> du salon (Mon salon › Agenda) pour activer cet indicateur.</div></div>';
+  if(!ag) return h+'<div class="muted" style="text-align:left;padding:.2rem 0">Configurez les <b>horaires</b> du salon (Paramètres › Agenda) pour activer cet indicateur.</div></div>';
   var r=periodeRange(), capMin=capaciteRange(r[0],r[1]), usedMin=tempsRealise(ps);
   if(capMin<=0) return h+'<div class="muted" style="text-align:left;padding:.2rem 0">Aucune capacité d\'ouverture sur la période.</div></div>';
   var taux=Math.round(usedMin/capMin*100), w=Math.min(100,taux);

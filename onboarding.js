@@ -147,7 +147,7 @@
       sel: ".btn-config",
       title: "7 · Le paramétrage",
       body:
-        "Pour finir : le bouton « Mon salon » regroupe vos infos et la synchronisation Google Drive.",
+        "Pour finir : le bouton « Paramètres » regroupe vos infos et la synchronisation Google Drive.",
     },
     {
       page: "index.html",
@@ -828,7 +828,7 @@
     }
   }
 
-  // ── Hook « Revoir le guide » (déclenché depuis les réglages « Mon salon ») ──
+  // ── Hook « Revoir le guide » (déclenché depuis les réglages « Paramètres ») ──
   function injectReplay() {
     window.ktReplayGuide = function () { start(0); };
   }

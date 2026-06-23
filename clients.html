@@ -522,7 +522,7 @@ function jsonpRaw(base,params,cb){
 function syncMsg(cls,msg){var el=document.getElementById('syncSt');if(el){el.className='sync-st '+cls;el.textContent=msg;}}
 
 function pushClients(){
-  var url=su();if(!url){syncMsg('err','Configurez la synchro dans Mon salon.');return;}
+  var url=su();if(!url){syncMsg('err','Configurez la synchro dans Paramètres.');return;}
   syncMsg('','⏳ Envoi vers Drive…');
   jsonp(url,{action:'saveClients',data:JSON.stringify(lc())},function(r){
     if(r&&r.ok)syncMsg('ok','✓ Clients envoyés vers le Drive.');
@@ -530,7 +530,7 @@ function pushClients(){
   });
 }
 function pullClients(){
-  var url=su();if(!url){syncMsg('err','Configurez la synchro dans Mon salon.');return;}
+  var url=su();if(!url){syncMsg('err','Configurez la synchro dans Paramètres.');return;}
   if(!confirm('Remplacer la liste locale par celle du Drive ?'))return;
   syncMsg('','⏳ Récupération…');
   jsonp(url,{action:'loadClients'},function(r){

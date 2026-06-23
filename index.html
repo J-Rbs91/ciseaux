@@ -22,11 +22,15 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:"Manrope",-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#EEF1EF;color:#1C2321;min-height:100vh;display:flex;flex-direction:column}
-header{background:#1C2321;color:#fff;padding:1.2rem 1.5rem;display:flex;align-items:center;gap:.7rem}
+header{background:#1C2321;color:#fff;padding:1.2rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:.7rem}
 header>div:first-child{margin-right:auto}
 .logo{display:flex;align-items:center;gap:.6rem}
 .logo h1{font-size:1.5rem;font-weight:800;letter-spacing:-.01em}
-.salon-name{font-size:.82rem;opacity:.8;margin-top:.1rem}
+.salon-name{font-size:1.2rem;font-weight:800;letter-spacing:-.01em;opacity:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kut-brand{position:fixed;right:.9rem;bottom:.7rem;font-size:1rem;font-weight:800;letter-spacing:-.01em;color:#1C2321;opacity:.45;pointer-events:none;z-index:5}
+.kut-brand span{color:#A22C29}
+html[data-theme="dark"] .kut-brand{color:#E7ECEE}
+#salonName{color:#fff!important}  /* titre sur en-tête sombre : prime sur le gris du mode sobre */
 .btn-config{background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.3);color:#fff;padding:.5rem 1rem;border-radius:20px;cursor:pointer;font-size:.83rem;font-weight:600;display:flex;align-items:center;gap:.4rem;font-family:inherit}
 .btn-config:hover{background:rgba(255,255,255,.28)}
 main{padding:1.2rem;max-width:600px;margin:0 auto;width:100%;flex:1;display:flex;flex-direction:column;justify-content:center}
@@ -380,13 +384,7 @@ html[data-theme="dark"] .ms-opt:hover{background:#272F33!important}
 <body>
 
 <header>
-  <div>
-    <div class="logo">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="26" height="26" fill="#A22C29" style="display:block" aria-hidden="true"><path d="M22,7.82a1.25,1.25,0,0,0,0-.19v0h0l-2-5A1,1,0,0,0,19,2H5a1,1,0,0,0-.93.63l-2,5h0v0a1.25,1.25,0,0,0,0,.19A.58.58,0,0,0,2,8H2V8a4,4,0,0,0,2,3.4V21a1,1,0,0,0,1,1H19a1,1,0,0,0,1-1V11.44A4,4,0,0,0,22,8V8h0A.58.58,0,0,0,22,7.82ZM13,20H11V16h2Zm5,0H15V15a1,1,0,0,0-1-1H10a1,1,0,0,0-1,1v5H6V12a4,4,0,0,0,3-1.38,4,4,0,0,0,6,0A4,4,0,0,0,18,12Zm0-10a2,2,0,0,1-2-2,1,1,0,0,0-2,0,2,2,0,0,1-4,0A1,1,0,0,0,8,8a2,2,0,0,1-4,.15L5.68,4H18.32L20,8.15A2,2,0,0,1,18,10Z"></path></svg>
-      <h1>K<span style="color:#A22C29">u</span>T</h1>
-    </div>
-    <div class="salon-name" id="salonName">Mon salon</div>
-  </div>
+  <div class="salon-name" id="salonName">Mon salon</div>
   <button class="btn-config" onclick="openModal()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="display:block" aria-hidden="true"><path d="M19.9 12.66a1 1 0 0 1 0-1.32l1.28-1.44a1 1 0 0 0 .12-1.17l-2-3.46a1 1 0 0 0-1.07-.48l-1.88.38a1 1 0 0 1-1.15-.66l-.61-1.83a1 1 0 0 0-.95-.68h-4a1 1 0 0 0-1 .68l-.56 1.83a1 1 0 0 1-1.15.66L5 4.79a1 1 0 0 0-1 .48L2 8.73a1 1 0 0 0 .1 1.17l1.27 1.44a1 1 0 0 1 0 1.32L2.1 14.1a1 1 0 0 0-.1 1.17l2 3.46a1 1 0 0 0 1.07.48l1.88-.38a1 1 0 0 1 1.15.66l.61 1.83a1 1 0 0 0 1 .68h4a1 1 0 0 0 .95-.68l.61-1.83a1 1 0 0 1 1.15-.66l1.88.38a1 1 0 0 0 1.07-.48l2-3.46a1 1 0 0 0-.12-1.17ZM18.41 14l.8.9-1.28 2.22-1.18-.24a3 3 0 0 0-3.45 2L12.92 20h-2.56L10 18.86a3 3 0 0 0-3.45-2l-1.18.24-1.3-2.21.8-.9a3 3 0 0 0 0-4l-.8-.9 1.28-2.2 1.18.24a3 3 0 0 0 3.45-2L10.36 4h2.56l.38 1.14a3 3 0 0 0 3.45 2l1.18-.24 1.28 2.22-.8.9a3 3 0 0 0 0 3.98Zm-6.77-6a4 4 0 1 0 4 4 4 4 0 0 0-4-4Zm0 6a2 2 0 1 1 2-2 2 2 0 0 1-2 2Z"></path></svg>Paramètres</button>
 </header>
 
@@ -445,6 +443,8 @@ html[data-theme="dark"] .ms-opt:hover{background:#272F33!important}
   Un bug, une idée d'amélioration ou une remarque&nbsp;?<br>
   <button type="button" class="footer-link" onclick="openContact()">Faites-moi un retour</button> — ça m'aide à améliorer KuT.
 </footer>
+
+<div class="kut-brand" aria-hidden="true">K<span>u</span>T</div>
 
 <!-- Modal Paramètres -->
 <div class="overlay" id="overlay" onclick="backdropClose(event)">
@@ -579,6 +579,8 @@ function jsonpRaw(base,params,cb){
 }
 
 function setSt(id,cls,msg){var el=document.getElementById(id);if(el){el.className='status '+cls;el.textContent=msg;}}
+var HG='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="13" height="13" fill="currentColor" aria-hidden="true" style="vertical-align:-.12em;margin-right:.3em"><path d="m24.12,12.29c.57-.57.88-1.32.88-2.12v-4.17c0-1.65-1.35-3-3-3h-12c-1.65,0-3,1.35-3,3v4.18c0,.8.31,1.55.87,2.11l3,3c.19.19.29.44.29.71s-.1.52-.29.71l-3.01,3c-.56.56-.87,1.31-.87,2.11v4.18c0,1.65,1.35,3,3,3h12c1.65,0,3-1.35,3-3v-4.17c0-.8-.31-1.56-.88-2.12l-3-3c-.39-.39-.39-1.02,0-1.41l3-3Zm-4.41,5.83l3,3c.19.19.29.44.29.71v4.17c0,.55-.45,1-1,1h-12c-.55,0-1-.45-1-1v-4.18c0-.27.1-.52.29-.7l3-3c.57-.57.88-1.32.88-2.12s-.31-1.56-.88-2.12l-3-3c-.19-.19-.29-.44-.29-.7v-4.18c0-.55.45-1,1-1h12c.55,0,1,.45,1,1v4.17c0,.27-.1.52-.29.71l-3,3c-1.17,1.17-1.17,3.07,0,4.24Z"></path><path d="m12,24c0,.55.45,1,1,1h5.91c.55,0,1-.45,1-1s-.45-1-1-1h-5.91c-.55,0-1,.45-1,1Z"></path></svg>';
+function setStH(id,cls,html){var el=document.getElementById(id);if(el){el.className='status '+cls;el.innerHTML=html;}}
 
 function syncPush(profil){
   var url=su();if(!url)return;
@@ -594,7 +596,7 @@ function syncPush(profil){
 function doPull(){
   var url=(document.getElementById('fSyncUrl').value||'').trim()||su();
   if(!url){setSt('driveSt','err','Saisissez d\'abord l\'URL du script.');return;}
-  setSt('driveSt','','⏳ Récupération…');
+  setStH('driveSt','',HG+'Récupération…');
   jsonp(url,{action:'load'},function(r){
     if(r&&r.ok&&r.data){
       try{var p=JSON.parse(r.data);localStorage.setItem(LS_P,JSON.stringify(p));fillForm(p);renderHeader();setSt('driveSt','ok','✓ Profil récupéré depuis Drive.');}catch(e){setSt('driveSt','err','Données illisibles.');}
@@ -617,7 +619,7 @@ function saveProfil(){
   // Elle se génère dans l'éditeur Apps Script (genererCleAdmin) puis se colle ici. On la
   // stocke localement et on pousse le profil ; le serveur accepte si la clé correspond.
   if(url&&key){
-    setSt('keySt','','⏳ Vérification de la clé…');
+    setStH('keySt','',HG+'Vérification de la clé…');
     jsonp(url,{action:'load'},function(r){
       if(r&&r.ok)setSt('keySt','ok','✓ Clé valide — sécurité en place.');
       else if(r&&r.error==='non configuré')setSt('keySt','err','Aucune clé posée sur le script. Exécutez genererCleAdmin() dans l\'éditeur Apps Script, puis collez la clé obtenue.');
@@ -693,7 +695,7 @@ function doImport(e){
 
 renderHeader();
 if(su()){
-  var sb=document.getElementById('syncBar');sb.textContent='⏳ Synchronisation…';
+  var sb=document.getElementById('syncBar');sb.innerHTML=HG+'Synchronisation…';
   jsonp(su(),{action:'load'},function(r){
     if(r&&r.ok&&r.data){
       try{var p=JSON.parse(r.data);localStorage.setItem(LS_P,JSON.stringify(p));renderHeader();sb.textContent='✓ Synchronisé';sb.className='sync-bar ok';}catch(e){sb.textContent='';}

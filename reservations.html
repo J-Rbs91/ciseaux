@@ -150,6 +150,8 @@ function su(){return(localStorage.getItem(LS_S)||'').trim();}
 function ak(){return(localStorage.getItem(LS_K)||'').trim();}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function setSt(cls,msg){var e=document.getElementById('st');e.className='st '+(cls||'');e.textContent=msg||'';}
+var HG='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="13" height="13" fill="currentColor" aria-hidden="true" style="vertical-align:-.12em;margin-right:.3em"><path d="m24.12,12.29c.57-.57.88-1.32.88-2.12v-4.17c0-1.65-1.35-3-3-3h-12c-1.65,0-3,1.35-3,3v4.18c0,.8.31,1.55.87,2.11l3,3c.19.19.29.44.29.71s-.1.52-.29.71l-3.01,3c-.56.56-.87,1.31-.87,2.11v4.18c0,1.65,1.35,3,3,3h12c1.65,0,3-1.35,3-3v-4.17c0-.8-.31-1.56-.88-2.12l-3-3c-.39-.39-.39-1.02,0-1.41l3-3Zm-4.41,5.83l3,3c.19.19.29.44.29.71v4.17c0,.55-.45,1-1,1h-12c-.55,0-1-.45-1-1v-4.18c0-.27.1-.52.29-.7l3-3c.57-.57.88-1.32.88-2.12s-.31-1.56-.88-2.12l-3-3c-.19-.19-.29-.44-.29-.7v-4.18c0-.55.45-1,1-1h12c.55,0,1,.45,1,1v4.17c0,.27-.1.52-.29.71l-3,3c-1.17,1.17-1.17,3.07,0,4.24Z"></path><path d="m12,24c0,.55.45,1,1,1h5.91c.55,0,1-.45,1-1s-.45-1-1-1h-5.91c-.55,0-1,.45-1,1Z"></path></svg>';
+function setStH(cls,html){var e=document.getElementById('st');e.className='st '+(cls||'');e.innerHTML=html;}
 function fmtDate(d){var m=String(d||'').match(/^(\d{4})-(\d{2})-(\d{2})/);return m?m[3]+'/'+m[2]+'/'+m[1]:esc(d||'');}
 
 // POST d'abord (clé admin dans le corps, hors URL/journaux) ; repli JSONP si échec.
@@ -184,7 +186,7 @@ function setFilter(f){filter=f;document.querySelectorAll('.tab').forEach(functio
 function reload(){
   var url=su();
   if(!url){setSt('err','Configurez la synchro dans « Paramètres ».');render();return;}
-  setSt('','⏳ Chargement…');
+  setStH('',HG+'Chargement…');
   jsonp(url,{action:'loadBookings'},function(r){
     if(r&&r.ok){
       try{bookings=JSON.parse(r.data||'[]');}catch(e){bookings=[];}
@@ -241,7 +243,7 @@ function itemHtml(b){
 
 function setStatut(id,statut){
   var url=su();if(!url)return;
-  setSt('','⏳ …');
+  setStH('',HG+'…');
   jsonp(url,{action:'setBookingStatus',id:id,statut:statut},function(r){
     if(r&&r.ok){var b=bookings.filter(function(x){return x.id===id;})[0];if(b)b.statut=statut;setSt('','✓ Mis à jour');render();}
     else setSt('err','Échec : '+((r&&r.error)||'inconnue'));

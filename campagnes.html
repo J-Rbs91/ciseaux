@@ -443,6 +443,7 @@ function fideRules(){
 function hasReward(c,rules){return rules.some(function(r){var b=r.counter==='visits'?(Number(c.visitsCount)||0):(Number(c.points)||0);return b>=(Number(r.threshold)||0);});}
 function val(id){return document.getElementById(id).value||'';}
 function res(cls,msg){var el=document.getElementById('result');el.className='result '+cls;el.innerHTML=msg;}
+var HG='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="13" height="13" fill="currentColor" aria-hidden="true" style="vertical-align:-.12em;margin-right:.3em"><path d="m24.12,12.29c.57-.57.88-1.32.88-2.12v-4.17c0-1.65-1.35-3-3-3h-12c-1.65,0-3,1.35-3,3v4.18c0,.8.31,1.55.87,2.11l3,3c.19.19.29.44.29.71s-.1.52-.29.71l-3.01,3c-.56.56-.87,1.31-.87,2.11v4.18c0,1.65,1.35,3,3,3h12c1.65,0,3-1.35,3-3v-4.17c0-.8-.31-1.56-.88-2.12l-3-3c-.39-.39-.39-1.02,0-1.41l3-3Zm-4.41,5.83l3,3c.19.19.29.44.29.71v4.17c0,.55-.45,1-1,1h-12c-.55,0-1-.45-1-1v-4.18c0-.27.1-.52.29-.7l3-3c.57-.57.88-1.32.88-2.12s-.31-1.56-.88-2.12l-3-3c-.19-.19-.29-.44-.29-.7v-4.18c0-.55.45-1,1-1h12c.55,0,1,.45,1,1v4.17c0,.27-.1.52-.29.71l-3,3c-1.17,1.17-1.17,3.07,0,4.24Z"></path><path d="m12,24c0,.55.45,1,1,1h5.91c.55,0,1-.45,1-1s-.45-1-1-1h-5.91c-.55,0-1,.45-1,1Z"></path></svg>';
 function loadTpls(){try{return JSON.parse(localStorage.getItem(LS_TPL)||'[]');}catch(e){return[];}}
 function escH(s){var d=document.createElement('div');d.textContent=String(s==null?'':s);return d.innerHTML;}
 
@@ -558,7 +559,7 @@ function filtrer(arr){
 
 function preview(){
   var url=su();if(!url){res('err','Synchro non configurée.');return;}
-  document.getElementById('recap').textContent='⏳ Lecture de la base…';
+  document.getElementById('recap').innerHTML=HG+'Lecture de la base…';
   jsonp(url,{action:'loadClients'},function(r){
     if(r&&r.ok){
       var arr=[];try{arr=JSON.parse(r.data||'[]');}catch(e){}
@@ -579,7 +580,7 @@ function send(){
   var seg=val('seg'), seuil=cfg().seuil||10;
   var logo=document.getElementById('logoUrl').value||'';
   var btn=document.getElementById('sendBtn');btn.disabled=true;
-  res('work','⏳ Envoi en cours… ne fermez pas cette page.');
+  res('work',HG+'Envoi en cours… ne fermez pas cette page.');
   var params={action:'sendCampaign',subject:sujet,body:corps,segment:seg,seuil:seuil,base:url};
   if(seg==='reward')params.rewardRules=JSON.stringify(fideRules().map(function(r){return {counter:r.counter,threshold:r.threshold};}));
   if(seg==='winback')params.winbackMult=winMult();

@@ -169,7 +169,7 @@
   }
   function pull(cb, quiet){
     var url = su(); if (!url) { if (cb) cb(false); return; }
-    if (!quiet) status('⏳ synchro…', 'work');
+    if (!quiet) status('synchro…', 'work');
     jsonp(url, { action:'loadClients' }, function (r) {
       if (r && r.ok) {
         var a = []; try { a = JSON.parse(r.data || '[]'); } catch (e) {}

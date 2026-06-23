@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; img-src 'self' data: https:; font-src https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://script.google.com https://script.googleusercontent.com; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.emailjs.com">
+<title>Mon salon — KuT</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="theme-color" content="#1C2321">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="KuT">
+<script defer src="pwa.js"></script>
+<script defer src="onboarding.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Manrope",-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#EEF1EF;color:#1C2321;min-height:100vh;display:flex;flex-direction:column}
+header{background:#1C2321;color:#fff;padding:1rem 1.2rem;display:flex;align-items:center;gap:.8rem}
+.back{color:#fff;text-decoration:none;font-size:1.3rem;opacity:.85;line-height:1;padding:.2rem}
+.back:hover{opacity:1}
+h1{font-size:1.08rem;font-weight:800;flex:1;display:flex;align-items:center;gap:.5rem}
+main{padding:1.2rem;max-width:600px;margin:0 auto;width:100%;flex:1;display:flex;flex-direction:column;justify-content:center}
+.intro{font-size:.85rem;color:#5E6572;line-height:1.5;margin:0 auto 1.3rem;text-align:center;max-width:440px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.card{background:#fff;border-radius:18px;padding:1.7rem 1.1rem 1.45rem;text-decoration:none;color:#1C2321;box-shadow:0 2px 14px rgba(28,35,33,.1);display:flex;flex-direction:column;align-items:center;gap:.6rem;transition:transform .15s,box-shadow .15s;border:1.5px solid transparent}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(94,101,114,.2);border-color:#c8d4da}
+.card .icon{width:62px;height:62px;border-radius:50%;background:rgba(162,44,41,.09);display:flex;align-items:center;justify-content:center}
+.card .label{font-size:1.04rem;font-weight:700}
+.card .desc{font-size:.75rem;color:#A9B4C2;text-align:center;line-height:1.35}
+.theme-toggle{width:38px;height:38px;border-radius:50%;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.18);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;transition:background .15s}
+.theme-toggle:hover{background:rgba(255,255,255,.28)}
+
+/* ── MODE SOMBRE ── */
+html[data-theme="dark"] body{background:#14181A;color:#E7ECEE}
+html[data-theme="dark"] header{background:#0E1214}
+html[data-theme="dark"] .card{background:#1F2528;color:#E7ECEE;border:1px solid #313A3F;box-shadow:0 1px 6px rgba(0,0,0,.4)}
+html[data-theme="dark"] .card:hover{border-color:#3d484e;box-shadow:0 6px 20px rgba(0,0,0,.55)}
+html[data-theme="dark"] .card .desc{color:#9AA6AE}
+html[data-theme="dark"] .intro{color:#9AA6AE}
+
+/* ── ADAPTATION ÉCRAN LARGE (desktop) ── */
+@media(min-width:640px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(min-width:1024px){
+  main{max-width:680px}
+}
+
+/* ── ERGONOMIE TACTILE (tablette paysage / mobile) ── */
+@media (pointer:coarse){
+  button:not(.toggle){min-height:44px}
+  a.back{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px}
+  .theme-toggle{width:44px;height:44px}
+}
+</style>
+<script>(function(){try{if(localStorage.getItem("kut-theme")==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();</script>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back" aria-label="Retour à l'accueil"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" style="display:block" aria-hidden="true"><path d="M13.41,12l3.3-3.29a1,1,0,1,0-1.42-1.42l-4,4a1,1,0,0,0,0,1.42l4,4a1,1,0,0,0,1.42,0,1,1,0,0,0,0-1.42ZM8,7A1,1,0,0,0,7,8v8a1,1,0,0,0,2,0V8A1,1,0,0,0,8,7Z"></path></svg></a>
+  <h1><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#A22C29" style="vertical-align:-.18em" aria-hidden="true"><path d="M22,7.82a1.25,1.25,0,0,0,0-.19v0h0l-2-5A1,1,0,0,0,19,2H5a1,1,0,0,0-.93.63l-2,5h0v0a1.25,1.25,0,0,0,0,.19A.58.58,0,0,0,2,8H2V8a4,4,0,0,0,2,3.4V21a1,1,0,0,0,1,1H19a1,1,0,0,0,1-1V11.44A4,4,0,0,0,22,8V8h0A.58.58,0,0,0,22,7.82ZM13,20H11V16h2Zm5,0H15V15a1,1,0,0,0-1-1H10a1,1,0,0,0-1,1v5H6V12a4,4,0,0,0,3-1.38,4,4,0,0,0,6,0A4,4,0,0,0,18,12Zm0-10a2,2,0,0,1-2-2,1,1,0,0,0-2,0,2,2,0,0,1-4,0A1,1,0,0,0,8,8a2,2,0,0,1-4,.15L5.68,4H18.32L20,8.15A2,2,0,0,1,18,10Z"></path></svg> Mon salon</h1>
+</header>
+
+<main>
+  <p class="intro">Tout ce qui décrit votre salon : votre catalogue de prestations et le planning de l'équipe.</p>
+  <div class="grid">
+    <a href="prestations.html" class="card">
+      <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="#A22C29" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="7" r="2.6"></circle><circle cx="6" cy="17" r="2.6"></circle><path d="M8.2 8.5 20 16"></path><path d="M8.2 15.5 20 8"></path></svg></div>
+      <div class="label">Prestations</div>
+      <div class="desc">Catalogue &amp; tarifs</div>
+    </a>
+    <a href="planning.html" class="card">
+      <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="38" height="38" fill="#A22C29" style="display:block" aria-hidden="true"><path d="M12.3,12.22A4.92,4.92,0,0,0,14,8.5a5,5,0,0,0-10,0,4.92,4.92,0,0,0,1.7,3.72A8,8,0,0,0,1,19.5a1,1,0,0,0,2,0,6,6,0,0,1,12,0,1,1,0,0,0,2,0A8,8,0,0,0,12.3,12.22ZM9,11.5a3,3,0,1,1,3-3A3,3,0,0,1,9,11.5Zm9.74.32A5,5,0,0,0,15,3.5a1,1,0,0,0,0,2,3,3,0,0,1,3,3,3,3,0,0,1-1.5,2.59,1,1,0,0,0-.5.84,1,1,0,0,0,.45.86l.39.26.13.07a7,7,0,0,1,4,6.38,1,1,0,0,0,2,0A9,9,0,0,0,18.74,11.82Z"/></svg></div>
+      <div class="label">Planning équipe</div>
+      <div class="desc">Horaires, équipe, prestations &amp; absences</div>
+    </a>
+  </div>
+</main>
+
+<script>
+(function(){
+  var K="kut-theme";
+  function cur(){try{return localStorage.getItem(K)==="dark"?"dark":"light";}catch(e){return "light";}}
+  function apply(t){if(t==="dark")document.documentElement.setAttribute("data-theme","dark");else document.documentElement.removeAttribute("data-theme");}
+  var SUN='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 7a5 5 0 1 0 5 5 5 5 0 0 0-5-5Zm0 8a3 3 0 1 1 3-3 3 3 0 0 1-3 3Zm0-9a1 1 0 0 0 1-1V3a1 1 0 0 0-2 0v2a1 1 0 0 0 1 1Zm0 12a1 1 0 0 0-1 1v2a1 1 0 0 0 2 0v-2a1 1 0 0 0-1-1ZM5.99 7.41a1 1 0 0 0 1.42-1.41l-1-1a1 1 0 0 0-1.42 1.41Zm11.6 9.18a1 1 0 0 0-1.42 1.42l1 1a1 1 0 0 0 1.42-1.42ZM21 11h-2a1 1 0 0 0 0 2h2a1 1 0 0 0 0-2ZM5 12a1 1 0 0 0-1-1H2a1 1 0 0 0 0 2h2a1 1 0 0 0 1-1Zm11.59-4.59a1 1 0 0 0 .7-.29l1-1a1 1 0 1 0-1.42-1.42l-1 1a1 1 0 0 0 .72 1.71ZM5.99 16.59l-1 1a1 1 0 1 0 1.42 1.42l1-1a1 1 0 0 0-1.42-1.42Z"/></svg>';
+  var MOON='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M21.64 13a1 1 0 0 0-1.05-.14 8.05 8.05 0 0 1-3.37.73A8.15 8.15 0 0 1 9.08 5.49a8.59 8.59 0 0 1 .25-2A1 1 0 0 0 8 2.36 10.14 10.14 0 1 0 22 14.05a1 1 0 0 0-.36-1.05Zm-9.5 6.69A8.14 8.14 0 0 1 7.08 5.22v.27A10.15 10.15 0 0 0 17.19 15.6a9.79 9.79 0 0 0 2.1-.22 8.11 8.11 0 0 1-7.15 4.31Z"/></svg>';
+  var b=document.createElement("button");b.id="themeToggle";b.type="button";b.className="theme-toggle";
+  function refresh(){var d=cur()==="dark";b.innerHTML=d?SUN:MOON;var l=d?"Passer en mode clair":"Passer en mode sombre";b.setAttribute("aria-label",l);b.title=l;}
+  b.addEventListener("click",function(){var t=cur()==="dark"?"light":"dark";try{localStorage.setItem(K,t);}catch(e){}apply(t);refresh();});
+  apply(cur());refresh();var H=document.querySelector("header");(H||document.body).appendChild(b);
+})();
+</script>
+</body>
+</html>

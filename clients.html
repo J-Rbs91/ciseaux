@@ -200,8 +200,8 @@ input:not([type=file]):not([type=checkbox]):not([type=search]):focus,textarea:fo
 
 
 /* ── BOUTON BASCULE CLAIR/SOMBRE ── */
-.theme-toggle{width:38px;height:38px;border-radius:50%;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.18);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;transition:background .15s}
-.theme-toggle:hover{background:rgba(255,255,255,.28)}
+.theme-toggle{position:fixed;left:.9rem;right:auto;bottom:.9rem;z-index:40;width:30px;height:30px;border-radius:50%;border:1.5px solid #c8d4da;background:#fff;color:#1C2321;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;box-shadow:0 2px 10px rgba(28,35,33,.18);transition:background .15s}
+.theme-toggle:hover{background:#f0f3f2}
 
 /* ── MODE SOMBRE (accent rouge conservé) ── */
 html[data-theme="dark"] body{background:#14181A!important;color:#E7ECEE!important}
@@ -357,7 +357,7 @@ html[data-theme="dark"] .tl-tag{background:#171C1F!important;border-color:#313A3
   input[type=checkbox],input[type=radio]{width:20px;height:20px}
   a.back{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px}
   .ms-opt{min-height:44px}
-  .theme-toggle{width:44px;height:44px}
+  .theme-toggle{width:35px;height:35px}
   .toggle{transform:scale(1.25);transform-origin:left center}
 }
 </style>
@@ -380,8 +380,6 @@ html[data-theme="dark"] .tl-tag{background:#171C1F!important;border-color:#313A3
   <button class="sync-btn" onclick="pullClients()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M21,14a1,1,0,0,0-1,1v4a1,1,0,0,1-1,1H5a1,1,0,0,1-1-1V15a1,1,0,0,0-2,0v4a3,3,0,0,0,3,3H19a3,3,0,0,0,3-3V15A1,1,0,0,0,21,14Zm-9.71,1.71a1,1,0,0,0,.33.21.94.94,0,0,0,.76,0,1,1,0,0,0,.33-.21l4-4a1,1,0,0,0-1.42-1.42L13,12.59V3a1,1,0,0,0-2,0v9.59l-2.29-2.3a1,1,0,1,0-1.42,1.42Z"></path></svg> Récupérer du Drive</button>
   <span class="sync-st" id="syncSt"></span>
 </div>
-
-<div id="capBox" style="display:none;max-width:620px;margin:.2rem auto .7rem;padding:.7rem 1rem;border-radius:12px;font-size:.85rem"></div>
 
 <div id="inactBanner" style="display:none;max-width:620px;margin:.2rem auto .7rem;padding:.7rem 1rem;background:#fff8e1;border:1.5px solid #f0d98a;border-radius:12px;font-size:.85rem;color:#6b5800;cursor:pointer" onclick="openInact()"></div>
 <div class="list" id="list"></div>
@@ -410,6 +408,7 @@ html[data-theme="dark"] .tl-tag{background:#171C1F!important;border-color:#313A3
       <button class="btn btn-p" onclick="save_()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M18.71,7.21a1,1,0,0,0-1.42,0L9.84,14.67,6.71,11.53A1,1,0,1,0,5.29,13l3.84,3.84a1,1,0,0,0,1.42,0l8.16-8.16A1,1,0,0,0,18.71,7.21Z"></path></svg> Enregistrer</button>
       <button class="btn btn-d" id="delBtn" style="display:none" onclick="del_()">Supprimer</button>
     </div>
+    <div id="oubliRow" style="display:none;margin-top:.6rem;text-align:center"><button type="button" onclick="oubli_()" style="background:none;border:none;color:#A22C29;font-weight:700;font-size:.82rem;cursor:pointer;text-decoration:underline;text-underline-offset:2px;font-family:inherit">Droit à l'oubli — effacer toutes les données de ce client (RGPD)</button></div>
   </div>
 </div>
 
@@ -565,25 +564,6 @@ function enforceCapRule(){
     if(window.DB&&DB.autoPurge)DB.autoPurge();
   }
 }
-function renderCapBox(){
-  var box=document.getElementById('capBox'); if(!box) return;
-  var n=lc().length, pct=Math.min(100,Math.round(n/CAP_FIDELITE*100));
-  var plein=n>=CAP_FIDELITE, approche=n>=CAP_APPROCHE;
-  var col=plein?'#A22C29':(approche?'#7a5d00':'#2f6a45');
-  var bg=plein?'#fef2f2':(approche?'#fff8e1':'#f0f7f4');
-  var bd=plein?'#A22C29':(approche?'#f0d98a':'#bfe0cb');
-  var msg='';
-  if(approche){
-    var dorm=inactiveList(RGL_OBLIG_MOIS).length;
-    msg='<div style="margin-top:.45rem;font-size:.8rem;line-height:1.45">⚠️ Vous approchez de la limite. <strong>Règle obligatoire active</strong> : suppression automatique des membres sans visite depuis <strong>12 mois</strong>'+(dorm>0?' — '+dorm+' concerné'+(dorm>1?'s':'')+' au prochain chargement':'')+'. <span onclick="openInact()" style="color:'+col+';font-weight:700;cursor:pointer;text-decoration:underline">Gérer les règles d\'effacement</span></div>';
-  }
-  box.style.display='';
-  box.style.background=bg; box.style.border='1.5px solid '+bd; box.style.color=col;
-  box.innerHTML='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:.5rem">'+
-    '<span style="font-weight:800">'+n.toLocaleString('fr-FR')+' / '+CAP_FIDELITE.toLocaleString('fr-FR')+' membres fidélité</span>'+
-    '<span style="font-size:.75rem;font-weight:700">'+pct+' %</span></div>'+
-    '<div style="height:8px;border-radius:5px;background:rgba(0,0,0,.08);overflow:hidden;margin-top:.4rem"><div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:5px"></div></div>'+msg;
-}
 function lastActivity(c){
   var ts=0;
   if(Array.isArray(c.visites))c.visites.forEach(function(v){if(v&&v.date){var t=+new Date(v.date);if(t>ts)ts=t;}});
@@ -626,7 +606,7 @@ function onPolChange(){
   if(locked) document.getElementById('autoPurge').checked=true;
   polSet({purgeMonths:m,autoPurge:auto});
   if(auto&&window.DB&&DB.autoPurge){var removed=DB.autoPurge();if(removed&&removed.length)render();}
-  renderInactBanner();renderInactList();renderCapBox();
+  renderInactBanner();renderInactList();
 }
 function renderInactList(){
   var p=pol(),m=parseInt(document.getElementById('inactMonths').value,10)||p.purgeMonths;
@@ -659,7 +639,6 @@ function bkInact(e){if(e.target===document.getElementById('ovInact'))closeInact(
 function render(){
   enforceCapRule();
   renderInactBanner();
-  renderCapBox();
   var q=(document.getElementById('q').value||'').toLowerCase().trim();
   var all=lc();
   document.getElementById('countEl').textContent=all.length+' client'+(all.length>1?'s':'');
@@ -697,6 +676,7 @@ function openNew(){
   ['fN','fT','fE','fDob','fProf','fNt'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('fOpt').checked=false;
   document.getElementById('delBtn').style.display='none';
+  document.getElementById('oubliRow').style.display='none';
   document.getElementById('histSec').style.display='none';
   document.getElementById('ov').classList.add('open');
   setTimeout(function(){document.getElementById('fN').focus();},80);
@@ -715,6 +695,7 @@ function openEdit(id){
   document.getElementById('fNt').value=c.notes||'';
   document.getElementById('fOpt').checked=isOptin(c.optin);
   document.getElementById('delBtn').style.display='';
+  document.getElementById('oubliRow').style.display='';
   renderHistory(c);
   document.getElementById('ov').classList.add('open');
 }
@@ -743,6 +724,19 @@ function del_(){
   sc(lc().filter(function(c){return c.id!==id;}));
   if(window.DB)DB.remove(id);
   close_();render();
+}
+/* Droit à l'oubli (RGPD) : à la demande du client, effacement complet et
+   irréversible de toutes ses données (fiche, historique, fidélité), local + Drive. */
+function oubli_(){
+  if(!eid)return;
+  var c=lc().find(function(x){return x.id===eid;});
+  var nom=(c&&c.nom)?c.nom:'ce client';
+  if(!confirm('Droit à l\'oubli (RGPD)\n\nEffacer DÉFINITIVEMENT toutes les données de '+nom+' — coordonnées, historique des visites et points de fidélité — en local et sur le Drive ?\n\nLe client est retiré du programme de fidélité. Cette action est irréversible.'))return;
+  var id=eid;
+  sc(lc().filter(function(x){return x.id!==id;}));
+  if(window.DB)DB.remove(id);
+  close_();render();
+  syncMsg('ok','Données du client effacées (droit à l\'oubli).');
 }
 
 function close_(){document.getElementById('ov').classList.remove('open');eid=null;}

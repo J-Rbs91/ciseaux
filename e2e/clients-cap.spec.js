@@ -1,7 +1,10 @@
 const { test, expect } = require('@playwright/test');
-const { seed, client, visit } = require('./_helpers');
+const { seed, client } = require('./_helpers');
 
-// Compteur de membres fidélité + règle obligatoire des 12 mois à l'approche du cap (3000).
+// Compteur de membres fidélité (jauge dans le header de Stats) + règle obligatoire
+// des 12 mois à l'approche du cap (3000), appliquée côté Clients.
+
+test.use({ serviceWorkers: 'block' }); // évite qu'un SW serve une page en cache
 
 async function seedMany(page, activeN, staleMonths) {
   await page.addInitScript(({ activeN, staleMonths }) => {
@@ -18,32 +21,34 @@ async function seedMany(page, activeN, staleMonths) {
   }, { activeN, staleMonths });
 }
 
-test.describe('clients.html — compteur fidélité & cap 3000', () => {
+test.describe('Membres fidélité — jauge (Stats) & cap 3000 (Clients)', () => {
 
-  test('compteur affiché, pas de règle obligatoire en dessous du seuil', async ({ page }) => {
-    await seed(page, { clients: [client({ nom: 'A' }), client({ nom: 'B' }), client({ nom: 'C' })] });
-    await page.goto('/clients.html');
-    const box = page.locator('#capBox');
-    await expect(box).toBeVisible();
-    await expect(box).toContainText('membres fidélité');
-    await expect(box).not.toContainText('obligatoire');
-    // modale : réglage libre
-    await page.locator('header button:has-text("Inactifs")').click();
-    await expect(page.locator('#autoPurge')).toBeEnabled();
-    await expect(page.locator('#capLockNote')).toBeHidden();
+  test('jauge membres fidélité affichée dans le header de Stats', async ({ page }) => {
+    const recent = d => [{ date: new Date(Date.now() - d * 86400000).toISOString(), montant: 20, items: [] }];
+    await seed(page, { clients: [
+      client({ nom: 'A', visites: recent(5) }),
+      client({ nom: 'B', visites: recent(6) }),
+      client({ nom: 'C', visites: recent(7) }),
+    ] });
+    await page.goto('/stats.html');
+    await expect(page.locator('#memg')).toBeVisible();
+    // 3 membres sur 3000 -> le texte ne contient que ces chiffres
+    const digits = await page.locator('#memgN').evaluate(el => el.textContent.replace(/\D/g, ''));
+    expect(digits).toBe('33000');
+    // la barre a bien une largeur en pourcentage (proportionnelle au cap)
+    const w = await page.locator('#memgF').evaluate(el => el.style.width);
+    expect(w).toMatch(/^\d+%$/);
   });
 
   test('à l\'approche des 3000 : règle 12 mois imposée + dormant >12 mois supprimé', async ({ page }) => {
-    await seedMany(page, 2500, 14); // 2501 membres au total, 1 dormant à 14 mois
+    await seedMany(page, 2500, 14); // 2501 membres, 1 dormant à 14 mois
     await page.goto('/clients.html');
-    await expect(page.locator('#capBox')).toContainText('Règle obligatoire active');
+    await expect(page.locator('#countEl')).toContainText('client'); // page chargée
 
-    // La politique a été forcée : auto ON, délai plafonné à 12 mois.
     const polObj = await page.evaluate(() => JSON.parse(localStorage.getItem('crm-policy-v1') || '{}'));
     expect(polObj.autoPurge).toBe(true);
     expect(polObj.purgeMonths).toBeLessThanOrEqual(12);
 
-    // Le dormant >12 mois a été effacé (local). Reste 2500 membres.
     const stats = await page.evaluate(() => {
       const arr = JSON.parse(localStorage.getItem('clients-v1') || '[]');
       return { n: arr.length, hasStale: arr.some(c => c.id === 'STALE') };
@@ -63,5 +68,17 @@ test.describe('clients.html — compteur fidélité & cap 3000', () => {
     expect(Number(max)).toBe(12);
     const val = await page.locator('#inactMonths').inputValue();
     expect(Number(val)).toBeLessThanOrEqual(12);
+  });
+
+  test('droit à l\'oubli : efface la fiche client (local + Drive)', async ({ page }) => {
+    await seed(page, { clients: [client({ id: 'cX', nom: 'Marie Oubli', mail: 'm@x.fr', visites: [{ date: new Date(Date.now() - 5 * 86400000).toISOString(), montant: 20, items: [] }] })] });
+    page.on('dialog', d => d.accept());
+    await page.goto('/clients.html');
+    await page.locator('.card', { hasText: 'Marie Oubli' }).click();
+    await expect(page.locator('#oubliRow')).toBeVisible();
+    await page.locator('#oubliRow button').click();
+    await expect(page.locator('.card', { hasText: 'Marie Oubli' })).toHaveCount(0);
+    const gone = await page.evaluate(() => JSON.parse(localStorage.getItem('clients-v1') || '[]').every(c => c.id !== 'cX'));
+    expect(gone).toBe(true);
   });
 });

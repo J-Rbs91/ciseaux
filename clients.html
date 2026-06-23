@@ -381,6 +381,8 @@ html[data-theme="dark"] .tl-tag{background:#171C1F!important;border-color:#313A3
   <span class="sync-st" id="syncSt"></span>
 </div>
 
+<div id="capBox" style="display:none;max-width:620px;margin:.2rem auto .7rem;padding:.7rem 1rem;border-radius:12px;font-size:.85rem"></div>
+
 <div id="inactBanner" style="display:none;max-width:620px;margin:.2rem auto .7rem;padding:.7rem 1rem;background:#fff8e1;border:1.5px solid #f0d98a;border-radius:12px;font-size:.85rem;color:#6b5800;cursor:pointer" onclick="openInact()"></div>
 <div class="list" id="list"></div>
 <button class="fab" onclick="openNew()" title="Nouveau client">+</button>
@@ -416,6 +418,7 @@ html[data-theme="dark"] .tl-tag{background:#171C1F!important;border-color:#313A3
     <div class="mh"><h2>Clients inactifs &amp; rétention</h2><button class="xbtn" onclick="closeInact()">&times;</button></div>
     <div class="field"><label class="check"><input type="checkbox" id="autoPurge" onchange="onPolChange()"> Supprimer automatiquement les clients inactifs</label><div style="font-size:.76rem;color:#A9B4C2;margin-top:.35rem">Conformité RGPD : un client sans aucune visite ni mise à jour depuis le délai ci-dessous est <strong>supprimé automatiquement</strong> à l'ouverture de l'application (en local et sur le Drive).</div></div>
     <div class="field"><label>Délai avant suppression (mois)</label><input id="inactMonths" type="number" min="1" step="1" oninput="onPolChange()"><div style="font-size:.76rem;color:#A9B4C2;margin-top:.35rem">Par défaut <strong>24 mois (2 ans)</strong> après la dernière activité.</div></div>
+    <div id="capLockNote" style="display:none;font-size:.78rem;color:#7a1c1a;background:#fef2f2;border:1.5px solid #f0d98a;border-radius:10px;padding:.55rem .7rem;margin-bottom:.6rem">⚠️ Vous approchez de la limite de 3000 membres fidélité. La règle <strong>12 mois</strong> est <strong>obligatoire</strong> : la suppression automatique ne peut pas être désactivée et le délai ne peut pas dépasser 12 mois (vous pouvez le raccourcir).</div>
     <div id="inactList"></div>
     <div class="row" style="margin-top:1rem">
       <button class="btn btn-d" onclick="purgeSelected()" id="purgeBtn">Supprimer la sélection</button>
@@ -546,6 +549,39 @@ function pullClients(){
 var LS_POL='crm-policy-v1';
 function pol(){try{return Object.assign({purgeMonths:24,autoPurge:true},JSON.parse(localStorage.getItem(LS_POL)||'{}'));}catch(e){return {purgeMonths:24,autoPurge:true};}}
 function polSet(o){localStorage.setItem(LS_POL,JSON.stringify(Object.assign(pol(),o)));}
+
+/* ── Plafond du programme de fidélité (limite de stockage de l'appareil ~5 Mo) ──
+   À l'approche du cap, la règle des 12 mois devient obligatoire (cf. demande). */
+var CAP_FIDELITE=3000, CAP_APPROCHE=2500, RGL_OBLIG_MOIS=12;
+/* Force la règle obligatoire quand on approche du cap : auto-suppression ON,
+   délai plafonné à 12 mois (on peut raccourcir, pas allonger). Idempotent. */
+function enforceCapRule(){
+  if(lc().length<CAP_APPROCHE) return;
+  var p=pol(), cur=parseInt(p.purgeMonths,10)||24;
+  if(!p.autoPurge || cur>RGL_OBLIG_MOIS){
+    polSet({autoPurge:true,purgeMonths:Math.min(cur,RGL_OBLIG_MOIS)});
+    if(window.DB&&DB.autoPurge)DB.autoPurge();
+  }
+}
+function renderCapBox(){
+  var box=document.getElementById('capBox'); if(!box) return;
+  var n=lc().length, pct=Math.min(100,Math.round(n/CAP_FIDELITE*100));
+  var plein=n>=CAP_FIDELITE, approche=n>=CAP_APPROCHE;
+  var col=plein?'#A22C29':(approche?'#7a5d00':'#2f6a45');
+  var bg=plein?'#fef2f2':(approche?'#fff8e1':'#f0f7f4');
+  var bd=plein?'#A22C29':(approche?'#f0d98a':'#bfe0cb');
+  var msg='';
+  if(approche){
+    var dorm=inactiveList(RGL_OBLIG_MOIS).length;
+    msg='<div style="margin-top:.45rem;font-size:.8rem;line-height:1.45">⚠️ Vous approchez de la limite. <strong>Règle obligatoire active</strong> : suppression automatique des membres sans visite depuis <strong>12 mois</strong>'+(dorm>0?' — '+dorm+' concerné'+(dorm>1?'s':'')+' au prochain chargement':'')+'. <span onclick="openInact()" style="color:'+col+';font-weight:700;cursor:pointer;text-decoration:underline">Gérer les règles d\'effacement</span></div>';
+  }
+  box.style.display='';
+  box.style.background=bg; box.style.border='1.5px solid '+bd; box.style.color=col;
+  box.innerHTML='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:.5rem">'+
+    '<span style="font-weight:800">'+n.toLocaleString('fr-FR')+' / '+CAP_FIDELITE.toLocaleString('fr-FR')+' membres fidélité</span>'+
+    '<span style="font-size:.75rem;font-weight:700">'+pct+' %</span></div>'+
+    '<div style="height:8px;border-radius:5px;background:rgba(0,0,0,.08);overflow:hidden;margin-top:.4rem"><div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:5px"></div></div>'+msg;
+}
 function lastActivity(c){
   var ts=0;
   if(Array.isArray(c.visites))c.visites.forEach(function(v){if(v&&v.date){var t=+new Date(v.date);if(t>ts)ts=t;}});
@@ -564,16 +600,31 @@ function renderInactBanner(){
   if(!p.autoPurge && n>0){b.style.display='';b.innerHTML='🗑 '+n+' client'+(n>1?'s':'')+' inactif'+(n>1?'s':'')+' depuis plus de '+p.purgeMonths+' mois — <strong>Revoir</strong>';}
   else b.style.display='none';
 }
-function openInact(){var p=pol();document.getElementById('inactMonths').value=p.purgeMonths;document.getElementById('autoPurge').checked=!!p.autoPurge;renderInactList();document.getElementById('ovInact').classList.add('open');}
+function openInact(){
+  var p=pol(), locked=lc().length>=CAP_APPROCHE;
+  var mEl=document.getElementById('inactMonths'), aEl=document.getElementById('autoPurge');
+  if(locked){
+    aEl.checked=true; aEl.disabled=true;
+    mEl.max=RGL_OBLIG_MOIS; mEl.value=Math.min(parseInt(p.purgeMonths,10)||RGL_OBLIG_MOIS, RGL_OBLIG_MOIS);
+  } else {
+    aEl.disabled=false; mEl.removeAttribute('max'); mEl.value=p.purgeMonths; aEl.checked=!!p.autoPurge;
+  }
+  document.getElementById('capLockNote').style.display=locked?'':'none';
+  renderInactList();
+  document.getElementById('ovInact').classList.add('open');
+}
 // Changement de réglage (toggle auto ou délai) : on enregistre, et si l'auto est actif on purge tout de suite.
 function onPolChange(){
+  var locked=lc().length>=CAP_APPROCHE;
   var f=document.getElementById('inactMonths');
   var m=Math.max(1,Math.floor(parseInt(f.value,10)||24));
-  f.value=m;                       // force un entier de mois >= 1
-  var auto=document.getElementById('autoPurge').checked;
+  if(locked) m=Math.min(m,RGL_OBLIG_MOIS);   // règle obligatoire : 12 mois maximum
+  f.value=m;                                 // force un entier de mois >= 1
+  var auto=locked?true:document.getElementById('autoPurge').checked;
+  if(locked) document.getElementById('autoPurge').checked=true;
   polSet({purgeMonths:m,autoPurge:auto});
   if(auto&&window.DB&&DB.autoPurge){var removed=DB.autoPurge();if(removed&&removed.length)render();}
-  renderInactBanner();renderInactList();
+  renderInactBanner();renderInactList();renderCapBox();
 }
 function renderInactList(){
   var p=pol(),m=parseInt(document.getElementById('inactMonths').value,10)||p.purgeMonths;
@@ -604,7 +655,9 @@ function closeInact(){document.getElementById('ovInact').classList.remove('open'
 function bkInact(e){if(e.target===document.getElementById('ovInact'))closeInact();}
 
 function render(){
+  enforceCapRule();
   renderInactBanner();
+  renderCapBox();
   var q=(document.getElementById('q').value||'').toLowerCase().trim();
   var all=lc();
   document.getElementById('countEl').textContent=all.length+' client'+(all.length>1?'s':'');

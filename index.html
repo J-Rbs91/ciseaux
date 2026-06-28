@@ -456,14 +456,14 @@ html[data-theme="dark"] .ms-opt:hover{background:#272F33!important}
       <button class="btn-close" onclick="closeModal()">✕</button>
     </div>
 
-    <div class="field"><label>Nom du salon ✱</label><input id="fNom" type="text" placeholder="Ex : Salon Isabelle"></div>
-    <div class="field"><label>Adresse</label><input id="fAdresse" type="text" placeholder="12 rue des Lilas, 69000 Lyon"></div>
-    <div class="field"><label>Téléphone</label><input id="fTel" type="tel" placeholder="06 12 34 56 78"></div>
-    <div class="field"><label>Email</label><input id="fMail" type="email" placeholder="contact@monsalon.fr"></div>
+    <div class="field"><label for="fNom">Nom du salon ✱</label><input id="fNom" type="text" placeholder="Ex : Salon Isabelle"></div>
+    <div class="field"><label for="fAdresse">Adresse</label><input id="fAdresse" type="text" placeholder="12 rue des Lilas, 69000 Lyon"></div>
+    <div class="field"><label for="fTel">Téléphone</label><input id="fTel" type="tel" placeholder="06 12 34 56 78"></div>
+    <div class="field"><label for="fMail">Email</label><input id="fMail" type="email" placeholder="contact@monsalon.fr"></div>
 
     <div class="sep"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M14.29,14.19,11,17.48,9.71,16.19a1,1,0,0,0-1.42,0,1,1,0,0,0,0,1.41l2,2a1,1,0,0,0,1.42,0l4-4a1,1,0,0,0,0-1.41A1,1,0,0,0,14.29,14.19Zm4.13-5.87a7,7,0,0,0-13.36,1.9,4,4,0,0,0-.38,7.65A1,1,0,1,0,5.32,16,2,2,0,0,1,4,14.1a2,2,0,0,1,2-2,1,1,0,0,0,1-1,5,5,0,0,1,9.73-1.6,1,1,0,0,0,.78.66A3,3,0,0,1,17.75,16,1,1,0,0,0,18,18l.25,0a5,5,0,0,0,.17-9.62Z"></path></svg> Synchro Google Drive</div>
     <div class="field">
-      <label>URL de votre script Apps Script</label>
+      <label for="fSyncUrl">URL de votre script Apps Script</label>
       <input id="fSyncUrl" type="url" placeholder="https://script.google.com/macros/s/…/exec">
       <div class="hint">Optionnel — votre script perso hébergé sur votre compte Google. <a href="docs/sync-drive/">Comment faire ?</a> · <a href="docs/multi-appareils/">Plusieurs appareils</a></div>
     </div>
@@ -510,8 +510,8 @@ html[data-theme="dark"] .ms-opt:hover{background:#272F33!important}
     </div>
     <div class="hint" style="margin-bottom:1.1rem">Un bug, une idée, une remarque&nbsp;? Dites-moi tout — chaque message m'aide à améliorer KuT.</div>
     <form id="contactForm" onsubmit="return sendContact(event)">
-      <div class="field"><label>Nom ✱</label><input id="cName" type="text" required minlength="2" maxlength="100" autocomplete="name" placeholder="Votre nom"></div>
-      <div class="field"><label>Email ✱</label><input id="cMail" type="email" required maxlength="150" autocomplete="email" placeholder="vous@exemple.fr"></div>
+      <div class="field"><label for="cName">Nom ✱</label><input id="cName" type="text" required minlength="2" maxlength="100" autocomplete="name" placeholder="Votre nom"></div>
+      <div class="field"><label for="cMail">Email ✱</label><input id="cMail" type="email" required maxlength="150" autocomplete="email" placeholder="vous@exemple.fr"></div>
       <div class="field">
         <label>Fonctionnalité(s) / section(s) concernée(s)</label>
         <div class="ms" id="cSections">
@@ -535,7 +535,7 @@ html[data-theme="dark"] .ms-opt:hover{background:#272F33!important}
           </div>
         </div>
       </div>
-      <div class="field"><label>Message ✱</label><textarea id="cMsg" required minlength="10" maxlength="2000" placeholder="Votre retour…"></textarea></div>
+      <div class="field"><label for="cMsg">Message ✱</label><textarea id="cMsg" required minlength="10" maxlength="2000" placeholder="Votre retour…"></textarea></div>
       <button type="submit" class="btn btn-primary btn-full" id="cSubmit"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M21.66,11.06,3.66,2.06a1,1,0,0,0-1.32,1.3l3.13,7.64L2.34,18.64a1,1,0,0,0,.92,1.36,1,1,0,0,0,.4-.08l18-9a1,1,0,0,0,0-1.86ZM5.92,16.2l1.74-4.2h4.59a1,1,0,0,0,0-2H7.66L5.92,5.8,18.76,11Z"></path></svg> Envoyer</button>
       <div class="status" id="cSt" role="status" aria-live="polite"></div>
     </form>

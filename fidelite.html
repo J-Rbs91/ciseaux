@@ -442,7 +442,7 @@ html[data-theme="dark"] .switch .sl{background:#3d484e!important}
     <div id="passWho" style="font-size:.9rem;color:#5E6572;margin-bottom:1rem"></div>
     <div id="passList"></div>
     <div class="field" style="margin-top:1rem">
-      <label>Montant du passage (€)</label>
+      <label for="passMontant">Montant du passage (€)</label>
       <input id="passMontant" type="number" min="0" step="0.01" placeholder="0">
       <div class="hint" id="passHint"></div>
     </div>
@@ -459,7 +459,7 @@ html[data-theme="dark"] .switch .sl{background:#3d484e!important}
     <div class="mh"><h2>💶 Saisie d'une vente</h2><button class="xbtn" onclick="closeVente()">&times;</button></div>
     <div id="venteWho" style="font-size:.9rem;color:#5E6572;margin-bottom:1rem"></div>
     <div class="field">
-      <label>Montant de la vente (€)</label>
+      <label for="venteMontant">Montant de la vente (€)</label>
       <input id="venteMontant" type="number" min="0" step="0.01" placeholder="0">
       <div class="hint" id="venteHint"></div>
     </div>
@@ -730,9 +730,9 @@ function bkCloseVente(e){if(e.target===document.getElementById('ovVente'))closeV
 function openAdjust(){
   if(!selId)return;var c=lc().find(function(x){return x.id===selId;});if(!c)return;var cf=cfg(),h='';
   enabledCounters(cf).forEach(function(k){
-    h+='<div class="field"><label>'+esc(counterLabel(cf,k))+' — solde : '+bal(c,k)+'</label><input type="number" step="1" id="adj_'+k+'" placeholder="ex : 5 ou -3"></div>';
+    h+='<div class="field"><label for="adj_'+k+'">'+esc(counterLabel(cf,k))+' — solde : '+bal(c,k)+'</label><input type="number" step="1" id="adj_'+k+'" placeholder="ex : 5 ou -3"></div>';
   });
-  h+='<div class="field"><label>Note (optionnel)</label><input type="text" id="adjNote" placeholder="Correction, geste commercial…"></div>';
+  h+='<div class="field"><label for="adjNote">Note (optionnel)</label><input type="text" id="adjNote" placeholder="Correction, geste commercial…"></div>';
   document.getElementById('adjBody').innerHTML=h;
   document.getElementById('ovAdj').classList.add('open');
 }

@@ -371,9 +371,9 @@
 
   function onKey(e) {
     if (e.key === "Escape") { e.preventDefault(); end(false); }
-    else if (e.key === "ArrowRight") { e.preventDefault(); go(1); }
+    else if (e.key === "ArrowRight") { e.preventDefault(); onNext(); }
     else if (e.key === "ArrowLeft") { e.preventDefault(); go(-1); }
-    else if (e.key === "Enter") { e.preventDefault(); go(1); }
+    else if (e.key === "Enter") { e.preventDefault(); onNext(); }
     else if (e.key === " " || e.key === "Spacebar") { e.preventDefault(); togglePlay(); }
   }
 
@@ -596,6 +596,7 @@
     // Affiche le texte tout de suite : l'utilisateur peut commencer à lire.
     setText(shot.text);
     updateShotUI(j);
+    updateControls(); // rafraîchit le libellé « Suivant »/« Terminer » selon le plan
     // Défilement instantané (fond flouté, invisible) PUIS cadrage : le trou
     // glisse en un seul mouvement propre vers la zone, sans à-coups.
     try { frame.scrollIntoView({ block: "center", behavior: "auto" }); } catch (e) {}
@@ -628,6 +629,18 @@
     ended = false;
     playShot(0);
     updateControls();
+  }
+
+  // « Suivant » : avance d'abord plan par plan (animation suivante) dans la
+  // slide en cours ; ce n'est qu'au dernier plan (ou sur une slide sans
+  // sous-plans) qu'on passe à l'écran suivant.
+  function onNext() {
+    if (!ended && shots.length && curShot + 1 < shots.length) {
+      clearTimeout(shotTimer);
+      playShot(curShot + 1);
+      return;
+    }
+    go(1);
   }
 
   function togglePlay() {
@@ -697,7 +710,7 @@
     pop.onclick = function (e) {
       var b = e.target.closest("[data-kt]"); if (!b) return;
       var a = b.getAttribute("data-kt");
-      if (a === "next") go(1);
+      if (a === "next") onNext();
       else if (a === "prev") go(-1);
       else if (a === "skip") end(false);
       else if (a === "replay") replaySlide();
@@ -725,7 +738,14 @@
     var row = pop && pop.querySelector("[data-controls]");
     if (!row) return;
     var slide = SLIDES[curSlide] || {};
-    var nextLabel = slide.welcome ? "Commencer ✂️" : slide.last ? "Terminer ✓" : "Suivant →";
+    // Tant qu'il reste des plans à dérouler dans la slide, « Suivant » avance
+    // l'animation ; le libellé de fin (Terminer / Commencer) n'apparaît que
+    // lorsque le prochain clic changera réellement d'écran.
+    var moreShots = !ended && shots.length && curShot + 1 < shots.length;
+    var nextLabel = moreShots ? "Suivant →"
+      : slide.welcome ? "Commencer ✂️"
+      : slide.last ? "Terminer ✓"
+      : "Suivant →";
     var prevBtn = curSlide > 0 ? '<button class="kt-btn kt-prev" data-kt="prev" aria-label="Précédent">←</button>' : "";
     var replayBtn = (!slide.welcome && shots.length)
       ? '<button class="kt-btn kt-replay" data-kt="replay" aria-label="Revoir">↺ Revoir</button>'

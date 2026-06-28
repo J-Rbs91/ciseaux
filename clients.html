@@ -391,12 +391,12 @@ html[data-theme="dark"] .tl-tag{background:#171C1F!important;border-color:#313A3
       <h2 id="mTitle">Nouveau client</h2>
       <button class="xbtn" onclick="close_()">&times;</button>
     </div>
-    <div class="field"><label>Nom Prénom ✱</label><input id="fN" type="text" placeholder="Marie Dupont"></div>
-    <div class="field"><label>Téléphone</label><input id="fT" type="tel" placeholder="06 12 34 56 78"></div>
-    <div class="field"><label>Email ✱</label><input id="fE" type="email" placeholder="marie@exemple.fr"></div>
-    <div class="field"><label>Date de naissance <span style="font-weight:400;color:#A9B4C2">(facultatif)</span></label><input id="fDob" type="date"><div class="hint" style="font-size:.74rem;color:#A9B4C2;margin-top:.3rem">Facultatif — sert uniquement à l'offre et au mail d'anniversaire (si une offre est active). À ne renseigner qu'avec l'accord du client.</div></div>
-    <div class="field"><label>Profil <span style="font-weight:400;color:#A9B4C2">(facultatif)</span></label><select id="fProf"><option value="">Non précisé</option><option value="homme">Homme</option><option value="femme">Femme</option><option value="enfant">Enfant</option></select><div class="hint" style="font-size:.74rem;color:#A9B4C2;margin-top:.3rem">Sert uniquement à cibler les campagnes (ex. offre coupe homme/femme/enfant). « Non précisé » par défaut : aucune obligation de renseigner.</div></div>
-    <div class="field"><label>Notes</label><textarea id="fNt" placeholder="Préférences, coupe habituelle…"></textarea><div class="hint" style="font-size:.74rem;color:#A9B4C2;margin-top:.3rem">Évitez d'y noter des données sensibles (santé, allergies…) sans nécessité ni accord du client.</div></div>
+    <div class="field"><label for="fN">Nom Prénom ✱</label><input id="fN" type="text" placeholder="Marie Dupont"></div>
+    <div class="field"><label for="fT">Téléphone</label><input id="fT" type="tel" placeholder="06 12 34 56 78"></div>
+    <div class="field"><label for="fE">Email ✱</label><input id="fE" type="email" placeholder="marie@exemple.fr"></div>
+    <div class="field"><label for="fDob">Date de naissance <span style="font-weight:400;color:#A9B4C2">(facultatif)</span></label><input id="fDob" type="date"><div class="hint" style="font-size:.74rem;color:#A9B4C2;margin-top:.3rem">Facultatif — sert uniquement à l'offre et au mail d'anniversaire (si une offre est active). À ne renseigner qu'avec l'accord du client.</div></div>
+    <div class="field"><label for="fProf">Profil <span style="font-weight:400;color:#A9B4C2">(facultatif)</span></label><select id="fProf"><option value="">Non précisé</option><option value="homme">Homme</option><option value="femme">Femme</option><option value="enfant">Enfant</option></select><div class="hint" style="font-size:.74rem;color:#A9B4C2;margin-top:.3rem">Sert uniquement à cibler les campagnes (ex. offre coupe homme/femme/enfant). « Non précisé » par défaut : aucune obligation de renseigner.</div></div>
+    <div class="field"><label for="fNt">Notes</label><textarea id="fNt" placeholder="Préférences, coupe habituelle…"></textarea><div class="hint" style="font-size:.74rem;color:#A9B4C2;margin-top:.3rem">Évitez d'y noter des données sensibles (santé, allergies…) sans nécessité ni accord du client.</div></div>
     <div class="field"><label class="check"><input type="checkbox" id="fOpt"> Accepte de recevoir les offres &amp; promotions par email</label></div>
     <div class="hist-sec" id="histSec" style="display:none">
       <h3>Historique des passages</h3>
@@ -416,7 +416,7 @@ html[data-theme="dark"] .tl-tag{background:#171C1F!important;border-color:#313A3
   <div class="modal">
     <div class="mh"><h2>Clients inactifs &amp; rétention</h2><button class="xbtn" onclick="closeInact()">&times;</button></div>
     <div class="field"><label class="check"><input type="checkbox" id="autoPurge" onchange="onPolChange()"> Supprimer automatiquement les clients inactifs</label><div style="font-size:.76rem;color:#A9B4C2;margin-top:.35rem">Conformité RGPD : un client sans aucune visite ni mise à jour depuis le délai ci-dessous est <strong>supprimé automatiquement</strong> à l'ouverture de l'application (en local et sur le Drive).</div></div>
-    <div class="field"><label>Délai avant suppression (mois)</label><input id="inactMonths" type="number" min="1" step="1" oninput="onPolChange()"><div style="font-size:.76rem;color:#A9B4C2;margin-top:.35rem">Par défaut <strong>24 mois (2 ans)</strong> après la dernière activité.</div></div>
+    <div class="field"><label for="inactMonths">Délai avant suppression (mois)</label><input id="inactMonths" type="number" min="1" step="1" oninput="onPolChange()"><div style="font-size:.76rem;color:#A9B4C2;margin-top:.35rem">Par défaut <strong>24 mois (2 ans)</strong> après la dernière activité.</div></div>
     <div id="capLockNote" style="display:none;font-size:.78rem;color:#7a1c1a;background:#fef2f2;border:1.5px solid #f0d98a;border-radius:10px;padding:.55rem .7rem;margin-bottom:.6rem">⚠️ Vous approchez de la limite de 3000 membres fidélité. La règle <strong>12 mois</strong> est <strong>obligatoire</strong> : la suppression automatique ne peut pas être désactivée et le délai ne peut pas dépasser 12 mois (vous pouvez le raccourcir).</div>
     <div id="inactList"></div>
     <div class="row" style="margin-top:1rem">

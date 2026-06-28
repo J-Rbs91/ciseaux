@@ -355,15 +355,15 @@ html[data-theme="dark"] .anniv-tag{background:#2a1614!important;color:#E0635D!im
       <h2 id="modalTitle">Nouvelle offre</h2>
       <button class="btn-close" onclick="closeModal()">&#x2715;</button>
     </div>
-    <div class="field"><label>Nom de l'offre ✱</label><input id="fNom" type="text" placeholder="Ex : Coupe + couleur"></div>
-    <div class="field"><label>Réduction / avantage</label><input id="fReduction" type="text" placeholder="Ex : -20% ou 1 soin offert"></div>
-    <div class="field"><label>Description</label><textarea id="fDesc" placeholder="Détails de l'offre…"></textarea></div>
-    <div class="field"><label>Valable jusqu'au</label><input id="fDate" type="date"></div>
+    <div class="field"><label for="fNom">Nom de l'offre ✱</label><input id="fNom" type="text" placeholder="Ex : Coupe + couleur"></div>
+    <div class="field"><label for="fReduction">Réduction / avantage</label><input id="fReduction" type="text" placeholder="Ex : -20% ou 1 soin offert"></div>
+    <div class="field"><label for="fDesc">Description</label><textarea id="fDesc" placeholder="Détails de l'offre…"></textarea></div>
+    <div class="field"><label for="fDate">Valable jusqu'au</label><input id="fDate" type="date"></div>
     <div class="field" style="margin-bottom:.4rem"><label class="anniv-check"><input type="checkbox" id="fAnniv" onchange="toggleAnniv()"> 🎂 Offre anniversaire (envoi automatique du mail le jour de l'anniversaire)</label></div>
     <div id="annivBlock" style="display:none;border:1.5px solid #f0dbd5;border-radius:12px;padding:.9rem 1rem;background:#fdf3ef;margin-bottom:.4rem">
       <div class="field"><label>Prestation(s) concernée(s)</label><div id="fPrestaBox" class="presta-box"></div><div class="hint" style="font-size:.74rem;color:#A9B4C2;margin-top:.4rem">Sélectionnez la prestation ou le groupe de prestations offert(es) pour l'anniversaire. (Catalogue : page Prestations.)</div></div>
-      <div class="field"><label>Objet du mail</label><input id="fEmailSujet" type="text" placeholder="Un cadeau pour votre anniversaire"></div>
-      <div class="field"><label>Message du mail</label><textarea id="fEmailCorps" placeholder="Bonjour {prenom}, à l'occasion de votre anniversaire, profitez de {offre} sur {prestations}. Réservez votre rendez-vous dès maintenant pour en profiter."></textarea></div>
+      <div class="field"><label for="fEmailSujet">Objet du mail</label><input id="fEmailSujet" type="text" placeholder="Un cadeau pour votre anniversaire"></div>
+      <div class="field"><label for="fEmailCorps">Message du mail</label><textarea id="fEmailCorps" placeholder="Bonjour {prenom}, à l'occasion de votre anniversaire, profitez de {offre} sur {prestations}. Réservez votre rendez-vous dès maintenant pour en profiter."></textarea></div>
       <div class="hint" style="font-size:.74rem;color:#A9B4C2">Variables : <strong>{prenom}</strong>, <strong>{nom}</strong>, <strong>{offre}</strong>, <strong>{prestations}</strong>. Le mail part automatiquement aux clients ayant une date de naissance renseignée <strong>et</strong> ayant accepté les communications commerciales. Un lien de désinscription est ajouté automatiquement.</div>
     </div>
     <div class="row">

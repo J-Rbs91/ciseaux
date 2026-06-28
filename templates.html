@@ -341,17 +341,17 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
 
       <div class="card">
         <h3>Informations</h3>
-        <div class="field"><label>Nom du template ✱</label><input id="fNomTpl" type="text" placeholder="Ex : Promo printemps" oninput="livePreview()"></div>
-        <div class="field"><label>Objet de l'email</label><input id="fSujet" type="text" placeholder="Ex : Offre spéciale !" oninput="livePreview()"></div>
-        <div class="field"><label>Segment ciblé <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#A9B4C2">(présélection auto dans Campagnes)</span></label><select id="fSeg"><option value="">Aucun / tous les clients</option><option value="winback">Clients à relancer (habitués absents)</option><option value="reward">Récompense disponible</option><option value="freq">Clients fidèles (nombre de passages)</option><option value="vip">Très bons clients (panier élevé)</option><option value="presta">Selon une prestation</option><option value="profil:homme">Profil — Homme</option><option value="profil:femme">Profil — Femme</option><option value="profil:enfant">Profil — Enfant</option><option value="profil:none">Profil — Non précisé</option></select><div class="hint">Quand ce segment est choisi dans Campagnes, ce modèle est proposé automatiquement.</div></div>
+        <div class="field"><label for="fNomTpl">Nom du template ✱</label><input id="fNomTpl" type="text" placeholder="Ex : Promo printemps" oninput="livePreview()"></div>
+        <div class="field"><label for="fSujet">Objet de l'email</label><input id="fSujet" type="text" placeholder="Ex : Offre spéciale !" oninput="livePreview()"></div>
+        <div class="field"><label for="fSeg">Segment ciblé <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#A9B4C2">(présélection auto dans Campagnes)</span></label><select id="fSeg"><option value="">Aucun / tous les clients</option><option value="winback">Clients à relancer (habitués absents)</option><option value="reward">Récompense disponible</option><option value="freq">Clients fidèles (nombre de passages)</option><option value="vip">Très bons clients (panier élevé)</option><option value="presta">Selon une prestation</option><option value="profil:homme">Profil — Homme</option><option value="profil:femme">Profil — Femme</option><option value="profil:enfant">Profil — Enfant</option><option value="profil:none">Profil — Non précisé</option></select><div class="hint">Quand ce segment est choisi dans Campagnes, ce modèle est proposé automatiquement.</div></div>
       </div>
 
       <div class="card">
         <h3>Contenu du message</h3>
-        <div class="field"><label>Titre</label><input id="fTitre" type="text" placeholder="Votre offre exclusive" oninput="livePreview()"></div>
-        <div class="field"><label>Sous-titre</label><input id="fSousTitre" type="text" placeholder="Pour vous remercier de votre fidélité" oninput="livePreview()"></div>
-        <div class="field"><label>Accroche</label><input id="fAccroche" type="text" placeholder="Cette semaine seulement…" oninput="livePreview()"></div>
-        <div class="field"><label>Corps du message</label><textarea id="fCorps" rows="5" placeholder="Détaillez votre message ici…&#10;Astuce : {prenom} sera remplacé par le prénom du client." oninput="livePreview()"></textarea><div class="hint">{prenom} {nom} {points} seront substitués lors de l'envoi.</div></div>
+        <div class="field"><label for="fTitre">Titre</label><input id="fTitre" type="text" placeholder="Votre offre exclusive" oninput="livePreview()"></div>
+        <div class="field"><label for="fSousTitre">Sous-titre</label><input id="fSousTitre" type="text" placeholder="Pour vous remercier de votre fidélité" oninput="livePreview()"></div>
+        <div class="field"><label for="fAccroche">Accroche</label><input id="fAccroche" type="text" placeholder="Cette semaine seulement…" oninput="livePreview()"></div>
+        <div class="field"><label for="fCorps">Corps du message</label><textarea id="fCorps" rows="5" placeholder="Détaillez votre message ici…&#10;Astuce : {prenom} sera remplacé par le prénom du client." oninput="livePreview()"></textarea><div class="hint">{prenom} {nom} {points} seront substitués lors de l'envoi.</div></div>
       </div>
 
       <div class="card">
@@ -366,9 +366,9 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
 
       <div class="card">
         <h3>Signature</h3>
-        <div class="field"><label>Phrase de sortie</label><input id="fSortie" type="text" placeholder="À très bientôt dans notre salon !" oninput="livePreview()"></div>
-        <div class="field"><label>Salutation</label><input id="fSalut" type="text" placeholder="Cordialement," oninput="livePreview()"></div>
-        <div class="field"><label>Signature</label><input id="fSign" type="text" placeholder="L'équipe du salon" oninput="livePreview()"></div>
+        <div class="field"><label for="fSortie">Phrase de sortie</label><input id="fSortie" type="text" placeholder="À très bientôt dans notre salon !" oninput="livePreview()"></div>
+        <div class="field"><label for="fSalut">Salutation</label><input id="fSalut" type="text" placeholder="Cordialement," oninput="livePreview()"></div>
+        <div class="field"><label for="fSign">Signature</label><input id="fSign" type="text" placeholder="L'équipe du salon" oninput="livePreview()"></div>
       </div>
 
       <div class="card">
@@ -377,14 +377,14 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
           <img id="logoPreview" class="logo-preview" alt="Aperçu logo">
           <div>
             <div class="field" style="margin-bottom:.5rem">
-              <label>Importer un logo (PNG/JPG/WEBP/GIF, 150 Ko max)</label>
+              <label for="logoFile">Importer un logo (PNG/JPG/WEBP/GIF, 150 Ko max)</label>
               <input type="file" id="logoFile" accept="image/png,image/jpeg,image/webp,image/gif" onchange="handleLogo(event)" style="font-size:.82rem">
             </div>
             <button class="logo-del" id="logoDel" style="display:none" onclick="clearLogo()">Supprimer le logo</button>
           </div>
         </div>
         <div class="field" style="margin-top:.6rem">
-          <label>URL du logo (HTTPS) — utilisée dans l'email</label>
+          <label for="fLogoUrl">URL du logo (HTTPS) — utilisée dans l'email</label>
           <input id="fLogoUrl" type="url" placeholder="https://monsite.fr/logo.png" oninput="livePreview()">
           <div class="hint">L'image doit être hébergée en ligne (HTTPS). Le logo uploadé ci-dessus est uniquement pour l'aperçu.</div>
         </div>

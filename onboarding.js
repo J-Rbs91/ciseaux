@@ -482,9 +482,17 @@
     var r = el.getBoundingClientRect(); // non transformé
     var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     if (zoom == null) zoom = defaultZoom(r);
-    // On borne le zoom pour que la zone nette ne déborde jamais de l'écran.
-    var pad = 14;
-    zoom = Math.min(zoom, (vw - 2 * pad - 16) / r.width, (vh - 2 * pad - 16) / r.height);
+    // On borne le zoom pour que l'élément ne sorte jamais de l'écran. Le zoom
+    // a pour origine le centre de l'élément : son centre (cx, cy) ne bouge pas.
+    // Pour une cible proche d'un bord, un zoom trop fort la pousserait hors
+    // cadre (donc rognée). On borne donc par la place réellement disponible de
+    // chaque côté du centre, pas seulement par la taille brute.
+    var pad = 14, edge = 14;
+    var maxByLeft = 2 * (cx - edge - pad) / r.width;
+    var maxByRight = 2 * (vw - edge - pad - cx) / r.width;
+    var maxByTop = 2 * (cy - edge - pad) / r.height;
+    var maxByBottom = 2 * (vh - edge - pad - cy) / r.height;
+    zoom = Math.min(zoom, maxByLeft, maxByRight, maxByTop, maxByBottom);
     zoom = Math.max(1, zoom);
     curZoom = zoom;
 
@@ -739,6 +747,14 @@
     pop.classList.add("kt-in");
   }
 
+  // Cale une position dans [margin, viewport - size - margin]. Si la boîte est
+  // trop large pour laisser cette marge des deux côtés, on la centre.
+  function clampCentered(pos, size, viewport, margin) {
+    var max = viewport - size - margin;
+    if (max <= margin) return Math.max(0, (viewport - size) / 2);
+    return Math.max(margin, Math.min(pos, max));
+  }
+
   // Place la popup à côté de la zone (rect en px viewport) et oriente la flèche.
   function placePop(rect) {
     if (!pop) return;
@@ -768,8 +784,11 @@
       left = rect.left + rect.width / 2 - pw / 2;
       arrow = "down";
     }
-    left = Math.max(margin, Math.min(left, vw - pw - margin));
-    top = Math.max(margin, Math.min(top, vh - ph - margin));
+    // Cale la popup dans le viewport. Quand elle est quasi pleine largeur
+    // (mobile : width = 100vw - 28px), forcer une marge de 16px la décentre ;
+    // dans ce cas on la centre vraiment pour des marges symétriques.
+    left = clampCentered(left, pw, vw, margin);
+    top = clampCentered(top, ph, vh, margin);
     pop.style.left = left + "px";
     pop.style.top = top + "px";
 

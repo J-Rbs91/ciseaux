@@ -516,6 +516,7 @@ html[data-theme="dark"] .switch .sl{background:#3d484e!important}
 </div>
 
 <script src="app-sync.js"></script>
+<script src="journal-ventes.js"></script>
 <script>
 var LS_C='clients-v1', LS_CF='fidelite-config-v1', LS_P='profil-magasin-v1';
 var selId=null, cfgWork=null;
@@ -678,6 +679,7 @@ function validatePassage(){
   if(cf.counters.visits.enabled)gv=Math.round(+cf.counters.visits.perPassage||0);
   if(!Array.isArray(c.visites))c.visites=[];
   c.visites.push({date:new Date().toISOString(),items:items,montant:montant,gp:gp,gv:gv});
+  if(window.Journal)Journal.record({clientId:c.id,clientNom:c.nom,items:items,montant:montant,source:'fidelite-passage'}).catch(function(){});
   if(gp)applyDelta(c,'points',gp,'passage',montant?eur(montant):'');
   if(gv)applyDelta(c,'visits',gv,'passage','');
   c.maj=new Date().toISOString();sc(all);if(window.DB)DB.upsert(c);closePass();
@@ -695,6 +697,7 @@ function undoPassage(){
   if(!confirm('Annuler le dernier passage ? Les compteurs gagnés seront retirés.'))return;
   var cf=cfg(),last=c.visites.pop();
   var gp=last&&last.gp!=null?last.gp:(cf.ptsParVisite||0),gv=last&&last.gv!=null?last.gv:0;
+  if(window.Journal&&last)Journal.record({clientId:c.id,clientNom:c.nom,items:last.items||[],montant:-(+last.montant||0),source:'annulation',motif:'Annulation du dernier passage (Fidélité)'}).catch(function(){});
   if(gp)applyDelta(c,'points',-gp,'correction','Annulation passage');
   if(gv)applyDelta(c,'visits',-gv,'correction','Annulation passage');
   c.maj=new Date().toISOString();sc(all);if(window.DB)DB.upsert(c);
@@ -718,6 +721,7 @@ function validateVente(){
   montant=Math.round(montant*100)/100;var cf=cfg(),c=all[i];
   var gp=Math.round((+cf.counters.points.perEuro||0)*montant);
   if(!gp){alert('Cette vente ne crédite aucun point (taux par € = 0). Réglez « points par € » dans Réglages.');return;}
+  if(window.Journal)Journal.record({clientId:c.id,clientNom:c.nom,items:[],montant:montant,source:'fidelite-vente'}).catch(function(){});
   applyDelta(c,'points',gp,'vente',eur(montant));
   c.maj=new Date().toISOString();sc(all);if(window.DB)DB.upsert(c);closeVente();
   var msg='✓ Vente enregistrée (+'+gp+' '+counterLabel(cf,'points')+').';

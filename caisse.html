@@ -187,6 +187,34 @@ main{padding:1.1rem 1.1rem 3rem;max-width:1200px;margin:0 auto}
 .cheques-total-row .ct-lbl{color:#EFC88B}
 .cheques-total-row .ct-val{color:#EFC88B}
 
+/* ── JOURNAL DES PRESTATIONS ── */
+.card--journal .card-head{background:#204d3a}
+.journal-intro{font-size:.8rem;color:#9193a8;padding:.75rem 1.1rem 0;line-height:1.4}
+.journal-form{display:flex;flex-wrap:wrap;gap:.5rem;padding:.75rem 1.1rem}
+.journal-form input,.journal-form select{font-family:inherit;font-size:.85rem;border:1.5px solid #d4c8b0;border-radius:8px;padding:.45rem .65rem;background:#fffaf2;color:#1C2321}
+.journal-form input:focus,.journal-form select:focus{outline:none;border-color:#2b4a63}
+.journal-form #jn-client{flex:1 1 160px;min-width:120px}
+.journal-form #jn-desc{flex:1 1 200px;min-width:140px}
+.journal-form #jn-montant{width:110px;flex:0 0 auto}
+.journal-form #jn-moyen{flex:0 0 auto}
+.btn-journal-add{background:#204d3a;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:.85rem;font-weight:700;padding:.5rem 1rem;cursor:pointer;flex:0 0 auto}
+.btn-journal-add:hover{background:#2a6249}
+.journal-body{overflow-x:auto;padding:0 .3rem}
+.journal-table thead th{white-space:nowrap}
+.journal-table tbody td{white-space:nowrap}
+.journal-table td.jn-desc-cell{white-space:normal;max-width:220px}
+.jn-badge{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:.15rem .5rem;border-radius:20px;background:#f0e8d8;color:#5E6572;white-space:nowrap}
+.jn-badge.jn-fidelite{background:#e3ecf0;color:#2b4a63}
+.jn-badge.jn-manuel{background:#eaf3ec;color:#204d3a}
+.jn-badge.jn-annulation{background:#fbe4e0;color:#a22c29}
+.jn-annulee{text-decoration:line-through;opacity:.6}
+.journal-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.7rem;padding:.8rem 1.1rem;background:#f0e8d8;border-top:1.5px solid #d4c8b0}
+.journal-total{display:flex;align-items:center;gap:.5rem;font-size:.9rem;font-weight:700;color:#EFC88B}
+.journal-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+#journal-integrity-msg{padding:0 1.1rem 1rem}
+.btn-jn-cancel{background:none;border:1px solid #5a3a3a;color:#e5736b;border-radius:6px;font-size:.68rem;font-weight:700;padding:.22rem .55rem;cursor:pointer;font-family:inherit;white-space:nowrap}
+.btn-jn-cancel:hover{background:#2a1f1f}
+
 /* ── RAPPROCHEMENT ── */
 .rappro-body{padding:1.1rem 1.1rem 1.2rem}
 .rappro-row{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid #f0e8d8;font-size:.87rem}
@@ -351,6 +379,20 @@ input:not([type=file]):not([type=checkbox]):not([type=search]):focus,textarea:fo
 .rappro-info{background:#f5f8fa!important;border-color:#dde4e8!important;border-left-color:#A9B4C2!important;color:#5E6572!important}
 .btn-print{background:#fff!important;border-color:#c8d4da!important;color:#1C2321!important}
 .btn-print:hover{border-color:#5E6572!important;color:#1C2321!important;background:#f5f8fa!important}
+.card--journal .card-head{background:#5E6572!important}
+.journal-intro{color:#A9B4C2!important}
+.journal-form input,.journal-form select{background:#fff!important;color:#1C2321!important;border-color:#c8d4da!important}
+.journal-form input:focus,.journal-form select:focus{border-color:#5E6572!important}
+.btn-journal-add{background:#A22C29!important}
+.btn-journal-add:hover{background:#8a2422!important}
+.jn-badge{background:#f5f8fa!important;color:#5E6572!important}
+.jn-badge.jn-fidelite{background:#eef2f8!important;color:#3a5a7a!important}
+.jn-badge.jn-manuel{background:#f0f7f4!important;color:#2f6b4a!important}
+.jn-badge.jn-annulation{background:#fef2f2!important;color:#A22C29!important}
+.journal-footer{background:#f5f8fa!important;border-top-color:#dde4e8!important}
+.journal-total{color:#5E6572!important}
+.btn-jn-cancel{border-color:#A22C29!important;color:#A22C29!important}
+.btn-jn-cancel:hover{background:#fef2f2!important}
 .card--cheques .card-head{background:#5E6572!important}
 .card--rappro .card-head{background:#2f6b4a!important}
 
@@ -498,6 +540,22 @@ html[data-theme="dark"] .btn-print{background:#1F2528!important;color:#E7ECEE!im
 html[data-theme="dark"] .btn-print:hover{background:#272F33!important;border-color:#3d484e!important}
 html[data-theme="dark"] .card--cheques .card-head{background:#1F2528!important}
 html[data-theme="dark"] .card--rappro .card-head{background:#12211a!important}
+html[data-theme="dark"] .card--journal .card-head{background:#12211a!important}
+html[data-theme="dark"] .journal-intro{color:#9AA6AE!important}
+html[data-theme="dark"] .journal-form input,
+html[data-theme="dark"] .journal-form select{background:#171C1F!important;color:#E7ECEE!important;border-color:#313A3F!important}
+html[data-theme="dark"] .journal-form input:focus,
+html[data-theme="dark"] .journal-form select:focus{border-color:#7a8791!important}
+html[data-theme="dark"] .btn-journal-add{background:#2f6b4a!important}
+html[data-theme="dark"] .btn-journal-add:hover{background:#39805a!important}
+html[data-theme="dark"] .jn-badge{background:#272F33!important;color:#9AA6AE!important}
+html[data-theme="dark"] .jn-badge.jn-fidelite{background:#1a2733!important;color:#8fb2cf!important}
+html[data-theme="dark"] .jn-badge.jn-manuel{background:#12211a!important;color:#7fd1a6!important}
+html[data-theme="dark"] .jn-badge.jn-annulation{background:#2a1614!important;color:#E0635D!important}
+html[data-theme="dark"] .journal-footer{background:#171C1F!important;border-top-color:#313A3F!important}
+html[data-theme="dark"] .journal-total{color:#9AA6AE!important}
+html[data-theme="dark"] .btn-jn-cancel{border-color:#E0635D!important;color:#E0635D!important}
+html[data-theme="dark"] .btn-jn-cancel:hover{background:#2a1614!important}
 
 /* ── ERGONOMIE TACTILE (tablette paysage / mobile) ── */
 @media (pointer:coarse){
@@ -621,11 +679,44 @@ html[data-theme="dark"] .card--rappro .card-head{background:#12211a!important}
 
   </div>
 
+  <!-- JOURNAL DES PRESTATIONS ENCAISSÉES (fidélité + clients de passage) -->
+  <section class="card card--journal">
+    <div class="card-head"><h2>Prestations encaissées aujourd'hui</h2><span class="card-badge" id="journal-count">0 entrée</span></div>
+    <div class="journal-intro">Toutes les prestations payées aujourd'hui, clients fidélité et clients de passage confondus. Ajoutez ici celles d'un client qui n'est pas dans votre fichier fidélité, pour que le rapprochement du soir soit complet.</div>
+    <div class="journal-form">
+      <input type="text" id="jn-client" placeholder="Nom du client (optionnel)" maxlength="80">
+      <input type="text" id="jn-desc" placeholder="Prestation (ex : Coupe + brushing)" maxlength="120">
+      <input type="number" id="jn-montant" placeholder="Montant €" min="0" step="0.01">
+      <select id="jn-moyen">
+        <option value="">Moyen de paiement…</option>
+        <option value="especes">Espèces</option>
+        <option value="cb">Carte</option>
+        <option value="cheque">Chèque</option>
+        <option value="autre">Autre</option>
+      </select>
+      <button class="btn-journal-add" id="btn-journal-add" type="button">+ Enregistrer</button>
+    </div>
+    <div class="journal-body">
+      <table class="cnt-table journal-table">
+        <thead><tr><th>Heure</th><th>Client</th><th>Prestation</th><th class="th-c">Origine</th><th class="th-c">Moyen</th><th class="th-r">Montant</th><th></th></tr></thead>
+        <tbody id="journal-tbody"><tr><td class="history-empty" colspan="7">Aucune prestation encaissée enregistrée pour le moment aujourd'hui.</td></tr></tbody>
+      </table>
+    </div>
+    <div class="journal-footer">
+      <div class="journal-total"><span>Total du jour</span><strong id="journal-total-value">0,00&nbsp;€</strong></div>
+      <div class="journal-actions">
+        <button class="btn-print" id="btn-journal-verify" type="button">Vérifier l'intégrité</button>
+        <button class="btn-print" id="btn-journal-export" type="button">Exporter l'archive</button>
+      </div>
+    </div>
+    <div id="journal-integrity-msg"></div>
+  </section>
+
   <!-- RAPPROCHEMENT PRESTATIONS / ENCAISSEMENTS -->
   <section class="card card--rappro">
     <div class="card-head"><h2>Rapprochement prestations / encaissements</h2><span class="card-badge">Contrôle</span></div>
     <div class="rappro-body">
-      <div class="rappro-row"><span class="rr-lbl">Prestations enregistrées aujourd'hui (Fidélité)</span><span class="rr-val" id="rappro-prestations">0,00&nbsp;€</span></div>
+      <div class="rappro-row"><span class="rr-lbl">Prestations enregistrées aujourd'hui (journal)</span><span class="rr-val" id="rappro-prestations">0,00&nbsp;€</span></div>
       <div class="rappro-row"><span class="rr-lbl">Recette espèces du jour</span><span class="rr-val" id="rappro-especes">0,00&nbsp;€</span></div>
       <div class="rappro-row"><span class="rr-lbl">Chèques encaissés</span><span class="rr-val" id="rappro-cheques-val">0,00&nbsp;€</span></div>
       <div class="rappro-row"><span class="rr-lbl">Paiements électroniques</span><span class="rr-val" id="rappro-elec-val">0,00&nbsp;€</span></div>
@@ -671,6 +762,7 @@ html[data-theme="dark"] .card--rappro .card-head{background:#12211a!important}
 <div class="toast" id="toast"></div>
 <div class="print-only" id="print-sheet"></div>
 
+<script src="journal-ventes.js"></script>
 <script>
   var COINS=[
     {label:'2,00 €',value:2.00},{label:'1,00 €',value:1.00},{label:'0,50 €',value:0.50},
@@ -702,6 +794,13 @@ html[data-theme="dark"] .card--rappro .card-head{background:#12211a!important}
     return localDateKey(d)===localDateKey(new Date());
   }
   function prestationsAujourdhui(){
+    // Le journal unifié (fidélité + clients de passage saisis directement en caisse) est la
+    // source de vérité du rapprochement. Repli sur clients-v1 si le module n'a pas pu charger,
+    // pour ne jamais afficher un rapprochement à zéro par accident.
+    if(window.Journal){
+      var t=Journal.totalForDate(Journal.todayKey());
+      return {total:t.total,count:t.count};
+    }
     var clients=[];
     try{clients=JSON.parse(localStorage.getItem('clients-v1')||'[]')||[];}catch(e){clients=[];}
     if(!Array.isArray(clients))clients=[];
@@ -713,6 +812,104 @@ html[data-theme="dark"] .card--rappro .card-head{background:#12211a!important}
       });
     });
     return {total:total,count:count};
+  }
+
+  function moyenLabel(m){
+    var map={especes:'Espèces',cb:'Carte',cheque:'Chèque',autre:'Autre'};
+    return map[m]||'—';
+  }
+  function sourceBadge(source){
+    if(source==='fidelite-passage'||source==='fidelite-vente')return '<span class="jn-badge jn-fidelite">Fidélité</span>';
+    if(source==='annulation')return '<span class="jn-badge jn-annulation">Annulation</span>';
+    return '<span class="jn-badge jn-manuel">Passage</span>';
+  }
+
+  function renderJournal(){
+    var tbody=document.getElementById('journal-tbody');
+    while(tbody.firstChild)tbody.removeChild(tbody.firstChild);
+    if(!window.Journal){
+      var trE=document.createElement('tr'),tdE=document.createElement('td');
+      tdE.className='history-empty';tdE.colSpan=7;tdE.textContent='Journal indisponible sur cet appareil.';
+      trE.appendChild(tdE);tbody.appendChild(trE);
+      document.getElementById('journal-count').textContent='—';
+      document.getElementById('journal-total-value').textContent=fmt(0);
+      return;
+    }
+    var t=Journal.totalForDate(Journal.todayKey());
+    var entries=t.entries.slice().sort(function(a,b){return new Date(a.ts)-new Date(b.ts);});
+    document.getElementById('journal-count').textContent=entries.length+(entries.length<=1?' entrée':' entrées');
+    document.getElementById('journal-total-value').textContent=fmt(t.total);
+    if(!entries.length){
+      var tr0=document.createElement('tr'),td0=document.createElement('td');
+      td0.className='history-empty';td0.colSpan=7;td0.textContent='Aucune prestation encaissée enregistrée pour le moment aujourd’hui.';
+      tr0.appendChild(td0);tbody.appendChild(tr0);return;
+    }
+    entries.forEach(function(e){
+      var tr=document.createElement('tr');
+      if(e.annule)tr.className='jn-annulee';
+      var heure=new Date(e.ts).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+      var desc=(e.items&&e.items.length)?e.items.map(function(it){return it.nom;}).filter(Boolean).join(', '):(e.motif||'—');
+
+      var tdHeure=document.createElement('td');tdHeure.textContent=heure;tr.appendChild(tdHeure);
+      var tdClient=document.createElement('td');tdClient.textContent=e.clientNom||'—';tr.appendChild(tdClient);
+      var tdDesc=document.createElement('td');tdDesc.className='jn-desc-cell';tdDesc.textContent=desc;tr.appendChild(tdDesc);
+      var tdSrc=document.createElement('td');tdSrc.className='td-c';tdSrc.innerHTML=sourceBadge(e.source);tr.appendChild(tdSrc);
+      var tdMoyen=document.createElement('td');tdMoyen.className='td-c';tdMoyen.textContent=moyenLabel(e.moyenPaiement);tr.appendChild(tdMoyen);
+      var tdMontant=document.createElement('td');tdMontant.className='td-r';tdMontant.textContent=(e.montant<0?'−':'')+fmt(Math.abs(e.montant));tr.appendChild(tdMontant);
+
+      var tdAction=document.createElement('td');
+      if(e.source!=='annulation'&&!e.annule){
+        var btn=document.createElement('button');btn.className='btn-jn-cancel';btn.type='button';btn.textContent='Annuler';
+        btn.addEventListener('click',function(){
+          if(!window.confirm('Annuler cette prestation encaissée ? Une écriture d’annulation sera ajoutée au journal (rien n’est supprimé).'))return;
+          Journal.cancel(e.id).then(function(){renderJournal();calculate();showToast('Prestation annulée');}).catch(function(err){alert(err&&err.message?err.message:'Impossible d’annuler cette écriture.');});
+        });
+        tdAction.appendChild(btn);
+      }
+      tr.appendChild(tdAction);
+      tbody.appendChild(tr);
+    });
+  }
+
+  function addJournalEntry(){
+    if(!window.Journal){alert('Journal indisponible sur cet appareil.');return;}
+    var montantEl=document.getElementById('jn-montant');
+    var montant=parseFloat(montantEl.value);
+    if(isNaN(montant)||montant<=0){alert('Indiquez un montant valide.');montantEl.focus();return;}
+    var clientNom=(document.getElementById('jn-client').value||'').trim();
+    var desc=(document.getElementById('jn-desc').value||'').trim();
+    var moyen=document.getElementById('jn-moyen').value||'';
+    var items=desc?[{nom:desc,prix:r2(montant)}]:[];
+    Journal.record({clientId:null,clientNom:clientNom,items:items,montant:montant,moyenPaiement:moyen,source:'caisse-manuel'}).then(function(){
+      document.getElementById('jn-client').value='';
+      document.getElementById('jn-desc').value='';
+      montantEl.value='';
+      document.getElementById('jn-moyen').value='';
+      renderJournal();calculate();showToast('Prestation enregistrée');
+    });
+  }
+
+  function verifyJournalIntegrity(){
+    if(!window.Journal){alert('Journal indisponible sur cet appareil.');return;}
+    var msgEl=document.getElementById('journal-integrity-msg');
+    msgEl.innerHTML='<div class="rappro-info">Vérification en cours…</div>';
+    Journal.verifyIntegrity().then(function(r){
+      if(r.ok===true){msgEl.innerHTML='<div class="rappro-ok">✓ Intégrité vérifiée — '+r.checked+' écriture'+(r.checked>1?'s':'')+', aucune altération détectée.</div>';}
+      else if(r.ok===false){msgEl.innerHTML='<div class="rappro-alert">⚠ Altération détectée dans le journal. Vérifiez l’historique avec votre comptable.</div>';}
+      else{msgEl.innerHTML='<div class="rappro-info">Vérification partielle : certaines écritures ont été enregistrées sur un appareil sans empreinte disponible.</div>';}
+    });
+  }
+
+  function exportJournalArchive(){
+    if(!window.Journal){alert('Journal indisponible sur cet appareil.');return;}
+    var data=Journal.exportArchive();
+    var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;a.download='journal-prestations-'+Journal.todayKey().replace(/\//g,'-')+'.json';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(url);},2000);
+    showToast('Archive exportée');
   }
 
   function qtyValue(el){var q=parseInt(el.value,10)||0;if(q<0)q=0;if(q>MAX_QTY)q=MAX_QTY;return q;}
@@ -863,7 +1060,7 @@ html[data-theme="dark"] .card--rappro .card-head{background:#12211a!important}
     document.getElementById('rappro-total').textContent=fmt(s.totalEncaisse);
     var msgEl=document.getElementById('rappro-msg');
     if(!presta.count){
-      msgEl.innerHTML='<div class="rappro-info">Aucun passage enregistré aujourd’hui dans <strong>Fidélité</strong> — enregistrez les prestations du jour pour activer ce contrôle.</div>';
+      msgEl.innerHTML='<div class="rappro-info">Aucune prestation encaissée enregistrée aujourd’hui — utilisez la carte <strong>Prestations encaissées aujourd’hui</strong> ci-dessus (ou Fidélité) pour activer ce contrôle.</div>';
     }else if(Math.abs(s.rappEcart)<=0.01){
       msgEl.innerHTML='<div class="rappro-ok">✓ Le total encaissé correspond aux prestations enregistrées.</div>';
     }else{
@@ -1024,7 +1221,7 @@ html[data-theme="dark"] .card--rappro .card-head{background:#12211a!important}
     html+='<tr><td>Montant logiciel de caisse</td><td class="ps-r">'+(s.ref>0?fmt(s.ref):'—')+'</td></tr>';
     html+='<tr><td>Écart de caisse</td><td class="ps-r">'+(s.ref>0?fmt(s.ecart):'—')+'</td></tr>';
     html+='<tr><td>Recette espèces du jour</td><td class="ps-r">'+fmt(s.recetteEspeces)+'</td></tr>';
-    html+='<tr><td>Prestations enregistrées (Fidélité, '+s.presta.count+' passage'+(s.presta.count>1?'s':'')+')</td><td class="ps-r">'+fmt(s.presta.total)+'</td></tr>';
+    html+='<tr><td>Prestations enregistrées (journal, '+s.presta.count+' passage'+(s.presta.count>1?'s':'')+')</td><td class="ps-r">'+fmt(s.presta.total)+'</td></tr>';
     html+='<tr class="ps-total-row"><td>Total encaissé du jour</td><td class="ps-r">'+fmt(s.totalEncaisse)+'</td></tr>';
     html+='<tr class="ps-total-row"><td>Écart de rapprochement</td><td class="ps-r">'+fmt(s.rappEcart)+'</td></tr>';
     html+='</tbody></table>';
@@ -1074,7 +1271,7 @@ html[data-theme="dark"] .card--rappro .card-head{background:#12211a!important}
   buildCoins();buildBills();buildElec();renderCheques();
   initEnterNavigation();
   saveHistoryData(capHistory(loadHistory()));
-  prefillFromLast();renderHistory();calculate();
+  prefillFromLast();renderHistory();renderJournal();calculate();
 
   var nowDate=new Date();
   document.getElementById('js-date').textContent=nowDate.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
@@ -1106,6 +1303,12 @@ html[data-theme="dark"] .card--rappro .card-head{background:#12211a!important}
   document.getElementById('btn-print-feuille').addEventListener('click',printFeuilleCaisse);
   document.getElementById('btn-print-especes').addEventListener('click',printBordereauEspeces);
   document.getElementById('btn-print-cheques').addEventListener('click',printBordereauCheques);
+  document.getElementById('btn-journal-add').addEventListener('click',addJournalEntry);
+  document.getElementById('btn-journal-verify').addEventListener('click',verifyJournalIntegrity);
+  document.getElementById('btn-journal-export').addEventListener('click',exportJournalArchive);
+  document.querySelector('.journal-form').addEventListener('keydown',function(e){
+    if(e.key==='Enter'){e.preventDefault();addJournalEntry();}
+  });
 </script>
 </body>
 </html>

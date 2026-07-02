@@ -32,8 +32,8 @@ header{background:linear-gradient(135deg,#050517,#07071a);color:#fff;padding:.9r
 .hdr-date{font-size:.82rem;font-weight:600;opacity:.9;white-space:nowrap;text-transform:capitalize}
 
 /* ── LAYOUT ── */
-main{padding:1.1rem 1.1rem 3rem;max-width:1080px;margin:0 auto}
-.grid-top{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1rem}
+main{padding:1.1rem 1.1rem 3rem;max-width:1200px;margin:0 auto}
+.grid-top{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1rem}
 .grid-bottom{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
 
 /* ── CARTES ── */
@@ -50,10 +50,14 @@ main{padding:1.1rem 1.1rem 3rem;max-width:1080px;margin:0 auto}
 .card--papier .card-head{background:#2f6b4a}
 /* L'Électronique — mauve chaud */
 .card--elec .card-head{background:#574177}
+/* Les Chèques — bleu ardoise */
+.card--cheques .card-head{background:#2b4a63}
 /* Comptage Espèces — terracotta foncé */
 .card--comptage .card-head{background:#5a2212}
 /* Calcul Écart — vert foncé */
 .card--ecart .card-head{background:#18183c}
+/* Rapprochement prestations — vert profond */
+.card--rappro .card-head{background:#204d3a}
 /* Historique — warm muted */
 .card--history .card-head{background:#141430}
 
@@ -165,8 +169,57 @@ main{padding:1.1rem 1.1rem 3rem;max-width:1080px;margin:0 auto}
 .toast.show{opacity:1;transform:translateY(0)}
 
 /* ── RESPONSIVE ── */
-@media(max-width:900px){.grid-top{grid-template-columns:1fr 1fr}}
+@media(max-width:1150px){.grid-top{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.grid-top{grid-template-columns:1fr}.grid-bottom{grid-template-columns:1fr}.comptage-total{font-size:2.1rem}}
+
+/* ── CHÈQUES ── */
+.cheques-body{padding:.75rem .9rem 1rem}
+.cheque-row{display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem}
+.cheque-row .ch-emetteur{flex:1;min-width:0;font-family:inherit;font-size:.85rem;border:1.5px solid #d4c8b0;border-radius:8px;padding:.4rem .6rem;background:#fffaf2;color:#1C2321}
+.cheque-row .ch-montant{width:92px;flex-shrink:0;font-family:inherit;font-size:.87rem;font-weight:700;text-align:right;border:1.5px solid #d4c8b0;border-radius:8px;padding:.4rem .5rem;background:#fffaf2;color:#1C2321;-moz-appearance:textfield}
+.cheque-row .ch-montant::-webkit-inner-spin-button,.cheque-row .ch-montant::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.cheque-row .ch-del{background:#f0e8d8;color:#5a2212;border:none;border-radius:8px;width:32px;height:32px;flex-shrink:0;cursor:pointer;font-size:.9rem;line-height:1}
+.cheque-row .ch-del:hover{background:#e6dcc4}
+.cheques-empty{font-size:.8rem;color:#9193a8;font-style:italic;padding:.2rem 0 .6rem}
+.btn-add-cheque{width:100%;padding:.55rem;background:#fff;border:1.5px dashed #d4c8b0;color:#5E6572;border-radius:8px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;margin-bottom:.7rem}
+.btn-add-cheque:hover{border-color:#2b4a63;color:#2b4a63}
+.cheques-total-row{display:flex;justify-content:space-between;align-items:center;padding:.6rem .85rem;background:#f0e8d8;border-top:1.5px solid #d4c8b0;font-size:.85rem;font-weight:800}
+.cheques-total-row .ct-lbl{color:#EFC88B}
+.cheques-total-row .ct-val{color:#EFC88B}
+
+/* ── RAPPROCHEMENT ── */
+.rappro-body{padding:1.1rem 1.1rem 1.2rem}
+.rappro-row{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid #f0e8d8;font-size:.87rem}
+.rappro-row:last-of-type{border-bottom:none}
+.rappro-row .rr-lbl{color:#D3D5D7;font-weight:600}
+.rappro-row .rr-val{font-weight:800;color:#F4E3B2}
+.rappro-result{display:flex;align-items:center;justify-content:space-between;padding:.7rem .9rem;background:#F4E3B2;border:1px solid #d4c8b0;border-radius:10px;margin-top:.7rem}
+.rappro-alert{padding:.65rem .85rem;background:#f0e8d8;border:1px solid #d4c8b0;border-left:4px solid #CF5C36;border-radius:8px;font-size:.82rem;font-weight:600;color:#EFC88B;margin-top:.7rem}
+.rappro-ok{padding:.65rem .85rem;background:#f0e8d8;border:1px solid #d4c8b0;border-left:4px solid #6bbf8a;border-radius:8px;font-size:.82rem;font-weight:600;color:#6bbf8a;margin-top:.7rem}
+.rappro-info{padding:.65rem .85rem;background:#f0e8d8;border:1px solid #d4c8b0;border-left:4px solid #9193a8;border-radius:8px;font-size:.82rem;font-weight:600;color:#D3D5D7;margin-top:.7rem}
+
+/* ── IMPRESSION ── */
+.print-only{display:none}
+.print-actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.6rem}
+.btn-print{background:#fff;border:1.5px solid #c8d4da;color:#1C2321;border-radius:10px;font-family:inherit;font-size:.84rem;font-weight:600;padding:.6rem 1.1rem;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:.4rem}
+.btn-print:hover{border-color:#2b4a63;color:#2b4a63;background:#f0f4f7}
+@media print{
+  body *{visibility:hidden}
+  .print-only,.print-only *{visibility:visible}
+  .print-only{display:block!important;position:absolute;top:0;left:0;width:100%;padding:0 1.2cm}
+  .ps-head{border-bottom:2px solid #1C2321;padding-bottom:.6rem;margin-bottom:1rem}
+  .ps-head h1{font-size:1.3rem;margin-bottom:.2rem}
+  .ps-head .ps-meta{font-size:.85rem;color:#333}
+  .ps-table{width:100%;border-collapse:collapse;margin-bottom:1rem;font-size:.85rem}
+  .ps-table th,.ps-table td{border:1px solid #999;padding:.35rem .55rem;text-align:left}
+  .ps-table th{background:#eee;text-align:left}
+  .ps-table td.ps-r,.ps-table th.ps-r{text-align:right}
+  .ps-total-row td{font-weight:800;background:#f4f4f4}
+  .ps-section-title{font-size:.95rem;font-weight:800;margin:1rem 0 .4rem}
+  .ps-sign{margin-top:2.2rem;display:flex;justify-content:space-between;font-size:.85rem}
+  .ps-sign div{width:45%;border-top:1px solid #333;padding-top:.3rem}
+  .ps-note{font-size:.78rem;color:#444;margin-top:.3rem}
+}
 
 
 /* ── MODE SOBRE — Carbon + accent rouge ── */
@@ -281,6 +334,25 @@ input:not([type=file]):not([type=checkbox]):not([type=search]):focus,textarea:fo
 .cb-sep{color:#c8d4da!important}
 .er-val.pos,.history-table .ht-pos{color:#5E6572!important}
 .er-val.neg,.history-table .ht-neg{color:#A22C29!important}
+.cheque-row .ch-emetteur,.cheque-row .ch-montant{background:#fff!important;color:#1C2321!important;border-color:#c8d4da!important}
+.cheque-row .ch-del{background:#f5f8fa!important;color:#A22C29!important}
+.cheque-row .ch-del:hover{background:#fef2f2!important}
+.btn-add-cheque{background:#fff!important;border-color:#c8d4da!important;color:#5E6572!important}
+.btn-add-cheque:hover{border-color:#5E6572!important;color:#1C2321!important}
+.cheques-total-row{background:#f5f8fa!important;border-top-color:#dde4e8!important}
+.cheques-total-row .ct-lbl,.cheques-total-row .ct-val{color:#5E6572!important}
+.cheques-empty{color:#A9B4C2!important}
+.rappro-row{border-bottom-color:#f0f3f2!important}
+.rappro-row .rr-lbl{color:#5E6572!important}
+.rappro-row .rr-val{color:#1C2321!important}
+.rappro-result{background:#f5f8fa!important;border-color:#dde4e8!important}
+.rappro-alert{background:#fef2f2!important;border-color:#dde4e8!important;border-left-color:#A22C29!important;color:#A22C29!important}
+.rappro-ok{background:#f0f7f4!important;border-color:#dde4e8!important;border-left-color:#3f8a5f!important;color:#2f6b4a!important}
+.rappro-info{background:#f5f8fa!important;border-color:#dde4e8!important;border-left-color:#A9B4C2!important;color:#5E6572!important}
+.btn-print{background:#fff!important;border-color:#c8d4da!important;color:#1C2321!important}
+.btn-print:hover{border-color:#5E6572!important;color:#1C2321!important;background:#f5f8fa!important}
+.card--cheques .card-head{background:#5E6572!important}
+.card--rappro .card-head{background:#2f6b4a!important}
 
 /* ── MODE SOMBRE (accent rouge conservé) ── */
 html[data-theme="dark"] body{background:#14181A!important;color:#E7ECEE!important}
@@ -405,6 +477,27 @@ html[data-theme="dark"] .toggle.on{background:#5E6572!important}
 html[data-theme="dark"] .toggle.off{background:#313A3F!important}
 html[data-theme="dark"] .toast{background:#0E1214!important;color:#E7ECEE!important}
 html[data-theme="dark"] .logo span{color:#E0635D!important}
+html[data-theme="dark"] .cheque-row .ch-emetteur,
+html[data-theme="dark"] .cheque-row .ch-montant{background:#171C1F!important;color:#E7ECEE!important;border-color:#313A3F!important}
+html[data-theme="dark"] .cheque-row .ch-del{background:#1F2528!important;color:#E0635D!important}
+html[data-theme="dark"] .cheque-row .ch-del:hover{background:#2a1614!important}
+html[data-theme="dark"] .btn-add-cheque{background:#1F2528!important;border-color:#313A3F!important;color:#9AA6AE!important}
+html[data-theme="dark"] .btn-add-cheque:hover{border-color:#3d484e!important;color:#E7ECEE!important}
+html[data-theme="dark"] .cheques-total-row{background:#171C1F!important;border-top-color:#313A3F!important}
+html[data-theme="dark"] .cheques-total-row .ct-lbl,
+html[data-theme="dark"] .cheques-total-row .ct-val{color:#9AA6AE!important}
+html[data-theme="dark"] .cheques-empty{color:#9AA6AE!important}
+html[data-theme="dark"] .rappro-row{border-bottom-color:#262d31!important}
+html[data-theme="dark"] .rappro-row .rr-lbl{color:#9AA6AE!important}
+html[data-theme="dark"] .rappro-row .rr-val{color:#E7ECEE!important}
+html[data-theme="dark"] .rappro-result{background:#171C1F!important;border-color:#313A3F!important}
+html[data-theme="dark"] .rappro-alert{background:#2a1614!important;border-color:#3d484e!important;border-left-color:#A22C29!important;color:#E0635D!important}
+html[data-theme="dark"] .rappro-ok{background:#12211a!important;border-color:#3d484e!important;border-left-color:#4caf7d!important;color:#7fd1a6!important}
+html[data-theme="dark"] .rappro-info{background:#171C1F!important;border-color:#313A3F!important;border-left-color:#7F8C94!important;color:#9AA6AE!important}
+html[data-theme="dark"] .btn-print{background:#1F2528!important;color:#E7ECEE!important;border-color:#313A3F!important}
+html[data-theme="dark"] .btn-print:hover{background:#272F33!important;border-color:#3d484e!important}
+html[data-theme="dark"] .card--cheques .card-head{background:#1F2528!important}
+html[data-theme="dark"] .card--rappro .card-head{background:#12211a!important}
 
 /* ── ERGONOMIE TACTILE (tablette paysage / mobile) ── */
 @media (pointer:coarse){
@@ -472,6 +565,16 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
       </table>
     </section>
 
+    <!-- LES CHÈQUES -->
+    <section class="card card--cheques">
+      <div class="card-head"><h2>Les Chèques</h2><span class="card-badge" id="cheques-count">0 chèque</span></div>
+      <div class="cheques-body">
+        <div id="cheques-list"></div>
+        <button class="btn-add-cheque" id="btn-add-cheque" type="button">+ Ajouter un chèque</button>
+      </div>
+      <div class="cheques-total-row"><span class="ct-lbl">Total chèques</span><span class="ct-val" id="total-cheques">0,00 €</span></div>
+    </section>
+
   </div>
 
   <div class="grid-bottom">
@@ -518,6 +621,22 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
 
   </div>
 
+  <!-- RAPPROCHEMENT PRESTATIONS / ENCAISSEMENTS -->
+  <section class="card card--rappro">
+    <div class="card-head"><h2>Rapprochement prestations / encaissements</h2><span class="card-badge">Contrôle</span></div>
+    <div class="rappro-body">
+      <div class="rappro-row"><span class="rr-lbl">Prestations enregistrées aujourd'hui (Fidélité)</span><span class="rr-val" id="rappro-prestations">0,00&nbsp;€</span></div>
+      <div class="rappro-row"><span class="rr-lbl">Recette espèces du jour</span><span class="rr-val" id="rappro-especes">0,00&nbsp;€</span></div>
+      <div class="rappro-row"><span class="rr-lbl">Chèques encaissés</span><span class="rr-val" id="rappro-cheques-val">0,00&nbsp;€</span></div>
+      <div class="rappro-row"><span class="rr-lbl">Paiements électroniques</span><span class="rr-val" id="rappro-elec-val">0,00&nbsp;€</span></div>
+      <div class="rappro-result">
+        <span class="er-lbl">Total encaissé aujourd'hui</span>
+        <strong class="er-val zero" id="rappro-total">0,00&nbsp;€</strong>
+      </div>
+      <div id="rappro-msg"></div>
+    </div>
+  </section>
+
   <!-- HISTORIQUE -->
   <section class="card card--history">
     <div class="card-head"><h2>Historique</h2><span class="card-badge" id="history-count">0 entrée</span></div>
@@ -526,24 +645,31 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
         <thead>
           <tr>
             <th>Date</th><th class="h-r">Pièces + billets</th><th class="h-r">Réserve monnaie</th>
-            <th class="h-r">Fond cible</th><th class="h-r">Sortie</th><th class="h-r">Logiciel</th>
-            <th class="h-r">Écart</th><th></th>
+            <th class="h-r">Fond cible</th><th class="h-r">Sortie</th><th class="h-r">Chèques</th>
+            <th class="h-r">Électronique</th><th class="h-r">Logiciel</th>
+            <th class="h-r">Écart</th><th class="h-r">Rapprochement</th><th></th>
           </tr>
         </thead>
         <tbody id="history-tbody">
-          <tr><td class="history-empty" colspan="8">Aucun comptage enregistré pour le moment.</td></tr>
+          <tr><td class="history-empty" colspan="11">Aucun comptage enregistré pour le moment.</td></tr>
         </tbody>
       </table>
     </div>
   </section>
 
-  <div class="actions-bar">
+  <div class="actions-bar" style="justify-content:space-between;flex-wrap:wrap;gap:.7rem">
+    <div class="print-actions">
+      <button class="btn-print" id="btn-print-feuille" type="button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M19,8H6a3,3,0,0,0-3,3v5a1,1,0,0,0,1,1H6v2a1,1,0,0,0,1,1H17a1,1,0,0,0,1-1V17h3a1,1,0,0,0,1-1V11A3,3,0,0,0,19,8ZM16,18H8V13h8Zm3-5H17a1,1,0,0,0-1-1H8a1,1,0,0,0-1,1H5V11a1,1,0,0,1,1-1H19a1,1,0,0,1,1,1ZM17,4H7A1,1,0,0,0,7,6H17a1,1,0,0,0,0-2Z"></path></svg> Feuille de caisse</button>
+      <button class="btn-print" id="btn-print-especes" type="button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M19,8H6a3,3,0,0,0-3,3v5a1,1,0,0,0,1,1H6v2a1,1,0,0,0,1,1H17a1,1,0,0,0,1-1V17h3a1,1,0,0,0,1-1V11A3,3,0,0,0,19,8ZM16,18H8V13h8Zm3-5H17a1,1,0,0,0-1-1H8a1,1,0,0,0-1,1H5V11a1,1,0,0,1,1-1H19a1,1,0,0,1,1,1ZM17,4H7A1,1,0,0,0,7,6H17a1,1,0,0,0,0-2Z"></path></svg> Bordereau dépôt espèces</button>
+      <button class="btn-print" id="btn-print-cheques" type="button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M19,8H6a3,3,0,0,0-3,3v5a1,1,0,0,0,1,1H6v2a1,1,0,0,0,1,1H17a1,1,0,0,0,1-1V17h3a1,1,0,0,0,1-1V11A3,3,0,0,0,19,8ZM16,18H8V13h8Zm3-5H17a1,1,0,0,0-1-1H8a1,1,0,0,0-1,1H5V11a1,1,0,0,1,1-1H19a1,1,0,0,1,1,1ZM17,4H7A1,1,0,0,0,7,6H17a1,1,0,0,0,0-2Z"></path></svg> Bordereau remise chèques</button>
+    </div>
     <button class="btn-reset" id="btn-reset" type="button">Réinitialiser le formulaire</button>
   </div>
 
 </main>
 
 <div class="toast" id="toast"></div>
+<div class="print-only" id="print-sheet"></div>
 
 <script>
   var COINS=[
@@ -566,6 +692,28 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
   function storeSubtitle(){return(profilMagasin().nom||'').trim()||'Mon salon';}
   function fmt(n){return n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';}
   function r2(n){return Math.round(n*100)/100;}
+
+  function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+  function localDateKey(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+  function isTodayIso(iso){
+    if(!iso)return false;
+    var d=new Date(iso);if(isNaN(d.getTime()))return false;
+    return localDateKey(d)===localDateKey(new Date());
+  }
+  function prestationsAujourdhui(){
+    var clients=[];
+    try{clients=JSON.parse(localStorage.getItem('clients-v1')||'[]')||[];}catch(e){clients=[];}
+    if(!Array.isArray(clients))clients=[];
+    var total=0,count=0;
+    clients.forEach(function(c){
+      if(!c||!Array.isArray(c.visites))return;
+      c.visites.forEach(function(v){
+        if(v&&isTodayIso(v.date)){total=r2(total+(parseFloat(v.montant)||0));count++;}
+      });
+    });
+    return {total:total,count:count};
+  }
 
   function qtyValue(el){var q=parseInt(el.value,10)||0;if(q<0)q=0;if(q>MAX_QTY)q=MAX_QTY;return q;}
   function normalizeQtyField(el){if(el.value==='')return;var q=qtyValue(el);if(el.value!==String(q))el.value=q;}
@@ -609,6 +757,35 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
     });
   }
 
+  var chequesWork=[];
+  function totalCheques(){var t=0;chequesWork.forEach(function(ch){t=r2(t+(parseFloat(ch.montant)||0));});return t;}
+  function renderCheques(){
+    var box=document.getElementById('cheques-list');
+    while(box.firstChild)box.removeChild(box.firstChild);
+    if(!chequesWork.length){
+      var empty=document.createElement('div');empty.className='cheques-empty';empty.textContent='Aucun chèque saisi.';
+      box.appendChild(empty);
+    }else{
+      chequesWork.forEach(function(ch,i){
+        var row=document.createElement('div');row.className='cheque-row';
+        var inpE=document.createElement('input');inpE.className='ch-emetteur';inpE.type='text';inpE.placeholder='Émetteur (optionnel)';inpE.maxLength=60;inpE.value=ch.emetteur||'';
+        inpE.addEventListener('input',function(){chequesWork[i].emetteur=inpE.value;});
+        var inpM=document.createElement('input');inpM.className='ch-montant';inpM.type='number';inpM.min='0';inpM.step='0.01';inpM.max=String(MAX_AMOUNT);inpM.placeholder='0,00';inpM.value=(ch.montant!=null&&ch.montant!=='')?ch.montant:'';
+        inpM.addEventListener('input',function(){chequesWork[i].montant=inpM.value;calculate();});
+        inpM.addEventListener('change',function(){normalizeAmountField(inpM);chequesWork[i].montant=inpM.value;calculate();});
+        var btnDel=document.createElement('button');btnDel.className='ch-del';btnDel.type='button';btnDel.textContent='✕';btnDel.title='Supprimer ce chèque';
+        btnDel.addEventListener('click',function(){chequesWork.splice(i,1);renderCheques();calculate();});
+        row.appendChild(inpE);row.appendChild(inpM);row.appendChild(btnDel);
+        box.appendChild(row);
+      });
+    }
+    document.getElementById('cheques-count').textContent=chequesWork.length+(chequesWork.length<=1?' chèque':' chèques');
+  }
+  function addCheque(){
+    chequesWork.push({emetteur:'',montant:''});renderCheques();calculate();
+    var ins=document.querySelectorAll('#cheques-list .ch-montant');if(ins.length)ins[ins.length-1].focus();
+  }
+
   function initEnterNavigation(){
     var SEL='.qty-input, .fond-input, .amt-input, .ref-input';
     var fields=Array.prototype.slice.call(document.querySelectorAll(SEL));
@@ -624,50 +801,75 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
     });
   }
 
-  function calculate(){
-    var totalCoins=0;
-    COINS.forEach(function(coin,i){
-      var qty=qtyValue(document.getElementById('coin-qty-'+i));
-      var line=r2(qty*coin.value);
-      document.getElementById('coin-tot-'+i).textContent=fmt(line);
-      totalCoins=r2(totalCoins+line);
-    });
-    document.getElementById('total-coins').textContent=fmt(totalCoins);
-    document.getElementById('sub-coins').textContent=fmt(totalCoins);
-
-    var totalBills=0;
-    BILLS.forEach(function(bill,i){
-      var qty=qtyValue(document.getElementById('bill-qty-'+i));
-      var line=r2(qty*bill.value);
-      document.getElementById('bill-tot-'+i).textContent=fmt(line);
-      totalBills=r2(totalBills+line);
-    });
-    document.getElementById('total-bills').textContent=fmt(totalBills);
-    document.getElementById('sub-bills').textContent=fmt(totalBills);
-
+  function buildSnapshot(){
+    var coinsDetail=COINS.map(function(coin,i){var q=qtyValue(document.getElementById('coin-qty-'+i));return {label:coin.label,qty:q,total:r2(q*coin.value)};});
+    var totalCoins=0;coinsDetail.forEach(function(c){totalCoins=r2(totalCoins+c.total);});
+    var billsDetail=BILLS.map(function(bill,i){var q=qtyValue(document.getElementById('bill-qty-'+i));return {label:bill.label,qty:q,total:r2(q*bill.value)};});
+    var totalBills=0;billsDetail.forEach(function(b){totalBills=r2(totalBills+b.total);});
     var reserve=r2(parseFloat(document.getElementById('reserve-monnaie').value)||0);
-    document.getElementById('sub-reserve').textContent=fmt(reserve);
     var totalEspeces=r2(totalCoins+totalBills);
     var totalCaisse=r2(totalEspeces+reserve);
-    document.getElementById('total-especes').textContent=fmt(totalCaisse);
+    var elecDetail=ELEC.map(function(type,i){return {label:type,montant:amountValue(document.getElementById('elec-'+i))};});
+    var totalElec=0;elecDetail.forEach(function(e){totalElec=r2(totalElec+e.montant);});
+    var fondCible=r2(parseFloat(document.getElementById('fond-cible').value)||0);
+    var sortie=r2(Math.max(0,totalCaisse-fondCible));
+    var refValue=document.getElementById('ref').value;
+    var ref=r2(parseFloat(refValue)||0);
+    var ecart=r2(totalCaisse-ref);
+    var chequesDetail=chequesWork.map(function(ch){return {emetteur:String(ch.emetteur||'').trim(),montant:r2(parseFloat(ch.montant)||0)};}).filter(function(ch){return ch.montant||ch.emetteur;});
+    var totalCheques=0;chequesDetail.forEach(function(ch){totalCheques=r2(totalCheques+ch.montant);});
+    var recetteEspeces=r2(totalCaisse-fondCible);
+    var totalEncaisse=r2(recetteEspeces+totalCheques+totalElec);
+    var presta=prestationsAujourdhui();
+    var rappEcart=r2(totalEncaisse-presta.total);
+    return {coinsDetail:coinsDetail,totalCoins:totalCoins,billsDetail:billsDetail,totalBills:totalBills,reserve:reserve,
+      totalEspeces:totalEspeces,totalCaisse:totalCaisse,elecDetail:elecDetail,totalElec:totalElec,fondCible:fondCible,
+      sortie:sortie,refValue:refValue,ref:ref,ecart:ecart,chequesDetail:chequesDetail,totalCheques:totalCheques,
+      recetteEspeces:recetteEspeces,totalEncaisse:totalEncaisse,presta:presta,rappEcart:rappEcart};
+  }
 
-    var totalElec=0;
-    ELEC.forEach(function(_,i){totalElec=r2(totalElec+amountValue(document.getElementById('elec-'+i)));});
-    document.getElementById('total-elec').textContent=fmt(totalElec);
+  function calculate(){
+    var s=buildSnapshot();
+    s.coinsDetail.forEach(function(c,i){document.getElementById('coin-tot-'+i).textContent=fmt(c.total);});
+    document.getElementById('total-coins').textContent=fmt(s.totalCoins);
+    document.getElementById('sub-coins').textContent=fmt(s.totalCoins);
 
-    var ref=parseFloat(document.getElementById('ref').value)||0;
+    s.billsDetail.forEach(function(b,i){document.getElementById('bill-tot-'+i).textContent=fmt(b.total);});
+    document.getElementById('total-bills').textContent=fmt(s.totalBills);
+    document.getElementById('sub-bills').textContent=fmt(s.totalBills);
+
+    document.getElementById('sub-reserve').textContent=fmt(s.reserve);
+    document.getElementById('total-especes').textContent=fmt(s.totalCaisse);
+
+    document.getElementById('total-elec').textContent=fmt(s.totalElec);
+
     var ecartEl=document.getElementById('ecart-value');
-    if(ref>0||document.getElementById('ref').value!==''){
-      var ecart=r2(totalCaisse-ref);
-      ecartEl.textContent=(ecart>=0?'+':'')+fmt(ecart);
-      ecartEl.className='er-val '+(ecart>0.005?'pos':ecart<-0.005?'neg':'zero');
+    if(s.ref>0||s.refValue!==''){
+      ecartEl.textContent=(s.ecart>=0?'+':'')+fmt(s.ecart);
+      ecartEl.className='er-val '+(s.ecart>0.005?'pos':s.ecart<-0.005?'neg':'zero');
     }else{ecartEl.textContent='—';ecartEl.className='er-val zero';}
 
-    var fondCible=r2(parseFloat(document.getElementById('fond-cible').value)||0);
-    var remise=r2(Math.max(0,totalCaisse-fondCible));
     var remiseEl=document.getElementById('remise-alert');
-    if(fondCible>0&&remise>0){remiseEl.textContent='Sortie de caisse à effectuer : '+fmt(remise)+'.';remiseEl.style.display='block';}
+    if(s.fondCible>0&&s.sortie>0){remiseEl.textContent='Sortie de caisse à effectuer : '+fmt(s.sortie)+'.';remiseEl.style.display='block';}
     else remiseEl.style.display='none';
+
+    document.getElementById('total-cheques').textContent=fmt(s.totalCheques);
+
+    var presta=s.presta;
+    document.getElementById('rappro-prestations').textContent=fmt(presta.total)+(presta.count?(' ('+presta.count+' passage'+(presta.count>1?'s':'')+')'):'');
+    document.getElementById('rappro-especes').textContent=fmt(s.recetteEspeces);
+    document.getElementById('rappro-cheques-val').textContent=fmt(s.totalCheques);
+    document.getElementById('rappro-elec-val').textContent=fmt(s.totalElec);
+    document.getElementById('rappro-total').textContent=fmt(s.totalEncaisse);
+    var msgEl=document.getElementById('rappro-msg');
+    if(!presta.count){
+      msgEl.innerHTML='<div class="rappro-info">Aucun passage enregistré aujourd’hui dans <strong>Fidélité</strong> — enregistrez les prestations du jour pour activer ce contrôle.</div>';
+    }else if(Math.abs(s.rappEcart)<=0.01){
+      msgEl.innerHTML='<div class="rappro-ok">✓ Le total encaissé correspond aux prestations enregistrées.</div>';
+    }else{
+      var sens=s.rappEcart>0?'de plus':'de moins';
+      msgEl.innerHTML='<div class="rappro-alert">⚠ Écart de '+fmt(Math.abs(s.rappEcart))+' '+sens+' encaissé que de prestations enregistrées. Vérifiez qu’aucun encaissement n’a été oublié ou mal saisi.</div>';
+    }
   }
 
   function loadHistory(){try{return JSON.parse(localStorage.getItem(LS_CAISSE)||'[]');}catch(e){return [];}}
@@ -688,21 +890,27 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
     while(tbody.firstChild)tbody.removeChild(tbody.firstChild);
     if(!data.length){
       var et=document.createElement('tr'),ed=document.createElement('td');
-      ed.className='history-empty';ed.colSpan=8;ed.textContent='Aucun comptage enregistré pour le moment.';
+      ed.className='history-empty';ed.colSpan=11;ed.textContent='Aucun comptage enregistré pour le moment.';
       et.appendChild(ed);tbody.appendChild(et);return;
     }
     data.forEach(function(entry,i){
       var tr=document.createElement('tr');
       var eCls=entry.ecart>0.005?'ht-pos':entry.ecart<-0.005?'ht-neg':'ht-zero';
       var eSign=entry.ecart>0.005?'+':'';
+      var rEcart=typeof entry.rapprochementEcart==='number'?entry.rapprochementEcart:null;
+      var rCls=rEcart===null?'ht-zero':(rEcart>0.01?'ht-pos':rEcart<-0.01?'ht-neg':'ht-zero');
+      var rSign=rEcart!==null&&rEcart>0.005?'+':'';
       var cells=[
         {cls:'',text:entry.date,lab:'Date'},
         {cls:'h-r ht-bold',text:fmt(entry.comptage),lab:'Pièces + billets'},
         {cls:'h-r',text:fmt(typeof entry.reserve==='number'?entry.reserve:entry.fond||0),lab:'Réserve monnaie'},
         {cls:'h-r',text:typeof entry.fondCible==='number'?fmt(entry.fondCible):'—',lab:'Fond cible'},
         {cls:'h-r',text:typeof entry.sortie==='number'?fmt(entry.sortie):'—',lab:'Sortie'},
+        {cls:'h-r',text:typeof entry.totalCheques==='number'?fmt(entry.totalCheques):'—',lab:'Chèques'},
+        {cls:'h-r',text:typeof entry.totalElec==='number'?fmt(entry.totalElec):'—',lab:'Électronique'},
         {cls:'h-r',text:entry.ref>0?fmt(entry.ref):'—',lab:'Logiciel'},
-        {cls:'h-r '+eCls,text:eSign+fmt(entry.ecart),lab:'Écart'}
+        {cls:'h-r '+eCls,text:eSign+fmt(entry.ecart),lab:'Écart'},
+        {cls:'h-r '+rCls,text:rEcart===null?'—':(rSign+fmt(rEcart)),lab:'Rapprochement'}
       ];
       cells.forEach(function(c){var td=document.createElement('td');if(c.cls)td.className=c.cls;td.setAttribute('data-label',c.lab);td.textContent=c.text;tr.appendChild(td);});
       var tdDel=document.createElement('td');tdDel.className='h-r';tdDel.setAttribute('data-label','');
@@ -713,19 +921,16 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
   }
 
   function saveEntry(){
-    var coinQtys=[],totalCoins=0;
-    COINS.forEach(function(coin,i){var el=document.getElementById('coin-qty-'+i);normalizeQtyField(el);var q=qtyValue(el);coinQtys.push(q);totalCoins=r2(totalCoins+r2(q*coin.value));});
-    var billQtys=[],totalBills=0;
-    BILLS.forEach(function(bill,i){var el=document.getElementById('bill-qty-'+i);normalizeQtyField(el);var q=qtyValue(el);billQtys.push(q);totalBills=r2(totalBills+r2(q*bill.value));});
-    var totalEspeces=r2(totalCoins+totalBills);
-    var reserve=r2(parseFloat(document.getElementById('reserve-monnaie').value)||0);
-    var fondCible=r2(parseFloat(document.getElementById('fond-cible').value)||0);
-    var totalCaisse=r2(totalEspeces+reserve);
-    var sortie=r2(Math.max(0,totalCaisse-fondCible));
-    var ref=r2(parseFloat(document.getElementById('ref').value)||0);
-    var ecart=r2(totalCaisse-ref);
+    COINS.forEach(function(_,i){normalizeQtyField(document.getElementById('coin-qty-'+i));});
+    BILLS.forEach(function(_,i){normalizeQtyField(document.getElementById('bill-qty-'+i));});
+    ELEC.forEach(function(_,i){normalizeAmountField(document.getElementById('elec-'+i));});
+    var s=buildSnapshot();
+    var coinQtys=s.coinsDetail.map(function(c){return c.qty;});
+    var billQtys=s.billsDetail.map(function(b){return b.qty;});
+
     var now=new Date(),dateStr=now.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
-    var entry={date:dateStr,ts:now.getTime(),comptage:totalEspeces,reserve:reserve,fondCible:fondCible,sortie:sortie,ref:ref,ecart:ecart,coins:coinQtys,bills:billQtys};
+    var entry={date:dateStr,ts:now.getTime(),comptage:s.totalEspeces,reserve:s.reserve,fondCible:s.fondCible,sortie:s.sortie,ref:s.ref,ecart:s.ecart,coins:coinQtys,bills:billQtys,
+      cheques:s.chequesDetail,totalCheques:s.totalCheques,totalElec:s.totalElec,totalEncaisse:s.totalEncaisse,prestations:s.presta.total,rapprochementEcart:s.rappEcart};
     var data=loadHistory(),existsToday=data.some(function(e){return e.date===dateStr;});
     data.unshift(entry);data=capHistory(data);saveHistoryData(data);renderHistory();
     showToast(existsToday?'Comptage du jour mis à jour':'Comptage enregistré ✔');
@@ -758,7 +963,107 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
     document.getElementById('reserve-monnaie').value=reserveDefaut().toFixed(2);
     document.getElementById('fond-cible').value=fondCibleDefaut()?fondCibleDefaut().toFixed(2):'';
     document.getElementById('prefill-banner').style.display='none';
+    chequesWork=[];renderCheques();
     calculate();showToast('Formulaire réinitialisé');
+  }
+
+  function docHeaderHtml(title){
+    var p=profilMagasin();
+    var lines=[];
+    if(p.adresse)lines.push(escHtml(p.adresse));
+    var contact=[];if(p.tel)contact.push(escHtml(p.tel));if(p.mail)contact.push(escHtml(p.mail));
+    if(contact.length)lines.push(contact.join(' · '));
+    var legal=[];if(p.formeJuridique)legal.push(escHtml(p.formeJuridique));if(p.siret)legal.push('SIRET '+escHtml(p.siret));
+    if(legal.length)lines.push(legal.join(' · '));
+    var dateFull=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    return '<div class="ps-head"><h1>'+escHtml(p.nom||'Mon salon')+'</h1>'+
+      (lines.length?'<div class="ps-meta">'+lines.join('<br>')+'</div>':'')+
+      '<div class="ps-meta" style="margin-top:.5rem"><strong>'+escHtml(title)+'</strong> — '+dateFull+'</div></div>';
+  }
+  function bankNote(p){
+    if(!p.banque&&!p.iban)return '';
+    return '<p class="ps-note">Compte : '+(p.banque?escHtml(p.banque):'')+(p.banque&&p.iban?' — ':'')+(p.iban?escHtml(p.iban):'')+'</p>';
+  }
+  function doPrint(html){
+    document.getElementById('print-sheet').innerHTML=html;
+    window.print();
+  }
+
+  function printFeuilleCaisse(){
+    var s=buildSnapshot(),p=profilMagasin();
+    var html=docHeaderHtml('Feuille de caisse journalière');
+
+    html+='<div class="ps-section-title">Comptage espèces</div>';
+    html+='<table class="ps-table"><thead><tr><th>Élément</th><th class="ps-r">Montant</th></tr></thead><tbody>';
+    html+='<tr><td>Total pièces</td><td class="ps-r">'+fmt(s.totalCoins)+'</td></tr>';
+    html+='<tr><td>Total billets</td><td class="ps-r">'+fmt(s.totalBills)+'</td></tr>';
+    html+='<tr><td>Réserve de monnaie</td><td class="ps-r">'+fmt(s.reserve)+'</td></tr>';
+    html+='<tr class="ps-total-row"><td>Total espèces en caisse</td><td class="ps-r">'+fmt(s.totalCaisse)+'</td></tr>';
+    html+='</tbody></table>';
+
+    html+='<div class="ps-section-title">Chèques</div>';
+    if(s.chequesDetail.length){
+      html+='<table class="ps-table"><thead><tr><th>Émetteur</th><th class="ps-r">Montant</th></tr></thead><tbody>';
+      s.chequesDetail.forEach(function(ch){html+='<tr><td>'+(escHtml(ch.emetteur)||'—')+'</td><td class="ps-r">'+fmt(ch.montant)+'</td></tr>';});
+      html+='<tr class="ps-total-row"><td>Total chèques ('+s.chequesDetail.length+')</td><td class="ps-r">'+fmt(s.totalCheques)+'</td></tr>';
+      html+='</tbody></table>';
+    }else{
+      html+='<p class="ps-note">Aucun chèque encaissé.</p>';
+    }
+
+    html+='<div class="ps-section-title">Paiements électroniques</div>';
+    html+='<table class="ps-table"><thead><tr><th>Type</th><th class="ps-r">Montant</th></tr></thead><tbody>';
+    s.elecDetail.forEach(function(e){html+='<tr><td>'+escHtml(e.label)+'</td><td class="ps-r">'+fmt(e.montant)+'</td></tr>';});
+    html+='<tr class="ps-total-row"><td>Total électronique</td><td class="ps-r">'+fmt(s.totalElec)+'</td></tr>';
+    html+='</tbody></table>';
+
+    html+='<div class="ps-section-title">Clôture &amp; rapprochement</div>';
+    html+='<table class="ps-table"><tbody>';
+    html+='<tr><td>Fond de caisse cible</td><td class="ps-r">'+fmt(s.fondCible)+'</td></tr>';
+    html+='<tr><td>Sortie de caisse (dépôt à effectuer)</td><td class="ps-r">'+fmt(s.sortie)+'</td></tr>';
+    html+='<tr><td>Montant logiciel de caisse</td><td class="ps-r">'+(s.ref>0?fmt(s.ref):'—')+'</td></tr>';
+    html+='<tr><td>Écart de caisse</td><td class="ps-r">'+(s.ref>0?fmt(s.ecart):'—')+'</td></tr>';
+    html+='<tr><td>Recette espèces du jour</td><td class="ps-r">'+fmt(s.recetteEspeces)+'</td></tr>';
+    html+='<tr><td>Prestations enregistrées (Fidélité, '+s.presta.count+' passage'+(s.presta.count>1?'s':'')+')</td><td class="ps-r">'+fmt(s.presta.total)+'</td></tr>';
+    html+='<tr class="ps-total-row"><td>Total encaissé du jour</td><td class="ps-r">'+fmt(s.totalEncaisse)+'</td></tr>';
+    html+='<tr class="ps-total-row"><td>Écart de rapprochement</td><td class="ps-r">'+fmt(s.rappEcart)+'</td></tr>';
+    html+='</tbody></table>';
+
+    html+=bankNote(p);
+    html+='<div class="ps-sign"><div>Signature</div><div>Date</div></div>';
+    doPrint(html);
+  }
+
+  function printBordereauEspeces(){
+    var s=buildSnapshot(),p=profilMagasin();
+    var html=docHeaderHtml('Bordereau de dépôt d’espèces');
+    html+='<table class="ps-table"><thead><tr><th>Valeur</th><th class="ps-r">Quantité</th><th class="ps-r">Montant</th></tr></thead><tbody>';
+    var any=false;
+    s.billsDetail.forEach(function(b){if(!b.qty)return;any=true;html+='<tr><td>'+escHtml(b.label)+'</td><td class="ps-r">'+b.qty+'</td><td class="ps-r">'+fmt(b.total)+'</td></tr>';});
+    s.coinsDetail.forEach(function(c){if(!c.qty)return;any=true;html+='<tr><td>'+escHtml(c.label)+'</td><td class="ps-r">'+c.qty+'</td><td class="ps-r">'+fmt(c.total)+'</td></tr>';});
+    if(!any)html+='<tr><td colspan="3">Aucune espèce comptée.</td></tr>';
+    html+='<tr class="ps-total-row"><td colspan="2">Total compté en caisse</td><td class="ps-r">'+fmt(s.totalCaisse)+'</td></tr>';
+    html+='</tbody></table>';
+    html+='<table class="ps-table"><tbody>';
+    html+='<tr><td>Fond de caisse conservé</td><td class="ps-r">'+fmt(s.fondCible)+'</td></tr>';
+    html+='<tr class="ps-total-row"><td>Montant à déposer en banque</td><td class="ps-r">'+fmt(s.sortie)+'</td></tr>';
+    html+='</tbody></table>';
+    html+=bankNote(p);
+    html+='<div class="ps-sign"><div>Signature</div><div>Date</div></div>';
+    doPrint(html);
+  }
+
+  function printBordereauCheques(){
+    var s=buildSnapshot(),p=profilMagasin();
+    if(!s.chequesDetail.length){alert('Aucun chèque saisi pour cette clôture.');return;}
+    var html=docHeaderHtml('Bordereau de remise de chèques');
+    html+='<table class="ps-table"><thead><tr><th>N°</th><th>Émetteur</th><th class="ps-r">Montant</th></tr></thead><tbody>';
+    s.chequesDetail.forEach(function(ch,i){html+='<tr><td>'+(i+1)+'</td><td>'+(escHtml(ch.emetteur)||'—')+'</td><td class="ps-r">'+fmt(ch.montant)+'</td></tr>';});
+    html+='<tr class="ps-total-row"><td colspan="2">Total — '+s.chequesDetail.length+' chèque'+(s.chequesDetail.length>1?'s':'')+'</td><td class="ps-r">'+fmt(s.totalCheques)+'</td></tr>';
+    html+='</tbody></table>';
+    html+=bankNote(p);
+    html+='<div class="ps-sign"><div>Signature</div><div>Date</div></div>';
+    doPrint(html);
   }
 
   /* ── INIT ── */
@@ -766,7 +1071,7 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
   document.getElementById('reserve-monnaie').value=reserveDefaut().toFixed(2);
   document.getElementById('fond-cible').value=fondCibleDefaut()?fondCibleDefaut().toFixed(2):'';
 
-  buildCoins();buildBills();buildElec();
+  buildCoins();buildBills();buildElec();renderCheques();
   initEnterNavigation();
   saveHistoryData(capHistory(loadHistory()));
   prefillFromLast();renderHistory();calculate();
@@ -797,6 +1102,10 @@ html[data-theme="dark"] .logo span{color:#E0635D!important}
   document.getElementById('ref').addEventListener('input',calculate);
   document.getElementById('btn-save').addEventListener('click',saveEntry);
   document.getElementById('btn-reset').addEventListener('click',resetForm);
+  document.getElementById('btn-add-cheque').addEventListener('click',addCheque);
+  document.getElementById('btn-print-feuille').addEventListener('click',printFeuilleCaisse);
+  document.getElementById('btn-print-especes').addEventListener('click',printBordereauEspeces);
+  document.getElementById('btn-print-cheques').addEventListener('click',printBordereauCheques);
 </script>
 </body>
 </html>

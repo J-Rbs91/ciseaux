@@ -461,6 +461,13 @@ html[data-theme="dark"] .ms-opt:hover{background:#272F33!important}
     <div class="field"><label for="fTel">Téléphone</label><input id="fTel" type="tel" placeholder="06 12 34 56 78"></div>
     <div class="field"><label for="fMail">Email</label><input id="fMail" type="email" placeholder="contact@monsalon.fr"></div>
 
+    <div class="sep"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M12,7a1,1,0,0,0-1,1v6a1,1,0,0,0,2,0V8A1,1,0,0,0,12,7Zm9.4,3.16-9-6a1,1,0,0,0-1.11,0l-9,6A1,1,0,0,0,2,12a1,1,0,0,0,1,1H4v6a3,3,0,0,0-2,2.83V22a1,1,0,0,0,1,1H21a1,1,0,0,0,1-1v-.17A3,3,0,0,0,20,19V13h1a1,1,0,0,0,.55-1.84ZM18,19a1,1,0,0,1,1,1H5a1,1,0,0,1,1-1Zm0-2H6V13h2v3a1,1,0,0,0,2,0V13h4v3a1,1,0,0,0,2,0V13h2Zm-6-6.82L6.7,11H5.3l6.7-4.47L18.7,11H17.3Z"></path></svg> Informations comptables</div>
+    <div class="field"><label for="fSiret">SIRET</label><input id="fSiret" type="text" inputmode="numeric" maxlength="20" placeholder="123 456 789 00012"></div>
+    <div class="field"><label for="fFormeJuridique">Forme juridique</label><input id="fFormeJuridique" type="text" maxlength="60" placeholder="Ex : Auto-entrepreneur, SASU, EURL…"></div>
+    <div class="field"><label for="fBanque">Banque</label><input id="fBanque" type="text" maxlength="80" placeholder="Ex : Crédit Mutuel"></div>
+    <div class="field"><label for="fIban">IBAN du compte professionnel</label><input id="fIban" type="text" maxlength="40" placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX"></div>
+    <div class="hint">Ces informations apparaissent sur la feuille de caisse et les bordereaux de dépôt imprimables depuis la page <strong>Caisse</strong>.</div>
+
     <div class="sep"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-.18em" aria-hidden="true"><path d="M14.29,14.19,11,17.48,9.71,16.19a1,1,0,0,0-1.42,0,1,1,0,0,0,0,1.41l2,2a1,1,0,0,0,1.42,0l4-4a1,1,0,0,0,0-1.41A1,1,0,0,0,14.29,14.19Zm4.13-5.87a7,7,0,0,0-13.36,1.9,4,4,0,0,0-.38,7.65A1,1,0,1,0,5.32,16,2,2,0,0,1,4,14.1a2,2,0,0,1,2-2,1,1,0,0,0,1-1,5,5,0,0,1,9.73-1.6,1,1,0,0,0,.78.66A3,3,0,0,1,17.75,16,1,1,0,0,0,18,18l.25,0a5,5,0,0,0,.17-9.62Z"></path></svg> Synchro Google Drive</div>
     <div class="field">
       <label for="fSyncUrl">URL de votre script Apps Script</label>
@@ -609,7 +616,7 @@ function doPull(){
 
 function saveProfil(){
   var existing=lp();
-  var p={nom:(document.getElementById('fNom').value||'').trim(),adresse:(document.getElementById('fAdresse').value||'').trim(),tel:(document.getElementById('fTel').value||'').trim(),mail:(document.getElementById('fMail').value||'').trim(),prestations:Array.isArray(existing.prestations)?existing.prestations:[]};
+  var p={nom:(document.getElementById('fNom').value||'').trim(),adresse:(document.getElementById('fAdresse').value||'').trim(),tel:(document.getElementById('fTel').value||'').trim(),mail:(document.getElementById('fMail').value||'').trim(),siret:(document.getElementById('fSiret').value||'').trim(),formeJuridique:(document.getElementById('fFormeJuridique').value||'').trim(),banque:(document.getElementById('fBanque').value||'').trim(),iban:(document.getElementById('fIban').value||'').trim(),prestations:Array.isArray(existing.prestations)?existing.prestations:[]};
   if(!p.nom){alert('Le nom du salon est requis.');return;}
   var url=(document.getElementById('fSyncUrl').value||'').trim();
   var key=(document.getElementById('fAdminKey').value||'').trim();
@@ -638,6 +645,10 @@ function fillForm(p){
   document.getElementById('fAdresse').value=p.adresse||'';
   document.getElementById('fTel').value=p.tel||'';
   document.getElementById('fMail').value=p.mail||'';
+  document.getElementById('fSiret').value=p.siret||'';
+  document.getElementById('fFormeJuridique').value=p.formeJuridique||'';
+  document.getElementById('fBanque').value=p.banque||'';
+  document.getElementById('fIban').value=p.iban||'';
   document.getElementById('fSyncUrl').value=su();
   document.getElementById('fAdminKey').value=ak();
 }

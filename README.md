@@ -1,3 +1,5 @@
+![KuT, bannière reprenant l'identité visuelle du site](.github/readme-hero.svg)
+
 # KuT
 
 Outil open source pour salons de coiffure — CRM clients, programme de fidélité, clôture de caisse, campagnes email.
